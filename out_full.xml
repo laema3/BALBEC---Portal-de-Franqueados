@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<SOAP-ENV:Body>
+		<IntegracaoFcxExportaCadSAT.ExecuteResponse xmlns="Valim">
+			<Sdtwebservicesaidaexpcadastrosat xmlns="Valim">
+				<MsgErro/>
+				<SNFim>N</SNFim>
+				<DataHoraInicio>0000-00-00T00:00:00</DataHoraInicio>
+				<ProdutoItem>
+					<TipoAtualizacao>A</TipoAtualizacao>
+					<ProdutoId>1</ProdutoId>
+					<ProdutoDescricaoResumida>PAO FRANCES</ProdutoDescricaoResumida>
+					<ProdutoDescricao>PAO FRANCES</ProdutoDescricao>
+					<ProdutoObservacao/>
+					<ProdutoUnidadeVendaId>KG</ProdutoUnidadeVendaId>
+					<ProdutoUnidadeVendaDesc>KILO</ProdutoUnidadeVendaDesc>
+					<ProdutoFatorConversao>1.000000</ProdutoFatorConversao>
+					<ProdutoUnidadeCompraId>KG</ProdutoUnidadeCompraId>
+					<ProdutoUnidadeCompraDesc>KILO</ProdutoUnidadeCompraDesc>
+					<ProdutoCasasDecimais>3</ProdutoCasasDecimais>
+					<ProdutoReferencia>PÃOZINHO</ProdutoReferencia>
+					<ProdutoFamiliaId>2</ProdutoFamiliaId>
+					<ProdutoFamiliaDescricao>PRODUCAO PROPRIA</ProdutoFamiliaDescricao>
+					<NCMCodigo>19012010</NCMCodigo>
+					<ProdutoAliquotaAproxNacional>0.00</ProdutoAliquotaAproxNacional>
+					<ProdutoMesesGarantia>0</ProdutoMesesGarantia>
+					<ProdutoDiasValidade>1</ProdutoDiasValidade>
+					<ProdutoSNSuspenso>N</ProdutoSNSuspenso>
+					<ProdutoTipoTributacao>I</ProdutoTipoTributacao>
+					<ProdutoPCAliquota>0.00</ProdutoPCAliquota>
+					<ProdutoTipoVendaBalanca>1</ProdutoTipoVendaBalanca>
+					<ProdutoTipoProducao>T</ProdutoTipoProducao>
+					<ProdutoEXTIPI/>
+					<ProdutoDataHoraAlt>15/07/2026 17:49</ProdutoDataHoraAlt>
+					<ProdutoQtdeAtacado>0.0000</ProdutoQtdeAtacado>
+					<CargaPDVNumero>132167</CargaPDVNumero>
+					<CargaPDVSequencia>1</CargaPDVSequencia>
+					<produtocfosaidenestadocod>5101</produtocfosaidenestadocod>
+					<produtosittridensaitipoicms>2</produtosittridensaitipoicms>
+					<produtosittridensaicodicms>0102</produtosittridensaicodicms>
+					<produtosittrisaipiscodigo>99</produtosittrisaipiscodigo>
+					<produtopissaida>0.0000</produtopissaida>
+					<produtosittrisaicofcodigo>99</produtosittrisaicofcodigo>
+					<produtocofinssaida>0.0000</produtocofinssaida>
+					<produtosittrisaicodigoipi>99</produtosittrisaicodigoipi>
+					<produtoipipcsaida>0.00</produtoipipcsaida>
+					<ProdutoSnCodBarValido>N</ProdutoSnCodBarValido>
+					<ProdutoCESTCodigo>1704612</ProdutoCESTCodigo>
+					<ProdutoCESTDescricao>MISTURAS E PREPARACOES PARA PAES COM, NO MINIMO, 80% DE FARINHA DE TRIGO NA SUA COMPOSICAO FINAL, EM EMBALAGEM SUPERIOR A 5 KG E INFERIOR OU IGUAL A 25 KG</ProdutoCESTDescricao>
+					<ProdutoEmbalagem>0.000</ProdutoEmbalagem>
+					<PrecoProdutoItem>
+						<PrecoProdutoPrecoId>11</PrecoProdutoPrecoId>
+						<PrecoProdutoPrecoDesc>Preço venda</PrecoProdutoPrecoDesc>
+						<PrecoProdutoPrecoTipo>V</PrecoProdutoPrecoTipo>
+						<PrecoProdutoPrecoSnAut>S</PrecoProdutoPrecoSnAut>
+						<PrecoProdutoData>18/08/2024</PrecoProdutoData>
+						<PrecoProdutoValor>19.900000</PrecoProdutoValor>
+					</PrecoProdutoItem>
+					<ProdutoCodificacaoItem>
+						<CodificacaoEstId>CODIGOANTIGO</CodificacaoEstId>
+						<CodificacaoEstDescricao>Código Antigo</CodificacaoEstDescricao>
+						<ProdutoCodificacaoValor>1</ProdutoCodificacaoValor>
+					</ProdutoCodificacaoItem>
+					<ProdutoClassificacaoItem>
+						<ClassificacaoEstId>00</ClassificacaoEstId>
+						<ClassificacaoEstDescricao/>
+						<ProdutoClassificacaoValor>CLASSCATEG</ProdutoClassificacaoValor>
+					</ProdutoClassificacaoItem>
+					<CodigoBarrasItem>
+						<CodigoBarras>2030</CodigoBarras>
+						<Lote1/>
+						<DescLote1/>
+						<Lote2/>
+						<DescLote2/>
+						<Lote3/>
+						<DescLote3/>
+						<Lote4/>
+						<DescLote4/>
+						<Lote5/>
+						<DescLote5/>
+					</CodigoBarrasItem>
+					<CodigoBarrasItem>
+						<CodigoBarras>7898940230570</CodigoBarras>
+						<Lote1/>
+						<DescLote1/>
+						<Lote2/>
+						<DescLote2/>
+						<Lote3/>
+						<DescLote3/>
+						<Lote4/>
+						<DescLote4/>
+						<Lote5/>
+						<DescLote5/>
+					</CodigoBarrasItem>
+				</ProdutoItem>
+			</Sdtwebservicesaidaexpcadastrosat>
+		</IntegracaoFcxExportaCadSAT.ExecuteResponse>
+	</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "cust_1789211318304_92jfv",
+    "name": "Antonio",
+    "phone": "(34) 97865-6564",
+    "email": "",
+    "address": "",
+    "source": "instore",
+    "totalOrders": 0,
+    "totalSpent": 0,
+    "lastOrderAt": null,
+    "createdAt": 1789211318304,
+    "tags": "[\"Lead\",\"Consumo Loja\",\"Lead\"]",
+    "notes": ""
+  },
+  {
+    "id": "cust_1788873145264_6baaw",
+    "name": "teste",
+    "phone": "(34) 89999-6545",
+    "email": "",
+    "address": "",
+    "source": "pedido_loja",
+    "totalOrders": 1,
+    "totalSpent": 14,
+    "lastOrderAt": 1788873145264,
+    "createdAt": 1788873145264,
+    "tags": "[\"Cliente\",\"Consumo Loja\",\"Cliente\",\"Lead\"]",
+    "notes": ""
+  }
+]

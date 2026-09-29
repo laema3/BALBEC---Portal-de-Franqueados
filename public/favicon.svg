@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Radial Gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#78350f" />
+      <stop offset="60%" stop-color="#451a03" />
+      <stop offset="100%" stop-color="#1c0a00" />
+    </radialGradient>
+
+    <!-- Golden Ring Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="25%" stop-color="#f59e0b" />
+      <stop offset="50%" stop-color="#fbbf24" />
+      <stop offset="75%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+
+    <!-- Bread Crust Gradient -->
+    <linearGradient id="breadCrust" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fde68a" />
+      <stop offset="30%" stop-color="#f59e0b" />
+      <stop offset="70%" stop-color="#b45309" />
+      <stop offset="100%" stop-color="#78350f" />
+    </linearGradient>
+
+    <!-- Bread Cuts Inner Glow -->
+    <linearGradient id="breadCut" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fffbeb" />
+      <stop offset="50%" stop-color="#fef3c7" />
+      <stop offset="100%" stop-color="#fde68a" />
+    </linearGradient>
+
+    <!-- Drop Shadow Filter -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+    
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Circular Outer Badge -->
+  <circle cx="256" cy="256" r="246" fill="url(#bgGrad)" stroke="url(#goldGrad)" stroke-width="12" filter="url(#shadow)" />
+  <circle cx="256" cy="256" r="226" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="6 4" opacity="0.6" />
+
+  <!-- Artisan Steam Waves -->
+  <g opacity="0.7" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round" fill="none" filter="url(#glow)">
+    <path d="M220 160 Q210 135 224 115 T218 85" />
+    <path d="M256 150 Q246 120 262 95 T254 65" />
+    <path d="M292 160 Q302 135 288 115 T294 85" />
+  </g>
+
+  <!-- Golden Wheat Ears (Left) -->
+  <g fill="url(#goldGrad)" opacity="0.95">
+    <!-- Left Stalk -->
+    <path d="M125 350 C110 300 115 240 145 190" stroke="url(#goldGrad)" stroke-width="4" fill="none" stroke-linecap="round" />
+    <ellipse cx="120" cy="210" rx="14" ry="7" transform="rotate(-35 120 210)" />
+    <ellipse cx="140" cy="235" rx="14" ry="7" transform="rotate(-15 140 235)" />
+    <ellipse cx="112" cy="250" rx="15" ry="8" transform="rotate(-45 112 250)" />
+    <ellipse cx="132" cy="275" rx="15" ry="8" transform="rotate(-25 132 275)" />
+    <ellipse cx="110" cy="295" rx="15" ry="8" transform="rotate(-55 110 295)" />
+    <ellipse cx="130" cy="315" rx="15" ry="8" transform="rotate(-35 130 315)" />
+  </g>
+
+  <!-- Golden Wheat Ears (Right) -->
+  <g fill="url(#goldGrad)" opacity="0.95">
+    <!-- Right Stalk -->
+    <path d="M387 350 C402 300 397 240 367 190" stroke="url(#goldGrad)" stroke-width="4" fill="none" stroke-linecap="round" />
+    <ellipse cx="392" cy="210" rx="14" ry="7" transform="rotate(35 392 210)" />
+    <ellipse cx="372" cy="235" rx="14" ry="7" transform="rotate(15 372 235)" />
+    <ellipse cx="400" cy="250" rx="15" ry="8" transform="rotate(45 400 250)" />
+    <ellipse cx="380" cy="275" rx="15" ry="8" transform="rotate(25 380 275)" />
+    <ellipse cx="402" cy="295" rx="15" ry="8" transform="rotate(55 402 295)" />
+    <ellipse cx="382" cy="315" rx="15" ry="8" transform="rotate(35 382 315)" />
+  </g>
+
+  <!-- Central Artisan Bread (Loaf) -->
+  <g filter="url(#shadow)">
+    <!-- Bread Body -->
+    <path d="M150 250 C150 185 200 170 256 170 C312 170 362 185 362 250 C362 290 320 305 256 305 C192 305 150 290 150 250 Z" 
+          fill="url(#breadCrust)" stroke="#78350f" stroke-width="4" />
+    
+    <!-- Crust Scoring Cuts (Artisan Slash Marks) -->
+    <path d="M185 245 Q195 210 205 200 Q215 220 200 255 Z" fill="url(#breadCut)" stroke="#d97706" stroke-width="2" />
+    <path d="M230 255 Q245 205 256 195 Q267 220 250 265 Z" fill="url(#breadCut)" stroke="#d97706" stroke-width="2" />
+    <path d="M285 255 Q300 210 310 200 Q320 220 305 250 Z" fill="url(#breadCut)" stroke="#d97706" stroke-width="2" />
+
+    <!-- Bread Highlight Gloss -->
+    <path d="M180 205 C205 185 240 180 275 182" stroke="#fef08a" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.6" />
+  </g>
+
+  <!-- Banner Ribbon / Brand Name Backdrop -->
+  <path d="M90 345 L130 330 L382 330 L422 345 L405 385 L370 375 L142 375 L107 385 Z" fill="#78350f" stroke="url(#goldGrad)" stroke-width="4" filter="url(#shadow)" />
+  <rect x="130" y="325" width="252" height="52" rx="10" fill="#9a3412" stroke="url(#goldGrad)" stroke-width="3" />
+
+  <!-- Brand Typography -->
+  <!-- BALBEC -->
+  <text x="256" y="362" 
+        text-anchor="middle" 
+        font-family="system-ui, -apple-system, sans-serif" 
+        font-weight="900" 
+        font-size="38" 
+        letter-spacing="4" 
+        fill="#fffbeb">
+    BALBEC
+  </text>
+
+  <!-- Subtitle: PORTAL DE FRANQUEADOS -->
+  <text x="256" y="420" 
+        text-anchor="middle" 
+        font-family="system-ui, -apple-system, sans-serif" 
+        font-weight="800" 
+        font-size="14" 
+        letter-spacing="2" 
+        fill="#fbbf24">
+    PORTAL DE FRANQUEADOS
+  </text>
+
+  <!-- Bottom Mini Star Accents -->
+  <polygon points="256,432 259,441 268,441 261,446 263,455 256,450 249,455 251,446 244,441 253,441" fill="#f59e0b" />
+  <polygon points="226,434 228,440 234,440 229,444 231,450 226,446 221,450 223,444 218,440 224,440" fill="#f59e0b" opacity="0.7" />
+  <polygon points="286,434 288,440 294,440 289,444 291,450 286,446 281,450 283,444 278,440 284,440" fill="#f59e0b" opacity="0.7" />
+</svg>

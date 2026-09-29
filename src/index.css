@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Bebas+Neue&family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Bebas Neue", sans-serif;
+  --font-slab: "Alfa Slab One", serif;
+  --font-serif: "Lora", serif;
+}
+
+/* =========================================================================
+   Typography & Device-Specific Font-Size Scaling:
+   - Desktop (PC/Notebook): Mantém a proporção padrão original (105%)
+   - Smartphone (Clientes fazendo pedidos no celular): +20% no tamanho da fonte (126%)
+   - Tablet / Totem (Autoatendimento e Atendimento Presencial): +20% no tamanho da fonte (126%)
+   ========================================================================= */
+
+/* Padrão Desktop */
+:root, html {
+  font-size: 100%;
+}
+
+/* Smartphone: Mantém a escala base estável (100%) para evitar quebra de containers e paddings, com tipografia nítida e legível */
+@media screen and (max-width: 767px) {
+  :root, html {
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
+/* Tablet (Retrato e Paisagem): Aumento de 20% no tamanho das fontes para Totem / Autoatendimento / Balcão */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  :root, html {
+    font-size: 126%;
+  }
+}
+
+/* Tablets touch em modo paisagem (até 1280px) */
+@media screen and (min-width: 768px) and (max-width: 1280px) and (pointer: coarse) {
+  :root, html {
+    font-size: 126%;
+  }
+}
+
+/* Modo Totem / Autoatendimento presencial (em qualquer resolução) */
+html.totem-mode,
+body.totem-mode,
+.totem-mode,
+.is-totem,
+[data-totem="true"] {
+  font-size: 126% !important;
+}
+
+/* =========================================================================
+   Custom Scrollbar Styles (Visible & Draggable Lateral Scroll Cursor)
+   ========================================================================= */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #f97316 #f5f5f4;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f5f5f4;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #ea580c;
+  border-radius: 8px;
+  border: 2px solid #f5f5f4;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #c2410c;
+}
+
