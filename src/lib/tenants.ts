@@ -4,7 +4,7 @@ export const getTenantId = () => {
   console.log('[Tenant] Hostname atual:', hostname);
 
   // Se for o subdomínio específico
-  if (hostname.includes('cardapiodigital.balbec.com.br') || hostname.includes('cardapiodigital.paomania.com.br')) {
+  if (hostname.includes('cardapiodigital.balbec.com.br')) {
     console.log('[Tenant] Identificado tenant: cardapio-digital');
     return 'cardapio-digital';
   }

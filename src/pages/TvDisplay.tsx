@@ -210,9 +210,9 @@ export default function TvDisplay() {
   // Fill Mode: 'cover' (100% preenchimento da tela) | 'smart_zoom' (zoom 135% para eliminar bordas de vídeos gravados com margem) | 'fit' (proporção original com fundo ambiente)
   const [mediaFillMode, setMediaFillMode] = useState<'cover' | 'smart_zoom' | 'fit'>(() => {
     try {
-      const saved = localStorage.getItem('paomania_tv_fill_mode');
+      const saved = localStorage.getItem('balbec_tv_fill_mode') || localStorage.getItem('paomania_tv_fill_mode');
       if (saved === 'cover' || saved === 'smart_zoom' || saved === 'fit') return saved;
-      const legacy = localStorage.getItem('paomania_tv_fill_youtube');
+      const legacy = localStorage.getItem('balbec_tv_fill_youtube') || localStorage.getItem('paomania_tv_fill_youtube');
       if (legacy !== null) return legacy === 'true' ? 'cover' : 'fit';
       return 'cover'; // Default to cover (100% fill)
     } catch {
@@ -223,7 +223,7 @@ export default function TvDisplay() {
   // Custom Zoom Level (0.8x to 2.5x) to eliminate baked-in black borders
   const [videoZoomLevel, setVideoZoomLevel] = useState<number>(() => {
     try {
-      const saved = localStorage.getItem('paomania_tv_video_zoom');
+      const saved = localStorage.getItem('balbec_tv_video_zoom') || localStorage.getItem('paomania_tv_video_zoom');
       const num = saved ? parseFloat(saved) : 1.0;
       return isNaN(num) || num < 0.8 || num > 3 ? 1.0 : num;
     } catch {
@@ -472,8 +472,8 @@ export default function TvDisplay() {
         msg = '📺 Preenchimento Total: Ocupando 100% da área do vídeo';
       }
       try {
-        localStorage.setItem('paomania_tv_fill_mode', next);
-        localStorage.setItem('paomania_tv_fill_youtube', next !== 'fit' ? 'true' : 'false');
+        localStorage.setItem('balbec_tv_fill_mode', next);
+        localStorage.setItem('balbec_tv_fill_youtube', next !== 'fit' ? 'true' : 'false');
       } catch {}
 
       setFillFeedbackMsg(msg);
@@ -490,7 +490,7 @@ export default function TvDisplay() {
     setVideoZoomLevel(prev => {
       const next = Math.max(0.8, Math.min(2.5, Math.round((prev + delta) * 10) / 10));
       try {
-        localStorage.setItem('paomania_tv_video_zoom', String(next));
+        localStorage.setItem('balbec_tv_video_zoom', String(next));
       } catch {}
       setFillFeedbackMsg(`🔎 Zoom do Vídeo: ${Math.round(next * 100)}%`);
       if (fillFeedbackTimer.current) clearTimeout(fillFeedbackTimer.current);
@@ -505,9 +505,9 @@ export default function TvDisplay() {
     setVideoZoomLevel(1.0);
     setMediaFillMode('cover');
     try {
-      localStorage.setItem('paomania_tv_video_zoom', '1.0');
-      localStorage.setItem('paomania_tv_fill_mode', 'cover');
-      localStorage.setItem('paomania_tv_fill_youtube', 'true');
+      localStorage.setItem('balbec_tv_video_zoom', '1.0');
+      localStorage.setItem('balbec_tv_fill_mode', 'cover');
+      localStorage.setItem('balbec_tv_fill_youtube', 'true');
     } catch {}
     setFillFeedbackMsg('✨ Preenchimento Total: 100% do campo (Padrão)');
     if (fillFeedbackTimer.current) clearTimeout(fillFeedbackTimer.current);
@@ -679,7 +679,7 @@ export default function TvDisplay() {
   const menuCategoryGroups = useMemo(() => {
     // Parse selected categories from storeInfo or localStorage fallback
     let selectedCatList: string[] = [];
-    const sourceCats = storeInfo?.tvSelectedCategories || localStorage.getItem('paomania_tv_selected_categories');
+    const sourceCats = storeInfo?.tvSelectedCategories || localStorage.getItem('balbec_tv_selected_categories') || localStorage.getItem('paomania_tv_selected_categories');
     if (sourceCats) {
       if (Array.isArray(sourceCats)) {
         selectedCatList = sourceCats;

@@ -159,7 +159,7 @@ export const MASTER_ADMIN_EMAILS = [
 export const isAuthorizedAdminEmail = (email?: string | null): boolean => {
   if (!email) return false;
   const cleanEmail = email.trim().toLowerCase();
-  if (MASTER_ADMIN_EMAILS.includes(cleanEmail) || cleanEmail.endsWith('@balbec.com.br') || cleanEmail.endsWith('@paomania.com.br')) {
+  if (MASTER_ADMIN_EMAILS.includes(cleanEmail) || cleanEmail.endsWith('@balbec.com.br') || cleanEmail === 'admin') {
     return true;
   }
   return false;

@@ -7,7 +7,7 @@ export function CookieConsentBanner() {
 
   useEffect(() => {
     try {
-      const consent = localStorage.getItem('paomania_cookie_consent');
+      const consent = localStorage.getItem('balbec_cookie_consent') || localStorage.getItem('paomania_cookie_consent');
       if (!consent) {
         // Exibir após 1.5s
         const timer = setTimeout(() => setShowBanner(true), 1500);
@@ -18,14 +18,14 @@ export function CookieConsentBanner() {
 
   const handleAccept = () => {
     try {
-      localStorage.setItem('paomania_cookie_consent', 'accepted');
+      localStorage.setItem('balbec_cookie_consent', 'accepted');
     } catch {}
     setShowBanner(false);
   };
 
   const handleReject = () => {
     try {
-      localStorage.setItem('paomania_cookie_consent', 'necessary_only');
+      localStorage.setItem('balbec_cookie_consent', 'necessary_only');
     } catch {}
     setShowBanner(false);
   };

@@ -14,9 +14,9 @@ export const getDatabaseUrl = (): string | undefined => {
          process.env.POSTGRES_URL_NON_POOLING ||
          process.env.STORAGE_URL ||
          process.env.STORAGE_POSTGRES_URL ||
-         process.env.PAOMANIA_URL ||
-         process.env.PAOMANIA_POSTGRES_URL ||
-         process.env.paomania;
+         process.env.BALBEC_URL ||
+         process.env.BALBEC_POSTGRES_URL ||
+         process.env.balbec;
 };
 
 export const isDatabaseConfigured = (): boolean => {
@@ -77,7 +77,7 @@ export const createPool = () => {
         host: 'localhost',
         user: 'postgres',
         password: '',
-        database: 'paomania',
+        database: 'balbec',
         port: 5432,
         max: 1, 
         connectionTimeoutMillis: 500,
@@ -241,7 +241,7 @@ export async function ensureTablesExist() {
         theme_color TEXT DEFAULT '#e6a800',
         add_button_color TEXT DEFAULT '#e6a800',
         icon_color TEXT DEFAULT '#e6a800',
-        header_phrase TEXT DEFAULT 'O Sabor da Tradição',
+        header_phrase TEXT DEFAULT 'Portal de Franqueados',
         logo_url TEXT DEFAULT '',
         address TEXT DEFAULT '',
         hours TEXT DEFAULT '',
@@ -253,7 +253,7 @@ export async function ensureTablesExist() {
         kiosk_enabled BOOLEAN DEFAULT TRUE,
         require_qr_code_for_ordering BOOLEAN DEFAULT TRUE,
         is_open BOOLEAN DEFAULT TRUE,
-        ntfy_topic TEXT DEFAULT 'paomania_pedidos',
+        ntfy_topic TEXT DEFAULT 'balbec_pedidos',
         ntfy_enabled BOOLEAN DEFAULT TRUE,
         tv_ticker_text TEXT DEFAULT '',
         tv_mode TEXT DEFAULT 'split_menu',
@@ -367,8 +367,8 @@ export async function ensureTablesExist() {
     await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS category_title_color TEXT DEFAULT '#e6a800';`);
     await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS add_button_color TEXT DEFAULT '#e6a800';`);
     await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS icon_color TEXT DEFAULT '#e6a800';`);
-    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS header_phrase TEXT DEFAULT 'O Sabor da Tradição';`);
-    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS ntfy_topic TEXT DEFAULT 'paomania_pedidos';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS header_phrase TEXT DEFAULT 'Portal de Franqueados';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS ntfy_topic TEXT DEFAULT 'balbec_pedidos';`);
     await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS ntfy_enabled BOOLEAN DEFAULT TRUE;`);
     await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS in_store_enabled BOOLEAN DEFAULT TRUE;`);
     await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS kiosk_enabled BOOLEAN DEFAULT TRUE;`);

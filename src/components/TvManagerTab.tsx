@@ -70,7 +70,7 @@ export default function TvManagerTab() {
       } catch {}
     }
     try {
-      const saved = localStorage.getItem('paomania_tv_selected_categories');
+      const saved = localStorage.getItem('balbec_tv_selected_categories') || localStorage.getItem('paomania_tv_selected_categories');
       if (saved && saved !== '[]') {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) return parsed;
@@ -127,7 +127,7 @@ export default function TvManagerTab() {
 
     setTvSelectedCategories(updated);
     try {
-      localStorage.setItem('paomania_tv_selected_categories', JSON.stringify(updated));
+      localStorage.setItem('balbec_tv_selected_categories', JSON.stringify(updated));
     } catch {}
 
     // Auto-save immediately to store and backend
@@ -143,7 +143,7 @@ export default function TvManagerTab() {
   const handleSelectAllCategories = async () => {
     setTvSelectedCategories([]); // Empty array represents all categories
     try {
-      localStorage.setItem('paomania_tv_selected_categories', '[]');
+      localStorage.setItem('balbec_tv_selected_categories', '[]');
     } catch {}
     try {
       await updateStoreInfo({ tvSelectedCategories: [] });

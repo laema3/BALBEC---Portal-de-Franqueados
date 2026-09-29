@@ -98,7 +98,7 @@ export const CaixaPrinterStationCard: React.FC<CaixaPrinterStationCardProps> = (
     setSelectedPrinterName(current);
     setCustomPrinterInput(current);
 
-    const autoPrintStorage = localStorage.getItem('paomania_auto_print_caixa');
+    const autoPrintStorage = localStorage.getItem('balbec_auto_print_caixa') || localStorage.getItem('paomania_auto_print_caixa');
     if (autoPrintStorage !== null) {
       setIsAutoPrint(autoPrintStorage === 'true');
     } else {
@@ -205,7 +205,7 @@ export const CaixaPrinterStationCard: React.FC<CaixaPrinterStationCardProps> = (
         });
       }
       setIsAutoPrint(true);
-      localStorage.setItem('paomania_auto_print_caixa', 'true');
+      localStorage.setItem('balbec_auto_print_caixa', 'true');
 
       setFeedbackMsg({
         type: 'success',
@@ -311,7 +311,7 @@ export const CaixaPrinterStationCard: React.FC<CaixaPrinterStationCardProps> = (
 
   const handleToggleAutoPrint = async (enabled: boolean) => {
     setIsAutoPrint(enabled);
-    localStorage.setItem('paomania_auto_print_caixa', String(enabled));
+    localStorage.setItem('balbec_auto_print_caixa', String(enabled));
 
     try {
       if (onUpdateStoreInfo) {

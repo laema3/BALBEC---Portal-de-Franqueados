@@ -21,13 +21,25 @@ function StoreMeta() {
   
   useEffect(() => {
     try {
-      const purgeKey = 'balbec_portal_purged_v3';
+      const purgeKey = 'balbec_portal_purged_v4';
       if (!localStorage.getItem(purgeKey)) {
         localStorage.removeItem('paomania_cached_categories_v1');
         localStorage.removeItem('paomania_cached_products_v1');
         localStorage.removeItem('paomania_store_info');
         localStorage.removeItem('paomania_customer_name');
         localStorage.removeItem('paomania_customer_phone');
+        localStorage.removeItem('paomania_active_cart');
+        localStorage.removeItem('paomania_selected_table');
+        localStorage.removeItem('paomania_custom_logo_url');
+        localStorage.removeItem('paomania_tv_selected_categories');
+        localStorage.removeItem('paomania_tv_media');
+        localStorage.removeItem('paomania_tv_media_backup');
+        localStorage.removeItem('paomania_cookie_consent');
+        localStorage.removeItem('paomania_auto_print_caixa');
+        localStorage.removeItem('paomania_network_printer_ip');
+        localStorage.removeItem('paomania_network_printer_port');
+        localStorage.removeItem('paomania_caixa_printer');
+        localStorage.removeItem('paomania_admin_session');
         localStorage.setItem(purgeKey, 'true');
       }
     } catch {}

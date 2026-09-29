@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { cleanProductDescription } from '../constants';
 import { safeStorage } from '../utils/storage';
 
-const CATALOG_CATEGORIES_CACHE_KEY = 'paomania_cached_categories_v1';
-const CATALOG_PRODUCTS_CACHE_KEY = 'paomania_cached_products_v1';
+const CATALOG_CATEGORIES_CACHE_KEY = 'balbec_cached_categories_v1';
+const CATALOG_PRODUCTS_CACHE_KEY = 'balbec_cached_products_v1';
 
 const getInitialCategories = (): Category[] => {
   return [];
@@ -29,7 +29,7 @@ const saveProductsToStorage = (list: Product[]): void => {
   } catch {}
 };
 
-const ORDERS_CACHE_KEY = 'paomania_cached_orders_v2';
+const ORDERS_CACHE_KEY = 'balbec_cached_orders_v2';
 
 const getInitialOrders = (): Order[] => {
   try {
@@ -393,7 +393,7 @@ export const defaultStoreInfo: StoreInfo = {
 
 const getInitialStoreInfo = (): StoreInfo => {
   try {
-    const saved = localStorage.getItem('paomania_store_info');
+    const saved = localStorage.getItem('balbec_store_info') || localStorage.getItem('paomania_store_info');
     let info = { ...defaultStoreInfo };
     if (saved) {
       const parsed = JSON.parse(saved);
@@ -445,11 +445,11 @@ const getInitialStoreInfo = (): StoreInfo => {
       } catch (e) {}
     }
 
-    const savedCustomLogo = localStorage.getItem('paomania_custom_logo_url');
+    const savedCustomLogo = localStorage.getItem('balbec_custom_logo_url') || localStorage.getItem('paomania_custom_logo_url');
     if (savedCustomLogo && (!info.logoUrl || info.logoUrl === '/logo.svg')) {
       info.logoUrl = savedCustomLogo;
     }
-    const savedTvCats = localStorage.getItem('paomania_tv_selected_categories');
+    const savedTvCats = localStorage.getItem('balbec_tv_selected_categories') || localStorage.getItem('paomania_tv_selected_categories');
     if (savedTvCats) {
       const isCatsEmpty = !info.tvSelectedCategories || 
         (Array.isArray(info.tvSelectedCategories) && info.tvSelectedCategories.length === 0) ||
@@ -467,9 +467,9 @@ export const initialStoreInfo: StoreInfo = getInitialStoreInfo();
 
 const saveStoreInfoToStorage = (info: StoreInfo) => {
   try {
-    localStorage.setItem('paomania_store_info', JSON.stringify(info));
+    localStorage.setItem('balbec_store_info', JSON.stringify(info));
     if (info.logoUrl && info.logoUrl !== '/logo.svg' && info.logoUrl.trim() !== '') {
-      localStorage.setItem('paomania_custom_logo_url', info.logoUrl);
+      localStorage.setItem('balbec_custom_logo_url', info.logoUrl);
     }
     if (info.tvSelectedCategories) {
       const isNotEmpty = Array.isArray(info.tvSelectedCategories) 
@@ -479,7 +479,7 @@ const saveStoreInfoToStorage = (info: StoreInfo) => {
         const catsStr = typeof info.tvSelectedCategories === 'string'
           ? info.tvSelectedCategories
           : JSON.stringify(info.tvSelectedCategories);
-        localStorage.setItem('paomania_tv_selected_categories', catsStr);
+        localStorage.setItem('balbec_tv_selected_categories', catsStr);
       }
     }
   } catch (e) {}
@@ -487,14 +487,14 @@ const saveStoreInfoToStorage = (info: StoreInfo) => {
 
 const getInitialTvMedia = (): TvMediaItem[] => {
   try {
-    const savedBackup = localStorage.getItem('paomania_tv_media_backup');
+    const savedBackup = localStorage.getItem('balbec_tv_media_backup') || localStorage.getItem('paomania_tv_media_backup');
     if (savedBackup) {
       const parsed = JSON.parse(savedBackup);
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed.filter((item: any) => !item.url || !item.url.endsWith('...'));
       }
     }
-    const saved = localStorage.getItem('paomania_tv_media');
+    const saved = localStorage.getItem('balbec_tv_media') || localStorage.getItem('paomania_tv_media');
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -508,7 +508,7 @@ const getInitialTvMedia = (): TvMediaItem[] => {
 
 const saveTvMediaToStorage = (list: TvMediaItem[]) => {
   try {
-    localStorage.setItem('paomania_tv_media_backup', JSON.stringify(list));
+    localStorage.setItem('balbec_tv_media_backup', JSON.stringify(list));
     // For localStorage on mobile devices, avoid storing giant base64 data to prevent QuotaExceededError
     const lightList = list.map(item => {
       if (item.url && (item.url.startsWith('data:') || item.url.length > 200000)) {
@@ -516,10 +516,10 @@ const saveTvMediaToStorage = (list: TvMediaItem[]) => {
       }
       return item;
     });
-    localStorage.setItem('paomania_tv_media', JSON.stringify(lightList));
+    localStorage.setItem('balbec_tv_media', JSON.stringify(lightList));
   } catch (e) {
     try {
-      localStorage.setItem('paomania_tv_media', JSON.stringify(list.map(i => ({ id: i.id, title: i.title, type: i.type, order: i.order, isActive: i.isActive }))));
+      localStorage.setItem('balbec_tv_media', JSON.stringify(list.map(i => ({ id: i.id, title: i.title, type: i.type, order: i.order, isActive: i.isActive }))));
     } catch (err) {}
   }
 };
@@ -545,7 +545,7 @@ const localHasCustomValues = (local: StoreInfo): boolean => {
   return Boolean(
     (local.whatsapp && local.whatsapp !== '' && local.whatsapp !== '(11) 99999-9999') ||
     (local.address && local.address !== '' && local.address !== 'Rua das Padarias, 123 - Centro') ||
-    (local.name && local.name !== 'BALBEC - Portal de Franqueados' && local.name !== 'Pão Mania') ||
+    (local.name && local.name !== 'BALBEC - Portal de Franqueados') ||
     (local.aiAgentCustomPrompt && local.aiAgentCustomPrompt !== '') ||
     (local.weeklySchedule && local.weeklySchedule !== '[]' && local.weeklySchedule !== defaultStoreInfo.weeklySchedule)
   );
@@ -677,12 +677,12 @@ export const useStore = create<StoreState>((set, get) => ({
               if (local.aiAgentTone) merged.aiAgentTone = local.aiAgentTone;
               if (local.aiAgentTrainingExamples) merged.aiAgentTrainingExamples = local.aiAgentTrainingExamples;
 
-              const customLogo = localStorage.getItem('paomania_custom_logo_url') || local.logoUrl;
+              const customLogo = localStorage.getItem('balbec_custom_logo_url') || localStorage.getItem('paomania_custom_logo_url') || local.logoUrl;
               if (customLogo && customLogo !== '/logo.svg') {
                 merged.logoUrl = customLogo;
               }
 
-              const customTvCats = localStorage.getItem('paomania_tv_selected_categories') || local.tvSelectedCategories;
+              const customTvCats = localStorage.getItem('balbec_tv_selected_categories') || localStorage.getItem('paomania_tv_selected_categories') || local.tvSelectedCategories;
               if (customTvCats && customTvCats !== '[]') {
                 merged.tvSelectedCategories = customTvCats;
               }
@@ -888,10 +888,10 @@ export const useStore = create<StoreState>((set, get) => ({
 
   recordAppInstall: async (data = {}) => {
     try {
-      let installId = localStorage.getItem('paomania_pwa_device_install_id');
+      let installId = localStorage.getItem('balbec_pwa_device_install_id') || localStorage.getItem('paomania_pwa_device_install_id');
       if (!installId) {
         installId = `install_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-        localStorage.setItem('paomania_pwa_device_install_id', installId);
+        localStorage.setItem('balbec_pwa_device_install_id', installId);
       }
 
       const ua = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
@@ -1383,12 +1383,12 @@ export const useStore = create<StoreState>((set, get) => ({
           const local = state.storeInfo;
           const merged = { ...local, ...updated };
 
-          const customLogo = localStorage.getItem('paomania_custom_logo_url') || local.logoUrl;
+          const customLogo = localStorage.getItem('balbec_custom_logo_url') || localStorage.getItem('paomania_custom_logo_url') || local.logoUrl;
           if (customLogo && customLogo !== '/logo.svg' && customLogo.trim() !== '') {
             merged.logoUrl = customLogo;
           }
 
-          const customTvCats = localStorage.getItem('paomania_tv_selected_categories') || local.tvSelectedCategories;
+          const customTvCats = localStorage.getItem('balbec_tv_selected_categories') || localStorage.getItem('paomania_tv_selected_categories') || local.tvSelectedCategories;
           if (customTvCats && customTvCats !== '[]') {
             merged.tvSelectedCategories = customTvCats;
           }

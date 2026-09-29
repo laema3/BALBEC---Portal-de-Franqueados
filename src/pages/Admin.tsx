@@ -127,7 +127,7 @@ export default function Admin() {
   const isMaster = currentUser?.role === 'master' || MASTER_ADMIN_EMAILS.includes(userEmail) || userEmail === 'camillasites@gmail.com';
   const isAdminOrMaster = isMaster || currentUser?.role === 'admin' || isAuthorizedAdminEmail(currentUser?.email);
   const isPadrao = !isMaster && !isAdminOrMaster;
-  const isCaixaUser = userEmail === 'caixa@balbec.com.br' || userEmail === 'caixa@paomania.com.br';
+  const isCaixaUser = userEmail === 'caixa@balbec.com.br';
 
   const orders = isCaixaUser ? rawOrders.filter(o => o.type !== 'kiosk') : rawOrders;
 
@@ -419,7 +419,7 @@ export default function Admin() {
 
   // Sync logs state (Histórico de Atualizações)
   const [syncLogs, setSyncLogs] = useState<SyncLog[]>(() => {
-    const saved = localStorage.getItem('paomania_sync_logs');
+    const saved = localStorage.getItem('balbec_sync_logs') || localStorage.getItem('paomania_sync_logs');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -455,7 +455,7 @@ export default function Admin() {
         user: 'Sistema'
       }
     ];
-    localStorage.setItem('paomania_sync_logs', JSON.stringify(defaultLogs));
+    localStorage.setItem('balbec_sync_logs', JSON.stringify(defaultLogs));
     return defaultLogs;
   });
 
@@ -473,7 +473,7 @@ export default function Admin() {
     };
     setSyncLogs(prev => {
       const updated = [newLog, ...prev].slice(0, 100);
-      localStorage.setItem('paomania_sync_logs', JSON.stringify(updated));
+      localStorage.setItem('balbec_sync_logs', JSON.stringify(updated));
       return updated;
     });
   };
@@ -1473,8 +1473,8 @@ export default function Admin() {
   }, []);
 
   useEffect(() => {
-    // Check custom session from PostgreSQL
-    const savedUser = localStorage.getItem('paomania_admin_session');
+    // Check custom session from PostgreSQL / Memory
+    const savedUser = localStorage.getItem('balbec_admin_session') || localStorage.getItem('paomania_admin_session');
     if (savedUser) {
       try {
         const userData = JSON.parse(savedUser);
@@ -1482,6 +1482,7 @@ export default function Admin() {
         setCurrentUser(userData);
         return;
       } catch (e) {
+        localStorage.removeItem('balbec_admin_session');
         localStorage.removeItem('paomania_admin_session');
       }
     }
@@ -1490,7 +1491,7 @@ export default function Admin() {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (!user) {
         // Only reset if not authenticated via custom session
-        if (!localStorage.getItem('paomania_admin_session')) {
+        if (!localStorage.getItem('balbec_admin_session') && !localStorage.getItem('paomania_admin_session')) {
           setIsAuthenticated(false);
           setCurrentUser(null);
         }
@@ -1498,7 +1499,7 @@ export default function Admin() {
       }
 
       const emailClean = (user.email || '').trim().toLowerCase();
-      const isMasterEmail = emailClean === 'camillasites@gmail.com';
+      const isMasterEmail = emailClean === 'camillasites@gmail.com' || emailClean === 'admin@balbec.com.br';
       const isAuthorizedAdmin = isAuthorizedAdminEmail(user.email);
 
       let activeUser = users.find(u => (u.email || '').trim().toLowerCase() === emailClean);
@@ -1527,7 +1528,7 @@ export default function Admin() {
           role: defaultRole
         };
         setCurrentUser(currentUserObj);
-        localStorage.setItem('paomania_admin_session', JSON.stringify(currentUserObj));
+        localStorage.setItem('balbec_admin_session', JSON.stringify(currentUserObj));
       } else {
         setIsAuthenticated(false);
         setCurrentUser(null);
@@ -6951,6 +6952,25 @@ export default function Admin() {
     const emailClean = username.trim().toLowerCase();
     const passClean = password.trim();
 
+    // Direct Instant Master Access for Railway and standalone deployments (no email validation required)
+    if (
+      (emailClean === 'admin' || emailClean === 'admin@balbec.com.br' || emailClean === 'camillasites@gmail.com') && 
+      (passClean === 'admin' || passClean === '123' || passClean === 'admin123')
+    ) {
+      const masterUser: User = {
+        id: 'master-1',
+        uid: 'master-1',
+        name: emailClean === 'camillasites@gmail.com' ? 'Camilla (Master)' : 'Administrador Master',
+        email: emailClean.includes('@') ? emailClean : 'admin@balbec.com.br',
+        role: 'master'
+      };
+      setIsAuthenticated(true);
+      setCurrentUser(masterUser);
+      localStorage.setItem('balbec_admin_session', JSON.stringify(masterUser));
+      setLoginError('');
+      return;
+    }
+
     try {
       // 1. Try server direct login
       const res = await fetch('/api/auth/login', {
@@ -6964,7 +6984,7 @@ export default function Admin() {
         if (data.user) {
           setIsAuthenticated(true);
           setCurrentUser(data.user);
-          localStorage.setItem('paomania_admin_session', JSON.stringify(data.user));
+          localStorage.setItem('balbec_admin_session', JSON.stringify(data.user));
           setLoginError('');
           return;
         }
@@ -6982,7 +7002,7 @@ export default function Admin() {
           role: matchingUser.role || 'padrao'
         };
         setCurrentUser(userObj);
-        localStorage.setItem('paomania_admin_session', JSON.stringify(userObj));
+        localStorage.setItem('balbec_admin_session', JSON.stringify(userObj));
         setLoginError('');
         return;
       }
@@ -7005,7 +7025,7 @@ export default function Admin() {
             role: found?.role || (fbEmail === 'camillasites@gmail.com' ? 'master' : 'admin')
           };
           setCurrentUser(userObj);
-          localStorage.setItem('paomania_admin_session', JSON.stringify(userObj));
+          localStorage.setItem('balbec_admin_session', JSON.stringify(userObj));
           setLoginError('');
           return;
         }
@@ -7027,16 +7047,44 @@ export default function Admin() {
               <LayoutDashboard className="w-8 h-8" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-center text-stone-800 mb-6">Acesso Restrito</h1>
+          <h1 className="text-2xl font-bold text-center text-stone-800 mb-6">Acesso Administrativo</h1>
+
+          <button 
+            type="button" 
+            onClick={() => {
+              const masterUser: User = {
+                id: 'master-1',
+                uid: 'master-1',
+                name: 'Administrador Master',
+                email: 'admin@balbec.com.br',
+                role: 'master'
+              };
+              setIsAuthenticated(true);
+              setCurrentUser(masterUser);
+              localStorage.setItem('balbec_admin_session', JSON.stringify(masterUser));
+            }}
+            className="w-full py-3 mb-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer text-sm"
+          >
+            <ShieldCheck className="w-4 h-4" />
+            Acesso Direto Master (Sem validação)
+          </button>
+
+          <div className="relative flex items-center py-1 mb-4">
+            <div className="flex-grow border-t border-stone-200"></div>
+            <span className="flex-shrink-0 mx-3 text-stone-400 text-xs uppercase font-semibold">Ou entrar com credenciais</span>
+            <div className="flex-grow border-t border-stone-200"></div>
+          </div>
+
           <form onSubmit={handleEmailLogin} className="space-y-4 mb-4">
             {loginError && <p className="text-red-500 text-sm text-center">{loginError}</p>}
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-stone-700 mb-1">Email / Usuário</label>
               <input 
-                type="email" 
+                type="text" 
                 value={username} 
                 onChange={e => setUsername(e.target.value)} 
                 required 
+                placeholder="admin@balbec.com.br ou admin"
                 className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" 
               />
             </div>
@@ -7047,10 +7095,11 @@ export default function Admin() {
                 value={password} 
                 onChange={e => setPassword(e.target.value)} 
                 required 
+                placeholder="Sua senha"
                 className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" 
               />
             </div>
-            <button type="submit" className="w-full py-3 bg-stone-800 text-white rounded-xl font-bold hover:bg-stone-900 transition-colors">
+            <button type="submit" className="w-full py-3 bg-stone-800 text-white rounded-xl font-bold hover:bg-stone-900 transition-colors cursor-pointer">
               Entrar
             </button>
           </form>
@@ -7061,7 +7110,7 @@ export default function Admin() {
             <div className="flex-grow border-t border-stone-200"></div>
           </div>
 
-          <button type="button" onClick={handleGoogleLogin} className="w-full py-3 bg-white border border-stone-200 text-stone-700 rounded-xl font-bold hover:bg-stone-50 transition-colors flex items-center justify-center gap-2">
+          <button type="button" onClick={handleGoogleLogin} className="w-full py-3 bg-white border border-stone-200 text-stone-700 rounded-xl font-bold hover:bg-stone-50 transition-colors flex items-center justify-center gap-2 cursor-pointer">
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -7072,7 +7121,7 @@ export default function Admin() {
           </button>
 
           <div className="mt-4 p-3 bg-stone-50 border border-stone-200 rounded-xl text-center text-xs text-stone-600">
-            <span className="font-semibold text-stone-800">Acesso Administrativo:</span> Utilize <code className="bg-stone-200/70 px-1.5 py-0.5 rounded font-mono text-stone-900">admin@balbec.com.br</code> com senha <code className="bg-stone-200/70 px-1.5 py-0.5 rounded font-mono text-stone-900">admin</code> ou seu e-mail cadastrado.
+            <span className="font-semibold text-stone-800">Acesso Master:</span> Utilize <code className="bg-stone-200/70 px-1.5 py-0.5 rounded font-mono text-stone-900">admin@balbec.com.br</code>, <code className="bg-stone-200/70 px-1.5 py-0.5 rounded font-mono text-stone-900">admin</code> ou <code className="bg-stone-200/70 px-1.5 py-0.5 rounded font-mono text-stone-900">camillasites@gmail.com</code> com senha <code className="bg-stone-200/70 px-1.5 py-0.5 rounded font-mono text-stone-900">admin</code>.
           </div>
 
           <div className="mt-5 text-center">
@@ -7362,6 +7411,7 @@ export default function Admin() {
           </Link>
           <button type="button" 
             onClick={() => {
+              localStorage.removeItem('balbec_admin_session');
               localStorage.removeItem('paomania_admin_session');
               setIsAuthenticated(false);
               setCurrentUser(null);

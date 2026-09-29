@@ -4,5 +4,9 @@ dist/
 coverage/
 .DS_Store
 *.log
+.data/
+.*_data.json
+.app_persistent_state.json
+backups/paomania*
 .env*
 !.env.example

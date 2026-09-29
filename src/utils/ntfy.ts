@@ -19,9 +19,9 @@ export const sendNtfyNotification = async (options: NtfyOptions): Promise<boolea
     console.log('[NTFY] Notificações desativadas, ignorando envio.');
     return false;
   }
-  const rawTopic = options.topic?.trim() || 'paomania_pedidos';
+  const rawTopic = options.topic?.trim() || 'balbec_pedidos';
   // Sanitizar tópico para evitar espaços ou caracteres inválidos na URL
-  const topic = rawTopic.replace(/[^a-zA-Z0-9_-]/g, '') || 'paomania_pedidos';
+  const topic = rawTopic.replace(/[^a-zA-Z0-9_-]/g, '') || 'balbec_pedidos';
   
   if (!options.message) return false;
 

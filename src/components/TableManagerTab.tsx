@@ -32,7 +32,7 @@ export const TableManagerTab: React.FC<TableManagerTabProps> = ({ orders }) => {
   
   const effectiveLogo = (storeInfo?.logoUrl && storeInfo.logoUrl.trim() !== '')
     ? storeInfo.logoUrl
-    : (typeof window !== 'undefined' ? localStorage.getItem('paomania_custom_logo_url') || '/logo.svg' : '/logo.svg');
+    : (typeof window !== 'undefined' ? localStorage.getItem('balbec_custom_logo_url') || localStorage.getItem('paomania_custom_logo_url') || '/logo.svg' : '/logo.svg');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSection, setSelectedSection] = useState<string>('all');

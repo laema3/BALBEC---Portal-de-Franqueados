@@ -49,10 +49,10 @@ export function AiAssistantModal({ isOpen, onClose, onAddToCart, onAddDirectToCa
   } | null>(null);
 
   // Checkout form fields
-  const [customerName, setCustomerName] = useState(() => localStorage.getItem('paomania_customer_name') || '');
-  const [customerPhone, setCustomerPhone] = useState(() => localStorage.getItem('paomania_customer_phone') || '');
+  const [customerName, setCustomerName] = useState(() => localStorage.getItem('balbec_customer_name') || localStorage.getItem('paomania_customer_name') || '');
+  const [customerPhone, setCustomerPhone] = useState(() => localStorage.getItem('balbec_customer_phone') || localStorage.getItem('paomania_customer_phone') || '');
   const [deliveryType, setDeliveryType] = useState<'pickup' | 'delivery'>('delivery');
-  const [deliveryAddress, setDeliveryAddress] = useState(() => localStorage.getItem('paomania_customer_address') || '');
+  const [deliveryAddress, setDeliveryAddress] = useState(() => localStorage.getItem('balbec_customer_address') || localStorage.getItem('paomania_customer_address') || '');
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'cash'>('pix');
   const [cashChange, setCashChange] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
@@ -221,10 +221,10 @@ export function AiAssistantModal({ isOpen, onClose, onAddToCart, onAddDirectToCa
     setIsSubmittingOrder(true);
 
     try {
-      localStorage.setItem('paomania_customer_name', customerName.trim());
-      localStorage.setItem('paomania_customer_phone', customerPhone.trim());
+      localStorage.setItem('balbec_customer_name', customerName.trim());
+      localStorage.setItem('balbec_customer_phone', customerPhone.trim());
       if (deliveryType === 'delivery') {
-        localStorage.setItem('paomania_customer_address', deliveryAddress.trim());
+        localStorage.setItem('balbec_customer_address', deliveryAddress.trim());
       }
 
       const paymentLabels: Record<string, string> = {

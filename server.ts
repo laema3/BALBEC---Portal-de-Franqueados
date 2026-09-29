@@ -45,9 +45,9 @@ app.use('/api/db', (req, res, next) => {
 app.use((req, res, next) => {
   const host = req.headers.host;
   // Se o acesso for pelo domínio principal, redireciona para o subdomínio preservando o método (POST/GET)
-  if (host && (host === 'paomania.com.br' || host === 'www.paomania.com.br')) {
-    console.log(`[Redirect] ${host}${req.url} -> cardapiodigital.paomania.com.br (Method: ${req.method})`);
-    return res.redirect(308, `https://cardapiodigital.paomania.com.br${req.url}`);
+  if (host && (host === 'balbec.com.br' || host === 'www.balbec.com.br')) {
+    console.log(`[Redirect] ${host}${req.url} -> portal.balbec.com.br (Method: ${req.method})`);
+    return res.redirect(308, `https://portal.balbec.com.br${req.url}`);
   }
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} (Host: ${host})`);
   next();
@@ -165,9 +165,9 @@ function formatBlueFocusError(error: any): { message: string; details: any } {
   if (error.code === 'ECONNREFUSED') {
     friendlyMessage = "Conexão recusada pelo servidor BlueFocus (porta 8082 fechada ou serviço parado no computador local).";
   } else if (error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-    friendlyMessage = "Tempo limite esgotado (Timeout) ao conectar ao servidor BlueFocus (paomania.ddns.net:8082). Verifique se o roteador/computador está online.";
+    friendlyMessage = "Tempo limite esgotado (Timeout) ao conectar ao servidor BlueFocus. Verifique se o roteador/computador está online.";
   } else if (error.code === 'ENOTFOUND') {
-    friendlyMessage = "Endereço DDNS não encontrado (paomania.ddns.net). Verifique o endereço no No-IP / DDNS.";
+    friendlyMessage = "Endereço DDNS não encontrado. Verifique o endereço no No-IP / DDNS.";
   } else if (error.response?.status === 401 || error.response?.status === 403) {
     friendlyMessage = "Chave de autenticação rejeitada pela BlueFocus. Verifique o campo 'autentica'.";
   } else if (typeof errorDetail === 'string') {
@@ -206,10 +206,10 @@ function formatBlueFocusError(error: any): { message: string; details: any } {
       } = req.body;
 
       const authKey = process.env.BLUE_FOCUS_AUTH_KEY || process.env.BLUEFOCUS_AUTH_KEY || process.env.BLUEFOCUS_AUTH_TOKEN;
-      const empresaId = reqEmpresaId || process.env.BLUEFOCUS_EMPRESA_ID || process.env.BLUEFOCUS_EMPRESA || 'PAOMANIA';
+      const empresaId = reqEmpresaId || process.env.BLUEFOCUS_EMPRESA_ID || process.env.BLUEFOCUS_EMPRESA || 'BALBEC';
       const usuarioId = reqUsuarioId || process.env.BLUEFOCUS_USUARIO_ID || process.env.BLUEFOCUS_USUARIO || 'CONSULTA';
       const pdvCodigo = reqPdvCodigo || process.env.BLUEFOCUS_PDV_CODIGO || '1000';
-      const syncUrl = reqSyncUrl || process.env.BLUEFOCUS_SYNC_URL || "http://paomania.ddns.net:8082/valim/servlet/aintegracaofcxexportacadsat";
+      const syncUrl = reqSyncUrl || process.env.BLUEFOCUS_SYNC_URL || "";
       const tipoAtualizacao = reqTipoAtualizacao || 'A';
       const tipo = reqTipo || '4';
       const dataInicial = reqDataInicial || '30/12/1899';
@@ -582,7 +582,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       } = req.body;
       
       const authKey = process.env.BLUE_FOCUS_AUTH_KEY || process.env.BLUEFOCUS_AUTH_KEY || process.env.BLUEFOCUS_AUTH_TOKEN;
-      const empresaId = reqEmpresaId || process.env.BLUEFOCUS_EMPRESA_ID || process.env.BLUEFOCUS_EMPRESA || 'PAOMANIA';
+      const empresaId = reqEmpresaId || process.env.BLUEFOCUS_EMPRESA_ID || process.env.BLUEFOCUS_EMPRESA || 'BALBEC';
       const usuarioId = reqUsuarioId || process.env.BLUEFOCUS_USUARIO_ID || process.env.BLUEFOCUS_USUARIO || 'CONSULTA';
       const pdvCodigo = reqPdvCodigo || process.env.BLUEFOCUS_PDV_CODIGO || '1000';
 
@@ -653,7 +653,7 @@ ${itemsXml}
       }
 
       const response = await axios.post(
-        process.env.BLUEFOCUS_ORDER_URL || "http://paomania.ddns.net:8082/valim/servlet/aintegracaofcxregistravenda",
+        process.env.BLUEFOCUS_ORDER_URL || "",
         soapEnvelope,
         { headers }
       );
@@ -695,7 +695,7 @@ ${itemsXml}
   app.post("/api/ntfy/send", async (req, res) => {
     try {
       const { topic, title, message, priority, tags, clickUrl } = req.body || {};
-      const cleanTopic = (topic || "paomania_pedidos").trim().replace(/[^a-zA-Z0-9_-]/g, "") || "paomania_pedidos";
+      const cleanTopic = (topic || "balbec_pedidos").trim().replace(/[^a-zA-Z0-9_-]/g, "") || "balbec_pedidos";
       
       if (!message) {
         return res.status(400).json({ error: "Mensagem é obrigatória" });
@@ -799,7 +799,7 @@ ${itemsXml}
               return res.sendFile(indexPath);
             }
             const targetManifest = isTvReq ? '/manifest-tv.json' : '/manifest-totem.json';
-            const targetTitle = isTvReq ? 'Smart TV & Painel de Mídia | Pão Mania' : 'Totem Autoatendimento | Pão Mania';
+            const targetTitle = isTvReq ? 'Smart TV & Painel de Mídia | BALBEC' : 'Totem Autoatendimento | BALBEC';
             const modifiedHtml = htmlContent
               .replace(/href="\/manifest\.json"/g, `href="${targetManifest}"`)
               .replace(/<title>.*?<\/title>/gi, `<title>${targetTitle}</title>`);

@@ -45,7 +45,7 @@ export default function Menu() {
       if (urlTable && !isNaN(parseInt(urlTable, 10))) {
         return parseInt(urlTable, 10);
       }
-      const saved = safeStorage.getSession('paomania_selected_table');
+      const saved = safeStorage.getSession('balbec_selected_table') || safeStorage.getSession('paomania_selected_table');
       if (saved && !isNaN(parseInt(saved, 10))) {
         return parseInt(saved, 10);
       }
@@ -167,8 +167,8 @@ export default function Menu() {
       setHasName(true);
       return;
     }
-    const savedName = safeStorage.getItem('paomania_customer_name');
-    const savedPhone = safeStorage.getItem('paomania_customer_phone');
+    const savedName = safeStorage.getItem('balbec_customer_name') || safeStorage.getItem('paomania_customer_name');
+    const savedPhone = safeStorage.getItem('balbec_customer_phone') || safeStorage.getItem('paomania_customer_phone');
     if (savedName && savedPhone) {
       setCustomerName(savedName);
       setCustomerPhone(savedPhone);
@@ -267,11 +267,11 @@ export default function Menu() {
       const tableParam = params.get('mesa') || params.get('table') || params.get('mesa_num');
       const qrParam = params.get('qr') || params.get('src') || params.get('origem') || params.get('source');
       if (tableParam || qrParam === 'true' || qrParam === 'qrcode' || qrParam === 'qr') {
-        safeStorage.setSession('paomania_qr_validated', 'true');
+        safeStorage.setSession('balbec_qr_validated', 'true');
         return true;
       }
     } catch {}
-    return safeStorage.getSession('paomania_qr_validated') === 'true';
+    return safeStorage.getSession('balbec_qr_validated') === 'true' || safeStorage.getSession('paomania_qr_validated') === 'true';
   });
 
   const isChannelActive = 
@@ -290,7 +290,7 @@ export default function Menu() {
       const pathname = window.location.pathname.toLowerCase();
       if (pathname.startsWith('/totem') || pathname.startsWith('/kiosk')) {
         setIsQrValidated(true);
-        safeStorage.setSession('paomania_qr_validated', 'true');
+        safeStorage.setSession('balbec_qr_validated', 'true');
         setSalesChannel('kiosk');
         setDeliveryType('pickup');
         setHasChosenChannel(true);
@@ -303,7 +303,7 @@ export default function Menu() {
       const qrParam = params.get('qr') || params.get('src') || params.get('origem') || params.get('source');
       if (qrParam === 'true' || qrParam === 'qrcode' || qrParam === 'qr') {
         setIsQrValidated(true);
-        safeStorage.setSession('paomania_qr_validated', 'true');
+        safeStorage.setSession('balbec_qr_validated', 'true');
       }
     } catch {}
     
@@ -311,9 +311,9 @@ export default function Menu() {
     if (tableParam && !isNaN(parseInt(tableParam, 10))) {
       const tableNum = parseInt(tableParam, 10);
       setSelectedTableNumber(tableNum);
-      safeStorage.setSession('paomania_selected_table', String(tableNum));
+      safeStorage.setSession('balbec_selected_table', String(tableNum));
       setIsQrValidated(true);
-      safeStorage.setSession('paomania_qr_validated', 'true');
+      safeStorage.setSession('balbec_qr_validated', 'true');
       setSalesChannel('instore');
       setDeliveryType('pickup');
       setHasChosenChannel(true);
@@ -409,7 +409,7 @@ export default function Menu() {
   };
   const [cart, setCart] = useState<OrderItem[]>(() => {
     try {
-      const saved = safeStorage.getItem('paomania_active_cart');
+      const saved = safeStorage.getItem('balbec_active_cart') || safeStorage.getItem('paomania_active_cart');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) return parsed;
@@ -425,8 +425,9 @@ export default function Menu() {
   useEffect(() => {
     try {
       if (cart.length > 0) {
-        safeStorage.setItem('paomania_active_cart', JSON.stringify(cart));
+        safeStorage.setItem('balbec_active_cart', JSON.stringify(cart));
       } else {
+        safeStorage.removeItem('balbec_active_cart');
         safeStorage.removeItem('paomania_active_cart');
       }
     } catch (e) {
@@ -938,12 +939,12 @@ export default function Menu() {
     const isTableOrder = salesChannel === 'instore' && selectedTableNumber !== null;
     
     // Obter o nome de identificação do cliente para imprimir no cupom
-    const savedCustomerName = safeStorage.getItem('paomania_customer_name') || '';
+    const savedCustomerName = safeStorage.getItem('balbec_customer_name') || safeStorage.getItem('paomania_customer_name') || '';
     const finalCustomerName = isKioskMode 
       ? '' 
       : (customerName.trim() || savedCustomerName.trim() || 'Cliente');
 
-    const savedCustomerPhone = safeStorage.getItem('paomania_customer_phone') || '';
+    const savedCustomerPhone = safeStorage.getItem('balbec_customer_phone') || safeStorage.getItem('paomania_customer_phone') || '';
     const finalCustomerPhone = isKioskMode 
       ? '' 
       : (customerPhone.trim() || savedCustomerPhone.trim());
@@ -965,6 +966,7 @@ export default function Menu() {
       if (createdOrder) {
         setLastPlacedOrder(createdOrder);
         setCart([]);
+        safeStorage.removeItem('balbec_active_cart');
         safeStorage.removeItem('paomania_active_cart');
 
         // OPÇÃO A: Disparo automático de impressão na impressora térmica da loja (via TCP Socket de Rede)
@@ -1005,7 +1007,7 @@ export default function Menu() {
 
           sendNtfyNotification({
             enabled: storeInfo.ntfyEnabled !== false,
-            topic: storeInfo.ntfyTopic || 'paomania_pedidos',
+            topic: storeInfo.ntfyTopic || 'balbec_pedidos',
             title: `🔔 Novo Pedido #${String(createdOrder.id).slice(-4).padStart(4, '0')}${isTableOrder ? ` (Mesa ${selectedTableNumber})` : isKioskMode ? ' (Totem - Entregue)' : (createdOrder.customerName ? ` (${createdOrder.customerName})` : '')}`,
             message: `Total: ${formatCurrency(createdOrder.total)}\nItens: ${itemsSummary}\nPagamento: ${createdOrder.paymentMethod}\nTipo: ${typeLabel}${isKioskMode ? '\nStatus: Entregue (Totem Autoatendimento)' : ''}${createdOrder.deliveryAddress ? '\nEndereço: ' + createdOrder.deliveryAddress : ''}`,
             priority: 5,
@@ -1059,7 +1061,7 @@ export default function Menu() {
   if (isSuccess) {
     const orderNumber = lastPlacedOrder?.id ? String(lastPlacedOrder.id).slice(-4).padStart(4, '0') : '0001';
     const isKioskMode = salesChannel === 'kiosk' || isTotemPath;
-    const clientNameDisplay = (lastPlacedOrder?.customerName || customerName || safeStorage.getItem('paomania_customer_name') || 'CLIENTE').trim().toUpperCase();
+    const clientNameDisplay = (lastPlacedOrder?.customerName || customerName || safeStorage.getItem('balbec_customer_name') || safeStorage.getItem('paomania_customer_name') || 'CLIENTE').trim().toUpperCase();
 
     return (
       <div id="success-order-screen" className="min-h-screen bg-stone-900 text-stone-100 flex flex-col items-center justify-start sm:justify-center p-2 sm:p-6 pt-2 sm:pt-6">
@@ -1464,6 +1466,7 @@ export default function Menu() {
                           type="button"
                           onClick={() => {
                             setSelectedTableNumber(null);
+                            safeStorage.removeItem('balbec_selected_table');
                             safeStorage.removeItem('paomania_selected_table');
                           }}
                           className="text-[11px] text-stone-400 hover:text-red-600 underline cursor-pointer"
@@ -1481,7 +1484,7 @@ export default function Menu() {
                                 type="button"
                                 onClick={() => {
                                   setSelectedTableNumber(tbl.number);
-                                  safeStorage.setSession('paomania_selected_table', String(tbl.number));
+                                  safeStorage.setSession('balbec_selected_table', String(tbl.number));
                                 }}
                                 className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer border ${
                                   selectedTableNumber === tbl.number
@@ -1503,7 +1506,7 @@ export default function Menu() {
                                 onChange={(e) => {
                                   const val = parseInt(e.target.value, 10);
                                   setSelectedTableNumber(isNaN(val) ? null : val);
-                                  if (!isNaN(val)) safeStorage.setSession('paomania_selected_table', String(val));
+                                  if (!isNaN(val)) safeStorage.setSession('balbec_selected_table', String(val));
                                 }}
                                 className="w-full sm:w-56 p-2.5 bg-white border border-stone-300 rounded-xl text-sm font-bold text-stone-800"
                               />
@@ -1900,7 +1903,7 @@ export default function Menu() {
                   const nowStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                   await sendNtfyNotification({
                     enabled: storeInfo.ntfyEnabled !== false,
-                    topic: storeInfo.ntfyTopic || 'paomania_pedidos',
+                    topic: storeInfo.ntfyTopic || 'balbec_pedidos',
                     title: `🥖 Novo Cliente no ${isKioskMode ? 'Totem' : 'Cardápio'}!`,
                     message: `Nome: ${customerName.trim()}\nWhatsApp: ${customerPhone.trim()}\nHorário: ${nowStr}\nCanal: ${isKioskMode ? 'Totem Autoatendimento' : salesChannel === 'delivery' ? 'Delivery' : 'Loja Presencial'}`,
                     priority: 4,
@@ -1931,8 +1934,8 @@ export default function Menu() {
                 
                 // Salvar no localStorage e registrar lead apenas se for cliente de delivery ou consumo na loja (totem NÃO vira lead)
                 if (!isKioskMode) {
-                  safeStorage.setItem('paomania_customer_name', customerName);
-                  safeStorage.setItem('paomania_customer_phone', customerPhone);
+                  safeStorage.setItem('balbec_customer_name', customerName);
+                  safeStorage.setItem('balbec_customer_phone', customerPhone);
 
                   try {
                     const isDelivery = salesChannel === 'delivery';
@@ -2580,6 +2583,7 @@ export default function Menu() {
             <button
               onClick={() => {
                 setCart([]);
+                safeStorage.removeItem('balbec_active_cart');
                 safeStorage.removeItem('paomania_active_cart');
               }}
               className="text-xs text-stone-500 hover:text-red-600 font-bold transition-colors cursor-pointer"
@@ -2997,7 +3001,7 @@ export default function Menu() {
                         type="button"
                         onClick={() => {
                           setSelectedTableNumber(tbl.number);
-                          safeStorage.setSession('paomania_selected_table', String(tbl.number));
+                          safeStorage.setSession('balbec_selected_table', String(tbl.number));
                           setShowTableSelectModal(false);
                         }}
                         className={`p-3 rounded-2xl flex flex-col items-center justify-center gap-1 border-2 transition-all cursor-pointer ${
@@ -3032,7 +3036,7 @@ export default function Menu() {
                         const val = parseInt(target.value, 10);
                         if (!isNaN(val) && val > 0) {
                           setSelectedTableNumber(val);
-                          safeStorage.setSession('paomania_selected_table', String(val));
+                          safeStorage.setSession('balbec_selected_table', String(val));
                           setShowTableSelectModal(false);
                         }
                       }
@@ -3048,7 +3052,7 @@ export default function Menu() {
                         const val = parseInt(input.value, 10);
                         if (!isNaN(val) && val > 0) {
                           setSelectedTableNumber(val);
-                          safeStorage.setSession('paomania_selected_table', String(val));
+                          safeStorage.setSession('balbec_selected_table', String(val));
                           setShowTableSelectModal(false);
                         }
                       }
@@ -3065,6 +3069,7 @@ export default function Menu() {
                   type="button"
                   onClick={() => {
                     setSelectedTableNumber(null);
+                    safeStorage.removeItem('balbec_selected_table');
                     safeStorage.removeItem('paomania_selected_table');
                     setShowTableSelectModal(false);
                   }}

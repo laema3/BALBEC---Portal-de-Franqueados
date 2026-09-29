@@ -19,12 +19,12 @@ export const getNetworkPrinterConfig = (storeInfo: StoreInfo): { ip: string; por
   let localPort = '';
   try {
     if (typeof window !== 'undefined') {
-      localIp = localStorage.getItem('paomania_network_printer_ip') || '';
-      localPort = localStorage.getItem('paomania_network_printer_port') || '';
+      localIp = localStorage.getItem('balbec_network_printer_ip') || localStorage.getItem('paomania_network_printer_ip') || '';
+      localPort = localStorage.getItem('balbec_network_printer_port') || localStorage.getItem('paomania_network_printer_port') || '';
       // Migração automática do IP de teste antigo para o IP real da EPSON
       if (localIp === '192.168.1.200') {
         localIp = '192.168.0.90';
-        localStorage.setItem('paomania_network_printer_ip', '192.168.0.90');
+        localStorage.setItem('balbec_network_printer_ip', '192.168.0.90');
       }
     }
   } catch (e) {}
@@ -43,10 +43,10 @@ export const setLocalNetworkPrinter = (ip: string, port: number = 9100) => {
   try {
     if (typeof window !== 'undefined') {
       if (ip && ip.trim()) {
-        localStorage.setItem('paomania_network_printer_ip', ip.trim());
+        localStorage.setItem('balbec_network_printer_ip', ip.trim());
       }
       if (port) {
-        localStorage.setItem('paomania_network_printer_port', String(port));
+        localStorage.setItem('balbec_network_printer_port', String(port));
       }
     }
   } catch (e) {}
@@ -273,7 +273,7 @@ export const getActiveOrderPrinter = (storeInfo: StoreInfo): ActivePrinterInfo =
   // 2. Checa se este computador local (estação do caixa) tem impressora fixa definida no navegador (ignorando Elgin)
   try {
     if (typeof window !== 'undefined') {
-      const localCaixa = localStorage.getItem('paomania_caixa_printer');
+      const localCaixa = localStorage.getItem('balbec_caixa_printer') || localStorage.getItem('paomania_caixa_printer');
       if (localCaixa && localCaixa.trim() && !isIgnoredElgin(localCaixa)) {
         return { name: localCaixa.trim(), model: 'Térmica (Estação Caixa)', isConfigured: true };
       }
@@ -324,7 +324,7 @@ export const getActiveOrderPrinter = (storeInfo: StoreInfo): ActivePrinterInfo =
 export const getLocalCaixaPrinter = (): string => {
   try {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('paomania_caixa_printer') || '';
+      return localStorage.getItem('balbec_caixa_printer') || localStorage.getItem('paomania_caixa_printer') || '';
     }
   } catch (e) {}
   return '';
@@ -334,8 +334,9 @@ export const setLocalCaixaPrinter = (printerName: string) => {
   try {
     if (typeof window !== 'undefined') {
       if (printerName && printerName.trim()) {
-        localStorage.setItem('paomania_caixa_printer', printerName.trim());
+        localStorage.setItem('balbec_caixa_printer', printerName.trim());
       } else {
+        localStorage.removeItem('balbec_caixa_printer');
         localStorage.removeItem('paomania_caixa_printer');
       }
     }

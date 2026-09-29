@@ -20,7 +20,7 @@ export const ProductImage: React.FC<ProductImageProps> = ({
   // Check if src is valid and not a placeholder
   const isValidSrc = src && src.trim() !== '' && !src.includes('unsplash.com');
   
-  // Transform insecure HTTP URLs (e.g. paomania.ddns.net:8082) into secure backend proxy URLs
+  // Transform insecure HTTP URLs into secure backend proxy URLs
   let finalSrc = src;
   if (isValidSrc && src && src.startsWith('http://')) {
     finalSrc = `/api/image-proxy?url=${encodeURIComponent(src)}`;

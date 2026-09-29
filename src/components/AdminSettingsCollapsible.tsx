@@ -1101,7 +1101,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                           checked={autoPrintOrdersOnCaixaState}
                           onChange={(e) => {
                             setAutoPrintOrdersOnCaixaState?.(e.target.checked);
-                            localStorage.setItem('paomania_auto_print_caixa', String(e.target.checked));
+                            localStorage.setItem('balbec_auto_print_caixa', String(e.target.checked));
                           }}
                           className="sr-only peer"
                         />
