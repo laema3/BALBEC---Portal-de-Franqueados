@@ -817,21 +817,104 @@ export default function Admin() {
   const [isTestingBlueFocus, setIsTestingBlueFocus] = useState(false);
   const [exportingOrderId, setExportingOrderId] = useState<string | null>(null);
   
-  // BlueFocus Config State
-  const [blueFocusConfig, setBlueFocusConfig] = useState({
-    empresaId: localStorage.getItem('bluefocus_empresa_id') || 'BALBEC',
-    usuarioId: localStorage.getItem('bluefocus_usuario_id') || 'CONSULTA',
-    pdvCodigo: localStorage.getItem('bluefocus_pdv_codigo') || '1000',
-    syncUrl: localStorage.getItem('bluefocus_sync_url') || '',
-    syncUrl2: localStorage.getItem('bluefocus_sync_url_2') || '',
-    tipoAtualizacao: localStorage.getItem('bluefocus_tipo_atualizacao') || 'A',
-    tipo: localStorage.getItem('bluefocus_tipo') || '4',
-    dataInicial: localStorage.getItem('bluefocus_data_inicial') || '30/12/1899',
-    startCargaNumero: localStorage.getItem('bluefocus_start_carga_numero') || '0',
-    startCargaSequencia: localStorage.getItem('bluefocus_start_carga_sequencia') || '0',
-    authToken: localStorage.getItem('bluefocus_auth_token') || '',
-    startProdutoId: localStorage.getItem('bluefocus_start_produto_id') || '0'
+  // BlueFocus Config States (INTEGRAÇÃO 1 e INTEGRAÇÃO 2)
+  const [blueFocusConfig1, setBlueFocusConfig1] = useState({
+    empresaId: localStorage.getItem('bluefocus1_empresa_id') || localStorage.getItem('bluefocus_empresa_id') || 'BALBEC',
+    usuarioId: localStorage.getItem('bluefocus1_usuario_id') || localStorage.getItem('bluefocus_usuario_id') || 'CONSULTA',
+    pdvCodigo: localStorage.getItem('bluefocus1_pdv_codigo') || localStorage.getItem('bluefocus_pdv_codigo') || '1000',
+    syncUrl: localStorage.getItem('bluefocus1_sync_url') || localStorage.getItem('bluefocus_sync_url') || '',
+    tipoAtualizacao: localStorage.getItem('bluefocus1_tipo_atualizacao') || localStorage.getItem('bluefocus_tipo_atualizacao') || 'A',
+    tipo: localStorage.getItem('bluefocus1_tipo') || localStorage.getItem('bluefocus_tipo') || '4',
+    dataInicial: localStorage.getItem('bluefocus1_data_inicial') || '30/12/1899',
+    startCargaNumero: localStorage.getItem('bluefocus1_start_carga_numero') || '0',
+    startCargaSequencia: localStorage.getItem('bluefocus1_start_carga_sequencia') || '0',
+    authToken: localStorage.getItem('bluefocus1_auth_token') || localStorage.getItem('bluefocus_auth_token') || '',
+    startProdutoId: localStorage.getItem('bluefocus1_start_produto_id') || '0'
   });
+
+  const [blueFocusConfig2, setBlueFocusConfig2] = useState({
+    empresaId: localStorage.getItem('bluefocus2_empresa_id') || '',
+    usuarioId: localStorage.getItem('bluefocus2_usuario_id') || 'CONSULTA',
+    pdvCodigo: localStorage.getItem('bluefocus2_pdv_codigo') || '1000',
+    syncUrl: localStorage.getItem('bluefocus2_sync_url') || '',
+    tipoAtualizacao: localStorage.getItem('bluefocus2_tipo_atualizacao') || 'A',
+    tipo: localStorage.getItem('bluefocus2_tipo') || '4',
+    dataInicial: localStorage.getItem('bluefocus2_data_inicial') || '30/12/1899',
+    startCargaNumero: localStorage.getItem('bluefocus2_start_carga_numero') || '0',
+    startCargaSequencia: localStorage.getItem('bluefocus2_start_carga_sequencia') || '0',
+    authToken: localStorage.getItem('bluefocus2_auth_token') || '',
+    startProdutoId: localStorage.getItem('bluefocus2_start_produto_id') || '0'
+  });
+
+  const [isTestingBlueFocus1, setIsTestingBlueFocus1] = useState(false);
+  const [isTestingBlueFocus2, setIsTestingBlueFocus2] = useState(false);
+
+  const handleSyncBlueFocus1 = (override?: any) => handleSyncBlueFocus(blueFocusConfig1, override);
+  const handleSyncBlueFocus2 = (override?: any) => handleSyncBlueFocus(blueFocusConfig2, override);
+
+  const handleTestBlueFocus1 = async () => {
+    if (isTestingBlueFocus1) return;
+    setIsTestingBlueFocus1(true);
+    try {
+      const response = await fetch('/api/bluefocus/sync-products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(blueFocusConfig1)
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setConfirmModal({
+          isOpen: true,
+          title: 'Conexão OK (Integração 1)',
+          message: 'Conexão com Integração 1 estabelecida com sucesso!',
+          onConfirm: () => setConfirmModal(null)
+        });
+      } else {
+        throw new Error(data.error || 'Erro na resposta');
+      }
+    } catch (error: any) {
+      setConfirmModal({
+        isOpen: true,
+        title: 'Erro de Conexão (Integração 1)',
+        message: `Falha ao conectar: ${error.message}`,
+        onConfirm: () => setConfirmModal(null)
+      });
+    } finally {
+      setIsTestingBlueFocus1(false);
+    }
+  };
+
+  const handleTestBlueFocus2 = async () => {
+    if (isTestingBlueFocus2) return;
+    setIsTestingBlueFocus2(true);
+    try {
+      const response = await fetch('/api/bluefocus/sync-products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(blueFocusConfig2)
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setConfirmModal({
+          isOpen: true,
+          title: 'Conexão OK (Integração 2)',
+          message: 'Conexão com Integração 2 estabelecida com sucesso!',
+          onConfirm: () => setConfirmModal(null)
+        });
+      } else {
+        throw new Error(data.error || 'Erro na resposta');
+      }
+    } catch (error: any) {
+      setConfirmModal({
+        isOpen: true,
+        title: 'Erro de Conexão (Integração 2)',
+        message: `Falha ao conectar: ${error.message}`,
+        onConfirm: () => setConfirmModal(null)
+      });
+    } finally {
+      setIsTestingBlueFocus2(false);
+    }
+  };
 
   // Auto Sync State (Sincronização Automática a cada 2h: Seg a Sex das 08h às 18h | Sábados das 08h às 12h | Domingos pausado)
   const [isAutoSyncEnabled, setIsAutoSyncEnabled] = useState<boolean>(() => {
@@ -931,7 +1014,7 @@ export default function Admin() {
     }
   };
 
-  const handleSyncBlueFocus = async (overrideConfig?: Partial<typeof blueFocusConfig>) => {
+  const handleSyncBlueFocus = async (configInput?: any, overrideConfig?: Partial<any>) => {
     if (isSyncing) return;
     setIsSyncing(true);
 
@@ -945,7 +1028,8 @@ export default function Admin() {
       }).then(() => fetchTotemBackups()).catch(() => {});
     } catch (_) {}
     
-    const activeConfig = { ...blueFocusConfig, ...overrideConfig };
+    const baseConfig = configInput && typeof configInput === 'object' && !overrideConfig && !configInput.empresaId && !configInput.syncUrl ? blueFocusConfig1 : (configInput || blueFocusConfig1);
+    const activeConfig = { ...baseConfig, ...(overrideConfig || {}) };
     
     // Use values from config as starting point if available
     let currentCargaNumero = parseInt(activeConfig.startCargaNumero) || 0;
@@ -5018,11 +5102,16 @@ export default function Admin() {
       setAiAgentAntiRepeatState={setAiAgentAntiRepeatState}
       isAiTestModalOpen={isAiTestModalOpen}
       setIsAiTestModalOpen={setIsAiTestModalOpen}
-      blueFocusConfig={blueFocusConfig}
-      setBlueFocusConfig={setBlueFocusConfig}
-      handleSyncBlueFocus={handleSyncBlueFocus}
-      handleTestBlueFocus={handleTestBlueFocus}
-      isTestingBlueFocus={isTestingBlueFocus}
+      blueFocusConfig1={blueFocusConfig1}
+      setBlueFocusConfig1={setBlueFocusConfig1}
+      handleSyncBlueFocus1={handleSyncBlueFocus1}
+      handleTestBlueFocus1={handleTestBlueFocus1}
+      isTestingBlueFocus1={isTestingBlueFocus1}
+      blueFocusConfig2={blueFocusConfig2}
+      setBlueFocusConfig2={setBlueFocusConfig2}
+      handleSyncBlueFocus2={handleSyncBlueFocus2}
+      handleTestBlueFocus2={handleTestBlueFocus2}
+      isTestingBlueFocus2={isTestingBlueFocus2}
       isSyncing={isSyncing}
       isAutoSyncEnabled={isAutoSyncEnabled}
       setIsAutoSyncEnabled={setIsAutoSyncEnabled}
