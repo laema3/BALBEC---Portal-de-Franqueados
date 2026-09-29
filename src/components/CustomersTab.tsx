@@ -447,7 +447,7 @@ export const CustomersTab: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `clientes_leads_paomania_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `clientes_leads_balbec_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

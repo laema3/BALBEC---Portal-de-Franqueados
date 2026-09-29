@@ -71,7 +71,7 @@ export function AiAssistantModal({ isOpen, onClose, onAddToCart, onAddDirectToCa
         {
           id: 'welcome',
           sender: 'assistant',
-          text: `Olá! Sou **${agentName}**, atendente da **${storeInfo.name || 'Pão Mania'}**. 🥖☕\n\nComo posso te ajudar hoje? Posso tirar dúvidas sobre nossos produtos, horários ou anotar seu pedido completo para enviar direto no WhatsApp!`,
+          text: `Olá! Sou **${agentName}**, atendente do **${storeInfo.name || 'BALBEC - Portal de Franqueados'}**. 🥖☕\n\nComo posso te ajudar hoje? Posso tirar dúvidas sobre nossos produtos, horários ou anotar seu pedido completo para enviar direto no WhatsApp!`,
           timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -263,7 +263,7 @@ export function AiAssistantModal({ isOpen, onClose, onAddToCart, onAddDirectToCa
         .map((i) => `• ${i.quantity}x *${i.name}* - ${formatCurrency(i.price * i.quantity)}`)
         .join('\n');
 
-      const waMessage = `🍞 *NOVO PEDIDO - ${storeInfo.name || 'PÃO MANIA'}* 🍞
+      const waMessage = `🍞 *NOVO PEDIDO - ${storeInfo.name || 'BALBEC'}* 🍞
 _Atendimento via Atendente Virtual (${agentName})_
 🔢 *Pedido:* #${placed?.id || Math.floor(Math.random() * 10000)}
 

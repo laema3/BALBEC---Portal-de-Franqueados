@@ -390,7 +390,7 @@ export const CaixaPrinterStationCard: React.FC<CaixaPrinterStationCardProps> = (
               </span>
               {isCaixaUser && (
                 <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <Laptop className="w-2.5 h-2.5" /> Estação: caixa@paomania.com.br
+                  <Laptop className="w-2.5 h-2.5" /> Estação: caixa@balbec.com.br
                 </span>
               )}
             </div>
@@ -594,7 +594,7 @@ export const CaixaPrinterStationCard: React.FC<CaixaPrinterStationCardProps> = (
             <div className="font-bold text-stone-900">Como funciona o Agente Windows (Opção 2):</div>
             <ol className="list-decimal list-inside space-y-1 text-stone-700">
               <li>Clique em <strong>"Baixar Agente Windows (.bat)"</strong> acima e salve no computador do Caixa.</li>
-              <li>Dê <strong>dois cliques</strong> no arquivo <code>Iniciar-Agente-PaoMania.bat</code> baixado.</li>
+              <li>Dê <strong>dois cliques</strong> no arquivo <code>Iniciar-Agente-Balbec.bat</code> baixado.</li>
               <li>Uma janela de comando se abrirá e exibirá <code>[Conectado!] Monitorando pedidos do smartphone em segundo plano...</code></li>
               <li>Você pode <strong>minimizar a janela</strong>! Ela continuará vigiando o servidor 24 horas por dia.</li>
               <li>(Dica) Para iniciar sozinho ao ligar o computador: Pressione <code>Win + R</code>, digite <code>shell:startup</code> e cole um atalho do arquivo <code>.bat</code> lá dentro.</li>

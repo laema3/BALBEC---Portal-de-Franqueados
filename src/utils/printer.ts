@@ -119,10 +119,10 @@ export const downloadWindowsNetworkPrinterScript = (ip: string, portOrPrinterNam
   const safePort = typeof portOrPrinterName === 'number' ? portOrPrinterName : 9100;
   const sanitizedIpName = safeIp.replace(/\./g, '_');
   const batContent = `@echo off
-title Pao Mania - Criar Porta TCP/IP ${safeIp} no Windows
+title BALBEC - Criar Porta TCP/IP ${safeIp} no Windows
 cls
 echo ======================================================================
-echo    PAO MANIA - CONFIGURADOR DE PORTA TCP/IP DA IMPRESSORA DE REDE
+echo    BALBEC - CONFIGURADOR DE PORTA TCP/IP DA IMPRESSORA DE REDE
 echo ======================================================================
 echo.
 echo Endereco IP: ${safeIp}
@@ -206,7 +206,7 @@ export const triggerPrinterAgentTestJob = async (): Promise<{ success: boolean; 
 export const downloadWindowsAgentBat = () => {
   const link = document.createElement('a');
   link.href = '/api/printer-agent/download/bat';
-  link.download = 'Iniciar-Agente-PaoMania.bat';
+  link.download = 'Iniciar-Agente-Balbec.bat';
   document.body.appendChild(link);
   link.click();
   setTimeout(() => {
@@ -349,7 +349,7 @@ export const getFullReceiptHTML = (order: Order, storeInfo: StoreInfo, autoPrint
 
   const customerNameStr = order.customerName ? order.customerName.trim().toUpperCase() : 'CLIENTE';
   const orderNumber = order.id ? String(order.id).slice(-4).padStart(4, '0') : '0001';
-  const storeName = (storeInfo?.name || 'PÃO MANIA').toUpperCase();
+  const storeName = (storeInfo?.name || 'BALBEC').toUpperCase();
   const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR');
   const items = Array.isArray(order.items) ? order.items : [];
 
@@ -862,7 +862,7 @@ export const getEscPosReceiptBase64 = (order: Order, storeInfo: StoreInfo): stri
   const formatCurrency = (value: number) => {
     return 'R$ ' + (value || 0).toFixed(2).replace('.', ',');
   };
-  const storeName = normalizeEscPosText((storeInfo?.name || 'PAO MANIA').toUpperCase());
+  const storeName = normalizeEscPosText((storeInfo?.name || 'BALBEC').toUpperCase());
   const orderNumber = order.id ? String(order.id).slice(-4).padStart(4, '0') : '0001';
   const customerName = order.customerName ? normalizeEscPosText(order.customerName.trim().toUpperCase()) : 'CLIENTE';
   const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR');
@@ -1260,10 +1260,10 @@ export const downloadChromeKioskShortcut = () => {
   const currentUrl = window.location.origin + '/admin';
   const batContent = `@echo off
 chcp 65001 > nul
-title Pao Mania - Modo Caixa Terminal (Ativo em Segundo Plano e Minimizado)
+title BALBEC - Modo Caixa Terminal (Ativo em Segundo Plano e Minimizado)
 cls
 echo ======================================================================
-echo           PAO MANIA - MODO TERMINAL DE IMPRESSAO DO CAIXA
+echo           BALBEC - MODO TERMINAL DE IMPRESSAO DO CAIXA
 echo ======================================================================
 echo.
 echo * As impressoes serao enviadas DIRETAMENTE para a Impressora Padrao
@@ -1293,7 +1293,7 @@ exit
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'PaoMania_Caixa_Impressao_Direta.bat';
+  a.download = 'Balbec_Caixa_Impressao_Direta.bat';
   document.body.appendChild(a);
   a.click();
   setTimeout(() => {

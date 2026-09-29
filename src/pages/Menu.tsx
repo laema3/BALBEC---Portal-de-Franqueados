@@ -1121,7 +1121,7 @@ export default function Menu() {
           {lastPlacedOrder && (
             <div className="p-4 sm:p-5 bg-stone-100 max-h-[34vh] overflow-y-auto border-b border-stone-200">
               <div className="bg-white p-4 rounded-xl shadow-xs border border-stone-300/70 font-mono text-xs text-stone-900 leading-relaxed max-w-sm mx-auto">
-                <div className="text-center font-black text-sm tracking-wide mb-1 uppercase">{storeInfo.name || 'PÃO MANIA'}</div>
+                <div className="text-center font-black text-sm tracking-wide mb-1 uppercase">{storeInfo.name || 'BALBEC'}</div>
                 <div className="text-center text-[10px] text-stone-500 mb-2">*** {lastPlacedOrder.tableNumber ? `CONSUMO NO LOCAL - MESA ${lastPlacedOrder.tableNumber}` : isKioskMode ? 'AUTOATENDIMENTO' : 'PEDIDO ONLINE'} ***</div>
 
                 <div className="bg-black text-white p-2 text-center rounded-md my-2">
@@ -1916,7 +1916,7 @@ export default function Menu() {
                   formData.append('name', customerName);
                   formData.append('whatsapp', customerPhone);
                   formData.append('canal', isKioskMode ? 'Totem Autoatendimento' : salesChannel);
-                  formData.append('_subject', 'Novo cliente acessou o cardápio - Pão Mania');
+                  formData.append('_subject', 'Novo cliente acessou o cardápio - BALBEC');
 
                   await fetch('https://formspree.io/f/xbdzbeoq', {
                     method: 'POST',

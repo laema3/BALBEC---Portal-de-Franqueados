@@ -934,6 +934,9 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
         return res.status(400).json({ error: 'Backup inválido ou não encontrado.' });
       }
 
+      let restoredCatCount = 0;
+      let restoredProdCount = 0;
+
       if (Array.isArray(targetBackup.categories)) {
         memCategories = targetBackup.categories;
         persistCategoriesToDisk(memCategories);
@@ -2320,7 +2323,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
   // Full System Data Backup & Restore endpoints
   app.get('/api/db/backup', (req: Request, res: Response) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-    res.setHeader('Content-Disposition', `attachment; filename="paomania-backup-${new Date().toISOString().slice(0, 10)}.json"`);
+    res.setHeader('Content-Disposition', `attachment; filename="balbec-backup-${new Date().toISOString().slice(0, 10)}.json"`);
     res.json({
       storeInfo: memStoreInfo,
       tvMedia: memTvMedia,
@@ -2486,7 +2489,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
       const now = new Date();
       const dateStr = now.toISOString().slice(0, 10);
       const hourStr = String(now.getHours()).padStart(2, '0');
-      const filename = `paomania-backup-hourly-${dateStr}_${hourStr}-00.json`;
+      const filename = `balbec-backup-hourly-${dateStr}_${hourStr}-00.json`;
       const filepath = path.join(AUTO_BACKUP_DIR, filename);
 
       const payload = {
@@ -2509,7 +2512,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
 
       // Retention: keep last 72 hourly backups (3 days)
       const files = fs.readdirSync(AUTO_BACKUP_DIR)
-        .filter(f => f.startsWith('paomania-backup-hourly-') && f.endsWith('.json'))
+        .filter(f => (f.startsWith('balbec-backup-hourly-') || f.startsWith('paomania-backup-hourly-')) && f.endsWith('.json'))
         .sort();
       
       if (files.length > 72) {
@@ -2541,7 +2544,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
         return res.json({ success: true, backups: [] });
       }
       const files = fs.readdirSync(AUTO_BACKUP_DIR)
-        .filter(f => f.startsWith('paomania-backup-hourly-') && f.endsWith('.json'))
+        .filter(f => (f.startsWith('balbec-backup-hourly-') || f.startsWith('paomania-backup-hourly-')) && f.endsWith('.json'))
         .sort()
         .reverse();
 

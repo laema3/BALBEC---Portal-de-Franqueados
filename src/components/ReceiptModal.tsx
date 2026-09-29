@@ -23,7 +23,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ order, storeInfo, on
 
   const customerNameStr = order.customerName ? order.customerName.trim().toUpperCase() : 'CLIENTE';
   const orderNumber = order.id ? String(order.id).slice(-4).padStart(4, '0') : '0001';
-  const storeName = (storeInfo?.name || 'PÃO MANIA').toUpperCase();
+  const storeName = (storeInfo?.name || 'BALBEC').toUpperCase();
   const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR');
   const items = Array.isArray(order.items) ? order.items : [];
 

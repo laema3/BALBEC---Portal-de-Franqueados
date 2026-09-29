@@ -314,7 +314,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `paomania_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `balbec_backup_${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -482,7 +482,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                 <div className="flex items-center gap-2">
                   <h3 className="text-base font-bold text-stone-800">Informações Gerais</h3>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
-                    {storeInfo.name || 'Pão Mania'}
+                    {storeInfo.name || 'BALBEC - Portal de Franqueados'}
                   </span>
                 </div>
                 <p className="text-xs text-stone-500 mt-0.5">
@@ -546,7 +546,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-stone-800">Notificações Push (NTFY)</h3>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800">
-                      ntfy.sh/{storeInfo.ntfyTopic || 'paomania_pedidos'}
+                      ntfy.sh/{storeInfo.ntfyTopic || 'balbec_pedidos'}
                     </span>
                   </div>
                   <p className="text-xs text-stone-500 mt-0.5">
@@ -596,20 +596,20 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         type="text" 
                         name="ntfyTopic" 
                         id="ntfyTopicInput"
-                        defaultValue={storeInfo.ntfyTopic || 'paomania_pedidos'} 
+                        defaultValue={storeInfo.ntfyTopic || 'balbec_pedidos'} 
                         required 
                         className="w-full p-2.5 pl-18 border rounded-xl font-mono text-xs bg-white focus:ring-2 focus:ring-orange-500 outline-none" 
-                        placeholder="paomania_pedidos"
+                        placeholder="balbec_pedidos"
                       />
                     </div>
                     <button
                       type="button"
                       onClick={async () => {
                         const input = document.getElementById('ntfyTopicInput') as HTMLInputElement;
-                        const topic = input?.value?.trim() || storeInfo.ntfyTopic || 'paomania_pedidos';
+                        const topic = input?.value?.trim() || storeInfo.ntfyTopic || 'balbec_pedidos';
                         const ok = await sendNtfyNotification({
                           topic,
-                          title: '🍞 Teste de Notificação Pão Mania',
+                          title: '🍞 Teste de Notificação BALBEC',
                           message: 'Seu canal do NTFY está funcionando perfeitamente!',
                           priority: 4,
                           tags: ['tada', 'bread', 'white_check_mark']
@@ -627,7 +627,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                     </button>
                   </div>
                   <p className="text-[11px] text-stone-500 mt-2">
-                    💡 <strong>Como receber no celular:</strong> Instale o app <strong>ntfy</strong> (grátis na Play Store / App Store), clique em <strong>+ (Inscrever-se)</strong> e digite exatamente o nome do tópico acima (ex: <code>{storeInfo.ntfyTopic || 'paomania_pedidos'}</code>). Ou acesse direto pelo navegador em <a href={`https://ntfy.sh/${storeInfo.ntfyTopic || 'paomania_pedidos'}`} target="_blank" rel="noreferrer" className="text-orange-600 underline font-semibold">ntfy.sh/{storeInfo.ntfyTopic || 'paomania_pedidos'}</a>.
+                    💡 <strong>Como receber no celular:</strong> Instale o app <strong>ntfy</strong> (grátis na Play Store / App Store), clique em <strong>+ (Inscrever-se)</strong> e digite exatamente o nome do tópico acima (ex: <code>{storeInfo.ntfyTopic || 'balbec_pedidos'}</code>). Ou acesse direto pelo navegador em <a href={`https://ntfy.sh/${storeInfo.ntfyTopic || 'balbec_pedidos'}`} target="_blank" rel="noreferrer" className="text-orange-600 underline font-semibold">ntfy.sh/{storeInfo.ntfyTopic || 'balbec_pedidos'}</a>.
                   </p>
                 </div>
               </div>
@@ -1034,12 +1034,12 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                   </div>
                 </div>
 
-                {/* Trava de Impressora Específica do Caixa (caixa@paomania.com.br) */}
+                {/* Trava de Impressora Específica do Caixa (caixa@balbec.com.br) */}
                 <div className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-300 space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-black text-stone-900">Trava da Impressora do Caixa (caixa@paomania.com.br)</span>
+                        <span className="text-xs font-black text-stone-900">Trava da Impressora do Caixa (caixa@balbec.com.br)</span>
                         <span className="bg-orange-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full uppercase tracking-wider">
                           Anti-Confusão
                         </span>
@@ -2439,7 +2439,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                       value={aiAgentWhatsAppDefaultMessageState}
                       onChange={(e) => setAiAgentWhatsAppDefaultMessageState(e.target.value)}
                       className="w-full p-2.5 border border-stone-300 rounded-xl bg-white text-xs text-stone-800 focus:ring-2 focus:ring-purple-500 outline-none"
-                      placeholder="Olá! Vim pelo site da Pão Mania e gostaria de fazer um pedido."
+                      placeholder="Olá! Vim pelo Portal BALBEC e gostaria de atendimento."
                     />
                   </div>
                 </div>
@@ -2575,9 +2575,14 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                   <label className="block text-xs font-bold text-stone-700 uppercase mb-1">Empresa ID</label>
                   <input 
                     type="text" 
-                    value="PAOMANIA" 
-                    readOnly
-                    className="w-full p-2.5 border rounded-xl bg-stone-50 text-stone-900 font-semibold outline-none cursor-not-allowed select-none text-xs" 
+                    value={blueFocusConfig.empresaId || ''} 
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setBlueFocusConfig((prev: any) => ({ ...prev, empresaId: val }));
+                      localStorage.setItem('bluefocus_empresa_id', val);
+                    }}
+                    placeholder="Ex: BALBEC"
+                    className="w-full p-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs font-semibold" 
                   />
                 </div>
                 <div>

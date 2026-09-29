@@ -18,7 +18,7 @@ export const MaintenancePage: React.FC = () => {
   const whatsappNumber = cleanWhatsappNumber(storeInfo.whatsapp || '3433383795');
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Olá! Vi que o cardápio online está em manutenção. Gostaria de informações ou fazer um pedido.')}`;
 
-  const instagramHandle = (storeInfo.instagram || '@paomaniauberaba').replace('@', '').trim();
+  const instagramHandle = (storeInfo.instagram || '@balbecoficial').replace('@', '').trim();
   const instagramUrl = `https://instagram.com/${instagramHandle}`;
 
   const handleRefresh = async () => {
@@ -40,12 +40,12 @@ export const MaintenancePage: React.FC = () => {
           <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 p-1.5 flex items-center justify-center shadow-inner">
             <img 
               src={storeInfo.logoUrl || '/logo.svg'} 
-              alt={storeInfo.name || 'Pão Mania'} 
+              alt={storeInfo.name || 'BALBEC - Portal de Franqueados'} 
               className="w-full h-full object-contain"
             />
           </div>
           <div>
-            <h1 className="text-lg font-black tracking-tight text-white">{storeInfo.name || 'Pão Mania'}</h1>
+            <h1 className="text-lg font-black tracking-tight text-white">{storeInfo.name || 'BALBEC - Portal de Franqueados'}</h1>
             <p className="text-[11px] text-amber-400 font-semibold">{storeInfo.headerPhrase || 'O Sabor da Tradição'}</p>
           </div>
         </div>
@@ -155,7 +155,7 @@ export const MaintenancePage: React.FC = () => {
 
       {/* Footer with Discreet Admin Link */}
       <footer className="max-w-4xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-3 py-4 border-t border-stone-800/80 text-xs text-stone-500">
-        <p>© {new Date().getFullYear()} {storeInfo.name || 'Pão Mania'}. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} {storeInfo.name || 'BALBEC - Portal de Franqueados'}. Todos os direitos reservados.</p>
         
         <Link
           to="/admin"

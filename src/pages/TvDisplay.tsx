@@ -1166,13 +1166,13 @@ export default function TvDisplay() {
                   <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-br from-amber-950 to-stone-950 p-1 border border-amber-500/40 shadow-lg flex items-center justify-center shrink-0">
                     <img 
                       src={storeInfo.logoUrl || '/logo.svg'} 
-                      alt={storeInfo.name || 'Pão Mania'} 
+                      alt={storeInfo.name || 'BALBEC - Portal de Franqueados'} 
                       className="w-full h-full object-contain drop-shadow-md hover:scale-105 transition-transform"
                       referrerPolicy="no-referrer"
                     />
                   </div>
                   <div>
-                    <h1 className="text-xl font-black text-white tracking-wide leading-none">{storeInfo.name || 'Pão Mania'}</h1>
+                    <h1 className="text-xl font-black text-white tracking-wide leading-none">{storeInfo.name || 'BALBEC - Portal de Franqueados'}</h1>
                     <p className="text-xs text-amber-300 font-medium tracking-wider uppercase mt-1.5">
                       {storeInfo.headerPhrase || 'Padaria Artesanal & Confeitaria'}
                     </p>
@@ -1415,7 +1415,7 @@ export default function TvDisplay() {
                         <div className="w-20 h-20 lg:w-28 lg:h-28 rounded-2xl bg-stone-950 border border-amber-500/30 p-2 flex items-center justify-center shrink-0 shadow-md">
                           <img 
                             src={storeInfo.logoUrl || '/logo.svg'} 
-                            alt={storeInfo.name || 'Pão Mania'} 
+                            alt={storeInfo.name || 'BALBEC - Portal de Franqueados'} 
                             className="w-full h-full object-contain drop-shadow-sm"
                             referrerPolicy="no-referrer"
                           />
@@ -1589,13 +1589,13 @@ export default function TvDisplay() {
         
         <div className="flex-1 overflow-hidden relative">
           <div className="whitespace-nowrap flex items-center gap-12 animate-marquee text-lg md:text-xl font-bold text-white tracking-wider drop-shadow-md">
-            <span className="text-white font-black">{storeInfo.tvTickerText || '🥖 Pães quentinhos saindo a cada 20 minutos! Experimente nossa broa artesanal e cafés especiais. Peça pelo app ou no balcão!'}</span>
+            <span className="text-white font-black">{storeInfo.tvTickerText || '🥖 Notificações e avisos institucionais do Portal BALBEC. Acompanhe pedidos e atualizações em tempo real!'}</span>
             <span className="text-amber-400 font-bold text-xl">•</span>
-            <span className="text-white font-black">🥐 Venha conhecer nossa linha de salgados folhados e confeitaria fina!</span>
+            <span className="text-white font-black">🥐 Portal oficial de franqueados e suporte BALBEC!</span>
             <span className="text-amber-400 font-bold text-xl">•</span>
-            <span className="text-white font-black">📱 Conecte-se ao nosso Wi-Fi gratuito e peça com praticidade!</span>
+            <span className="text-white font-black">📱 Conecte-se ao nosso sistema integrado!</span>
             <span className="text-amber-400 font-bold text-xl">•</span>
-            <span className="text-white font-black">🥖 Pão Mania • O Sabor da Tradição</span>
+            <span className="text-white font-black">🥖 BALBEC • Portal de Franqueados</span>
           </div>
         </div>
       </div>

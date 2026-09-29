@@ -5,7 +5,7 @@ import { useStore } from '../store/useStore';
 export default function PrivacyPolicy() {
   const { storeInfo } = useStore();
 
-  const storeName = storeInfo.name || 'Pão Mania - Padaria & Confeitaria';
+  const storeName = storeInfo.name || 'BALBEC - Portal de Franqueados';
   const storeAddress = storeInfo.address || 'Praça Dr. Jorge Frange, 72 - São Benedito, Uberaba - MG';
   const storePhone = storeInfo.whatsapp || '(34) 3338-3795';
 

@@ -76,7 +76,7 @@ export const restaurantTables = pgTable('restaurant_tables', {
 // Store Info table
 export const storeInfo = pgTable('store_info', {
   id: text('id').primaryKey().default('default'),
-  name: text('name').default('Pão Mania'),
+  name: text('name').default('BALBEC - Portal de Franqueados'),
   themeColor: text('theme_color').default('#e6a800'),
   addButtonColor: text('add_button_color').default('#e6a800'),
   iconColor: text('icon_color').default('#e6a800'),

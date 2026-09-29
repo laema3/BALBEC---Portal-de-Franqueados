@@ -237,7 +237,7 @@ export async function ensureTablesExist() {
     await runQuery(`
       CREATE TABLE IF NOT EXISTS store_info (
         id TEXT PRIMARY KEY DEFAULT 'default',
-        name TEXT DEFAULT 'Pão Mania',
+        name TEXT DEFAULT 'BALBEC - Portal de Franqueados',
         theme_color TEXT DEFAULT '#e6a800',
         add_button_color TEXT DEFAULT '#e6a800',
         icon_color TEXT DEFAULT '#e6a800',

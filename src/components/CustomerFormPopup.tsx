@@ -34,7 +34,7 @@ export const CustomerFormPopup: React.FC<CustomerFormPopupProps> = ({ isOpen, on
       // Send NTFY Notification
       sendNtfyNotification({
         enabled: storeInfo.ntfyEnabled !== false,
-        topic: storeInfo.ntfyTopic || 'paomania_pedidos',
+        topic: storeInfo.ntfyTopic || 'balbec_pedidos',
         title: `🥖 Novo Cliente Cadastrado!`,
         message: `Nome: ${name.trim()}\nWhatsApp: ${whatsapp.trim()}\nHorário: ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`,
         priority: 4,

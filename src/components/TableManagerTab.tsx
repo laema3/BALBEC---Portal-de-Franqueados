@@ -198,7 +198,7 @@ export const TableManagerTab: React.FC<TableManagerTabProps> = ({ orders }) => {
     if (!dataUrl) return;
     const link = document.createElement('a');
     link.href = dataUrl;
-    link.download = `QRCode_${table.name.replace(/\s+/g, '_')}_PaoMania.png`;
+    link.download = `QRCode_${table.name.replace(/\s+/g, '_')}_BALBEC.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

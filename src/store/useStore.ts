@@ -545,7 +545,7 @@ const localHasCustomValues = (local: StoreInfo): boolean => {
   return Boolean(
     (local.whatsapp && local.whatsapp !== '' && local.whatsapp !== '(11) 99999-9999') ||
     (local.address && local.address !== '' && local.address !== 'Rua das Padarias, 123 - Centro') ||
-    (local.name && local.name !== 'Pão Mania') ||
+    (local.name && local.name !== 'BALBEC - Portal de Franqueados' && local.name !== 'Pão Mania') ||
     (local.aiAgentCustomPrompt && local.aiAgentCustomPrompt !== '') ||
     (local.weeklySchedule && local.weeklySchedule !== '[]' && local.weeklySchedule !== defaultStoreInfo.weeklySchedule)
   );
@@ -723,7 +723,7 @@ export const useStore = create<StoreState>((set, get) => ({
       );
 
       // Fetch Orders (Always fetched so admin/kiosk/store metrics are instantly synchronized)
-      fetchWithTimeout('/api/db/orders', 15000)
+      const pOrders = fetchWithTimeout('/api/db/orders', 15000)
         .then(safeParseResponse)
         .then(ordersData => {
           if (Array.isArray(ordersData)) {

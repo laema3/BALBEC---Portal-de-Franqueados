@@ -127,7 +127,7 @@ export default function Admin() {
   const isMaster = currentUser?.role === 'master' || MASTER_ADMIN_EMAILS.includes(userEmail) || userEmail === 'camillasites@gmail.com';
   const isAdminOrMaster = isMaster || currentUser?.role === 'admin' || isAuthorizedAdminEmail(currentUser?.email);
   const isPadrao = !isMaster && !isAdminOrMaster;
-  const isCaixaUser = userEmail === 'caixa@paomania.com.br';
+  const isCaixaUser = userEmail === 'caixa@balbec.com.br' || userEmail === 'caixa@paomania.com.br';
 
   const orders = isCaixaUser ? rawOrders.filter(o => o.type !== 'kiosk') : rawOrders;
 
@@ -288,7 +288,7 @@ export default function Admin() {
         const a = document.createElement('a');
         const dateStr = new Date().toISOString().slice(0, 10);
         a.href = url;
-        a.download = `paomania_backup_completo_${dateStr}.json`;
+        a.download = `balbec_backup_completo_${dateStr}.json`;
         a.click();
         URL.revokeObjectURL(url);
       } else {
@@ -331,7 +331,7 @@ export default function Admin() {
             alert(data.error || 'Erro ao restaurar backup completo.');
           }
         } else {
-          alert('Arquivo de backup inválido. Certifique-se de selecionar um arquivo JSON de backup completo do sistema Pão Mania.');
+          alert('Arquivo de backup inválido. Certifique-se de selecionar um arquivo JSON de backup completo do sistema BALBEC.');
         }
       } catch (err) {
         alert('Erro ao ler arquivo JSON de backup.');
@@ -529,7 +529,7 @@ export default function Admin() {
   const [aiAgentToneState, setAiAgentToneState] = useState<string>(storeInfo.aiAgentTone || 'amigavel');
   const [aiAgentCustomPromptState, setAiAgentCustomPromptState] = useState<string>(storeInfo.aiAgentCustomPrompt || '');
   const [aiAgentWhatsAppPhoneState, setAiAgentWhatsAppPhoneState] = useState<string>(storeInfo.aiAgentWhatsAppPhone || '');
-  const [aiAgentWhatsAppDefaultMessageState, setAiAgentWhatsAppDefaultMessageState] = useState<string>(storeInfo.aiAgentWhatsAppDefaultMessage || 'Olá! Vim pelo site da Pão Mania e gostaria de fazer um pedido.');
+  const [aiAgentWhatsAppDefaultMessageState, setAiAgentWhatsAppDefaultMessageState] = useState<string>(storeInfo.aiAgentWhatsAppDefaultMessage || 'Olá! Vim pelo Portal BALBEC e gostaria de fazer um pedido.');
   const [aiAgentTrainingExamplesState, setAiAgentTrainingExamplesState] = useState<AiTrainingExample[]>(() => parseInitialTrainingExamples(storeInfo.aiAgentTrainingExamples));
   const [aiAgentKnowledgeBaseState, setAiAgentKnowledgeBaseState] = useState<string>(storeInfo.aiAgentKnowledgeBase || '');
   const [aiAgentForbiddenPhrasesState, setAiAgentForbiddenPhrasesState] = useState<string>(storeInfo.aiAgentForbiddenPhrases || '');
@@ -819,7 +819,7 @@ export default function Admin() {
   
   // BlueFocus Config State
   const [blueFocusConfig, setBlueFocusConfig] = useState({
-    empresaId: 'BALBEC',
+    empresaId: localStorage.getItem('bluefocus_empresa_id') || 'BALBEC',
     usuarioId: localStorage.getItem('bluefocus_usuario_id') || 'CONSULTA',
     pdvCodigo: localStorage.getItem('bluefocus_pdv_codigo') || '1000',
     syncUrl: localStorage.getItem('bluefocus_sync_url') || '',
@@ -832,11 +832,6 @@ export default function Admin() {
     authToken: localStorage.getItem('bluefocus_auth_token') || '',
     startProdutoId: localStorage.getItem('bluefocus_start_produto_id') || '0'
   });
-
-  // Garantir que a chave no localStorage esteja sempre gravada como PAOMANIA
-  useEffect(() => {
-    localStorage.setItem('bluefocus_empresa_id', 'PAOMANIA');
-  }, []);
 
   // Auto Sync State (Sincronização Automática a cada 2h: Seg a Sex das 08h às 18h | Sábados das 08h às 12h | Domingos pausado)
   const [isAutoSyncEnabled, setIsAutoSyncEnabled] = useState<boolean>(() => {
@@ -2025,7 +2020,7 @@ export default function Admin() {
     }
 
     const data = {
-      name: (formData.get('name') as string)?.trim() || storeInfo.name || 'Pão Mania',
+      name: (formData.get('name') as string)?.trim() || storeInfo.name || 'BALBEC - Portal de Franqueados',
       themeColor: themeColor || storeInfo.themeColor || '#ff5500',
       addButtonColor: addButtonColor || storeInfo.addButtonColor || '#ff0000',
       iconColor: iconColor || storeInfo.iconColor || '#ff5500',
@@ -2036,7 +2031,7 @@ export default function Admin() {
       hours: formatWeeklyScheduleSummary(weeklyScheduleState) || (formData.get('hours') as string)?.trim() || storeInfo.hours || '',
       instagram: (formData.get('instagram') as string)?.trim() || storeInfo.instagram || '',
       whatsapp: (formData.get('whatsapp') as string)?.trim() || storeInfo.whatsapp || '',
-      ntfyTopic: (formData.get('ntfyTopic') as string)?.trim() || storeInfo.ntfyTopic || 'paomania_pedidos',
+      ntfyTopic: (formData.get('ntfyTopic') as string)?.trim() || storeInfo.ntfyTopic || 'balbec_pedidos',
       ntfyEnabled: formData.get('ntfyEnabled') === 'on',
       deliveryEnabled: deliveryEnabledState,
       inStoreEnabled: inStoreEnabledState,
@@ -2054,7 +2049,7 @@ export default function Admin() {
       aiAgentTone: aiAgentToneState || storeInfo.aiAgentTone || 'amigavel',
       aiAgentCustomPrompt: aiAgentCustomPromptState ?? storeInfo.aiAgentCustomPrompt ?? '',
       aiAgentWhatsAppPhone: aiAgentWhatsAppPhoneState.trim() || storeInfo.aiAgentWhatsAppPhone || '',
-      aiAgentWhatsAppDefaultMessage: aiAgentWhatsAppDefaultMessageState.trim() || storeInfo.aiAgentWhatsAppDefaultMessage || 'Olá! Vim pelo site da Pão Mania e gostaria de fazer um pedido.',
+      aiAgentWhatsAppDefaultMessage: aiAgentWhatsAppDefaultMessageState.trim() || storeInfo.aiAgentWhatsAppDefaultMessage || 'Olá! Vim pelo Portal BALBEC e gostaria de fazer um pedido.',
       aiAgentTrainingExamples: JSON.stringify(aiAgentTrainingExamplesState),
       aiAgentKnowledgeBase: aiAgentKnowledgeBaseState ?? storeInfo.aiAgentKnowledgeBase ?? '',
       aiAgentForbiddenPhrases: aiAgentForbiddenPhrasesState ?? storeInfo.aiAgentForbiddenPhrases ?? '',
@@ -5132,20 +5127,20 @@ export default function Admin() {
                         type="text" 
                         name="ntfyTopic" 
                         id="ntfyTopicInput"
-                        defaultValue={storeInfo.ntfyTopic || 'paomania_pedidos'} 
+                        defaultValue={storeInfo.ntfyTopic || 'balbec_pedidos'} 
                         required 
                         className="w-full p-3 pl-20 border rounded-xl font-mono text-sm bg-white focus:ring-2 focus:ring-orange-500 outline-none" 
-                        placeholder="paomania_pedidos"
+                        placeholder="balbec_pedidos"
                       />
                     </div>
                     <button
                       type="button"
                       onClick={async () => {
                         const input = document.getElementById('ntfyTopicInput') as HTMLInputElement;
-                        const topic = input?.value?.trim() || storeInfo.ntfyTopic || 'paomania_pedidos';
+                        const topic = input?.value?.trim() || storeInfo.ntfyTopic || 'balbec_pedidos';
                         const ok = await sendNtfyNotification({
                           topic,
-                          title: '🍞 Teste de Notificação Pão Mania',
+                          title: '🍞 Teste de Notificação BALBEC',
                           message: 'Seu canal do NTFY está funcionando perfeitamente!',
                           priority: 4,
                           tags: ['tada', 'bread', 'white_check_mark']
@@ -5163,7 +5158,7 @@ export default function Admin() {
                     </button>
                   </div>
                   <p className="text-[11px] text-stone-500 mt-2">
-                    💡 <strong>Como receber no celular:</strong> Instale o app <strong>ntfy</strong> (grátis na Play Store / App Store), clique em <strong>+ (Inscrever-se)</strong> e digite exatamente o nome do tópico acima (ex: <code>{storeInfo.ntfyTopic || 'paomania_pedidos'}</code>). Ou acesse direto pelo navegador em <a href={`https://ntfy.sh/${storeInfo.ntfyTopic || 'paomania_pedidos'}`} target="_blank" rel="noreferrer" className="text-orange-600 underline font-semibold">ntfy.sh/{storeInfo.ntfyTopic || 'paomania_pedidos'}</a>.
+                    💡 <strong>Como receber no celular:</strong> Instale o app <strong>ntfy</strong> (grátis na Play Store / App Store), clique em <strong>+ (Inscrever-se)</strong> e digite exatamente o nome do tópico acima (ex: <code>{storeInfo.ntfyTopic || 'balbec_pedidos'}</code>). Ou acesse direto pelo navegador em <a href={`https://ntfy.sh/${storeInfo.ntfyTopic || 'balbec_pedidos'}`} target="_blank" rel="noreferrer" className="text-orange-600 underline font-semibold">ntfy.sh/{storeInfo.ntfyTopic || 'balbec_pedidos'}</a>.
                   </p>
                 </div>
               </div>
@@ -6145,7 +6140,7 @@ export default function Admin() {
                   value={aiAgentWhatsAppDefaultMessageState}
                   onChange={(e) => setAiAgentWhatsAppDefaultMessageState(e.target.value)}
                   className="w-full p-2.5 border border-stone-300 rounded-xl bg-white text-xs text-stone-800 focus:ring-2 focus:ring-purple-500 outline-none"
-                  placeholder="Olá! Vim pelo site da Pão Mania e gostaria de fazer um pedido."
+                  placeholder="Olá! Vim pelo Portal BALBEC e gostaria de fazer um pedido."
                 />
               </div>
             </div>
@@ -6255,12 +6250,16 @@ export default function Admin() {
                   <label className="block text-sm font-medium text-stone-700 mb-1">Empresa ID (Exato como no sistema)</label>
                   <input 
                     type="text" 
-                    value="PAOMANIA" 
-                    readOnly
-                    className="w-full p-3 border rounded-xl bg-stone-50 text-stone-900 font-semibold outline-none cursor-not-allowed select-none" 
-                    title="Fixo como PAOMANIA para garantir o sincronismo correto"
+                    value={blueFocusConfig.empresaId || ''} 
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setBlueFocusConfig(prev => ({ ...prev, empresaId: val }));
+                      localStorage.setItem('bluefocus_empresa_id', val);
+                    }}
+                    placeholder="Ex: BALBEC"
+                    className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none font-semibold text-stone-900" 
                   />
-                  <p className="text-[10px] text-stone-400 mt-1">Identificador fixo do sistema BlueFocus (PAOMANIA).</p>
+                  <p className="text-[10px] text-stone-400 mt-1">Identificador da empresa no sistema BlueFocus.</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1">Usuário ID</label>
@@ -6298,6 +6297,20 @@ export default function Admin() {
                       setBlueFocusConfig(prev => ({ ...prev, syncUrl: val }));
                       localStorage.setItem('bluefocus_sync_url', val);
                     }}
+                    className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none font-mono text-xs" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">URL de Sincronização 2 (Adicional)</label>
+                  <input 
+                    type="text" 
+                    value={blueFocusConfig.syncUrl2 || ''} 
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setBlueFocusConfig(prev => ({ ...prev, syncUrl2: val }));
+                      localStorage.setItem('bluefocus_sync_url_2', val);
+                    }}
+                    placeholder="https://..."
                     className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none font-mono text-xs" 
                   />
                 </div>
@@ -6917,7 +6930,7 @@ export default function Admin() {
         setIsAuthenticated(true);
         setLoginError('');
       } else {
-        setLoginError(`Acesso negado. O usuário ${result.user.email} está autenticado, mas não possui um registro de permissão no painel (UID: ${result.user.uid}). Você pode cadastrar este e-mail na aba Usuários ou utilizar o login direto por Email e Senha (ex: admin@paomania.com.br).`);
+        setLoginError(`Acesso negado. O usuário ${result.user.email} está autenticado, mas não possui um registro de permissão no painel (UID: ${result.user.uid}). Você pode cadastrar este e-mail na aba Usuários ou utilizar o login direto por Email e Senha (ex: admin@balbec.com.br).`);
         auth.signOut();
       }
     } catch (error: any) {
@@ -7059,7 +7072,7 @@ export default function Admin() {
           </button>
 
           <div className="mt-4 p-3 bg-stone-50 border border-stone-200 rounded-xl text-center text-xs text-stone-600">
-            <span className="font-semibold text-stone-800">Acesso Administrativo:</span> Utilize <code className="bg-stone-200/70 px-1.5 py-0.5 rounded font-mono text-stone-900">admin@paomania.com.br</code> com senha <code className="bg-stone-200/70 px-1.5 py-0.5 rounded font-mono text-stone-900">admin</code> ou seu e-mail cadastrado.
+            <span className="font-semibold text-stone-800">Acesso Administrativo:</span> Utilize <code className="bg-stone-200/70 px-1.5 py-0.5 rounded font-mono text-stone-900">admin@balbec.com.br</code> com senha <code className="bg-stone-200/70 px-1.5 py-0.5 rounded font-mono text-stone-900">admin</code> ou seu e-mail cadastrado.
           </div>
 
           <div className="mt-5 text-center">
@@ -7533,7 +7546,7 @@ export default function Admin() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1">Email / Usuário</label>
-                  <input type="email" name="email" defaultValue={editingItem?.email} required className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none" placeholder="usuario@paomania.com.br" />
+                  <input type="email" name="email" defaultValue={editingItem?.email} required className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none" placeholder="usuario@balbec.com.br" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1">

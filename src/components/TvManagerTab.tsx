@@ -1053,7 +1053,7 @@ export default function TvManagerTab() {
                     required
                     value={mediaTitle}
                     onChange={(e) => setMediaTitle(e.target.value)}
-                    placeholder="Ex: Vídeo Institucional Pão Mania ou Banner Bolo de Cenoura"
+                    placeholder="Ex: Vídeo Institucional BALBEC ou Banner de Produtos"
                     className="w-full p-3 border border-stone-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 outline-none"
                   />
                 </div>
