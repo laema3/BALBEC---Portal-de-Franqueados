@@ -15,8 +15,7 @@ export const getDatabaseUrl = (): string | undefined => {
          process.env.STORAGE_URL ||
          process.env.STORAGE_POSTGRES_URL ||
          process.env.BALBEC_URL ||
-         process.env.BALBEC_POSTGRES_URL ||
-         process.env.balbec;
+         process.env.BALBEC_POSTGRES_URL;
 };
 
 export const isDatabaseConfigured = (): boolean => {

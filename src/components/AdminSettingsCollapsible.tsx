@@ -2673,6 +2673,58 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
                     />
                   </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 uppercase mb-1">Data Inicial (Padrão: 30/12/1899)</label>
+                    <input 
+                      type="text" 
+                      value={blueFocusConfig1.dataInicial} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBlueFocusConfig1((prev: any) => ({ ...prev, dataInicial: val }));
+                        localStorage.setItem('bluefocus1_data_inicial', val);
+                      }}
+                      className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 uppercase mb-1">Carga Inicial (Número)</label>
+                    <input 
+                      type="text" 
+                      value={blueFocusConfig1.startCargaNumero} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBlueFocusConfig1((prev: any) => ({ ...prev, startCargaNumero: val }));
+                        localStorage.setItem('bluefocus1_start_carga_numero', val);
+                      }}
+                      className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 uppercase mb-1">Carga Inicial (Sequência)</label>
+                    <input 
+                      type="text" 
+                      value={blueFocusConfig1.startCargaSequencia} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBlueFocusConfig1((prev: any) => ({ ...prev, startCargaSequencia: val }));
+                        localStorage.setItem('bluefocus1_start_carga_sequencia', val);
+                      }}
+                      className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 uppercase mb-1">ID do Produto Inicial</label>
+                    <input 
+                      type="text" 
+                      value={blueFocusConfig1.startProdutoId || '0'} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBlueFocusConfig1((prev: any) => ({ ...prev, startProdutoId: val }));
+                        localStorage.setItem('bluefocus1_start_produto_id', val);
+                      }}
+                      className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -2812,6 +2864,58 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         const val = e.target.value;
                         setBlueFocusConfig2((prev: any) => ({ ...prev, tipo: val }));
                         localStorage.setItem('bluefocus2_tipo', val);
+                      }}
+                      className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 uppercase mb-1">Data Inicial (Padrão: 30/12/1899)</label>
+                    <input 
+                      type="text" 
+                      value={blueFocusConfig2.dataInicial} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBlueFocusConfig2((prev: any) => ({ ...prev, dataInicial: val }));
+                        localStorage.setItem('bluefocus2_data_inicial', val);
+                      }}
+                      className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 uppercase mb-1">Carga Inicial (Número)</label>
+                    <input 
+                      type="text" 
+                      value={blueFocusConfig2.startCargaNumero} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBlueFocusConfig2((prev: any) => ({ ...prev, startCargaNumero: val }));
+                        localStorage.setItem('bluefocus2_start_carga_numero', val);
+                      }}
+                      className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 uppercase mb-1">Carga Inicial (Sequência)</label>
+                    <input 
+                      type="text" 
+                      value={blueFocusConfig2.startCargaSequencia} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBlueFocusConfig2((prev: any) => ({ ...prev, startCargaSequencia: val }));
+                        localStorage.setItem('bluefocus2_start_carga_sequencia', val);
+                      }}
+                      className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 uppercase mb-1">ID do Produto Inicial</label>
+                    <input 
+                      type="text" 
+                      value={blueFocusConfig2.startProdutoId || '0'} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBlueFocusConfig2((prev: any) => ({ ...prev, startProdutoId: val }));
+                        localStorage.setItem('bluefocus2_start_produto_id', val);
                       }}
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
                     />
