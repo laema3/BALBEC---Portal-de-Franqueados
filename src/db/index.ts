@@ -125,10 +125,10 @@ export async function ensureTablesExist() {
   // Fast check: Ensure DB is reachable before attempting DDL migrations
   try {
     const pingPromise = pool.query('SELECT 1 as ping');
-    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('PostgreSQL indisponível ou tempo limite atingido (7s)')), 7000));
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('PostgreSQL indisponível ou tempo limite atingido (3.5s)')), 3500));
     await Promise.race([pingPromise, timeoutPromise]);
   } catch (pingErr: any) {
-    console.warn('[DB] PostgreSQL não respondeu ao teste inicial, migrações ignoradas:', pingErr?.message || pingErr);
+    console.warn('[DB] PostgreSQL não respondeu ao teste inicial, migrações DDL em lote ignoradas:', pingErr?.message || pingErr);
     return;
   }
 
@@ -412,6 +412,7 @@ export async function ensureTablesExist() {
     await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS in_store_max_radius_meters INTEGER DEFAULT 150;`);
     await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS in_store_pin_validation BOOLEAN DEFAULT FALSE;`);
     await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS in_store_pin_code TEXT DEFAULT '1234';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS modules_config TEXT DEFAULT '{"mesas":false,"qrcodes":false,"totem":false,"delivery":true,"tv":true,"ai_agent":false}';`);
 
     // Ensure columns exist on categories table
     await runQuery(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS is_visible BOOLEAN DEFAULT TRUE;`);

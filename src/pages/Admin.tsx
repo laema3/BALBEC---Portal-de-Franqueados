@@ -58,6 +58,7 @@ import {
   Menu as MenuIcon,
   Smartphone,
   Download,
+  Phone,
   Bot,
   Calendar,
   CalendarDays,
@@ -3743,14 +3744,54 @@ export default function Admin() {
                       {formatCurrency(order.total)}
                     </div>
                   </div>
-                  <div className="p-4 bg-stone-50 border-t flex flex-wrap gap-2">
-                    <button type="button" 
-                      onClick={() => printOrder(order)}
-                      className="bg-stone-200 text-stone-700 p-2 rounded-lg hover:bg-stone-300 flex items-center justify-center transition-colors"
-                      title="Imprimir Cupom"
-                    >
-                      <Printer className="w-5 h-5" />
-                    </button>
+                  <div className="p-4 bg-stone-50 border-t flex flex-col gap-2">
+                    {/* Mobile: Phone, Printer, Trash side by side */}
+                    <div className="flex md:hidden items-center gap-2 mb-1">
+                      {order.customerPhone ? (
+                        <a
+                          href={`https://wa.me/55${order.customerPhone.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 bg-emerald-100 text-emerald-700 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 text-xs shadow-xs"
+                          title={`WhatsApp: ${order.customerPhone}`}
+                        >
+                          <Phone className="w-4 h-4" />
+                          <span>Ligar</span>
+                        </a>
+                      ) : (
+                        <div className="flex-1 bg-stone-100 text-stone-400 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 text-xs">
+                          <Phone className="w-4 h-4" />
+                          <span>Sem Tel</span>
+                        </div>
+                      )}
+                      <button type="button" 
+                        onClick={() => printOrder(order)}
+                        className="flex-1 bg-stone-200 text-stone-700 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 text-xs shadow-xs"
+                        title="Imprimir Cupom"
+                      >
+                        <Printer className="w-4 h-4" />
+                        <span>Imprimir</span>
+                      </button>
+                      {isAdminOrMaster && (
+                        <button
+                          onClick={() => handleDeleteOrder(order.id)}
+                          className="flex-1 bg-red-100 text-red-600 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 text-xs shadow-xs"
+                          title="Excluir Pedido"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span>Excluir</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button type="button" 
+                        onClick={() => printOrder(order)}
+                        className="hidden md:flex bg-stone-200 text-stone-700 p-2 rounded-lg hover:bg-stone-300 items-center justify-center transition-colors"
+                        title="Imprimir Cupom"
+                      >
+                        <Printer className="w-5 h-5" />
+                      </button>
                     <button type="button" 
                       onClick={() => handleCallOnTv(order)}
                       className="bg-amber-100 text-amber-900 px-3 py-2 rounded-lg hover:bg-amber-200 flex items-center justify-center gap-1.5 transition-colors font-bold text-xs shadow-xs"
@@ -3801,6 +3842,7 @@ export default function Admin() {
                         <Trash2 className="w-5 h-5" />
                       </button>
                     )}
+                    </div>
                   </div>
                 </div>
               ))

@@ -206,6 +206,14 @@ export interface StoreInfo {
   networkPrinterIp?: string;
   networkPrinterPort?: number;
   bluefocusSyncUrl2?: string;
+  modulesConfig?: {
+    mesas?: boolean;
+    qrcodes?: boolean;
+    totem?: boolean;
+    delivery?: boolean;
+    tv?: boolean;
+    ai_agent?: boolean;
+  } | string;
 }
 
 export interface PrinterItem {
@@ -389,6 +397,14 @@ export const defaultStoreInfo: StoreInfo = {
   networkPrinterIp: '',
   networkPrinterPort: 9100,
   bluefocusSyncUrl2: '',
+  modulesConfig: {
+    mesas: false,
+    qrcodes: false,
+    totem: false,
+    delivery: true,
+    tv: true,
+    ai_agent: false
+  },
 };
 
 const getInitialStoreInfo = (): StoreInfo => {

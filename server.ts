@@ -818,17 +818,7 @@ ${itemsXml}
       });
     }
 
-    // Database Initialization and State Hydration (Awaited before listening)
-    try {
-      console.log("[DB] Verificando tabelas e colunas PostgreSQL...");
-      await ensureTablesExist();
-      console.log("[DB] Tabelas PostgreSQL verificadas com sucesso.");
-      await hydrateFromPostgres();
-      console.log("[DB] Estado da loja e cadastros hidratados com sucesso do PostgreSQL.");
-    } catch (dbInitErr) {
-      console.warn("[DB] Aviso na inicialização do banco de dados:", dbInitErr);
-    }
-
+    // Inicia o servidor HTTP imediatamente na porta 3000 para que a aplicação responda imediatamente
     if (!process.env.VERCEL) {
       const server = app.listen(PORT, "0.0.0.0", () => {
         console.log(`Server running on port ${PORT}`);
@@ -836,6 +826,19 @@ ${itemsXml}
       server.keepAliveTimeout = 120000;
       server.headersTimeout = 120000;
     }
+
+    // Inicialização do Banco de Dados e Hidratação de Estado em segundo plano (não bloqueia o boot do servidor)
+    (async () => {
+      try {
+        console.log("[DB] Verificando tabelas e colunas PostgreSQL...");
+        await ensureTablesExist();
+        console.log("[DB] Tabelas PostgreSQL verificadas com sucesso.");
+        await hydrateFromPostgres();
+        console.log("[DB] Estado da loja e cadastros hidratados com sucesso do PostgreSQL.");
+      } catch (dbInitErr) {
+        console.warn("[DB] Aviso na inicialização do banco de dados (usando armazenamento local/memória):", dbInitErr);
+      }
+    })();
   }
 
   startServer().catch(err => {

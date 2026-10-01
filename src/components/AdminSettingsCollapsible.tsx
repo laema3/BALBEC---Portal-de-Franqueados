@@ -39,7 +39,10 @@ import {
   Globe,
   Wifi,
   Check,
-  AlertCircle
+  AlertCircle,
+  LayoutGrid,
+  QrCode,
+  UtensilsCrossed
 } from 'lucide-react';
 import { StoreInfo, AiTrainingExample, DEFAULT_AI_TRAINING_EXAMPLES } from '../store/useStore';
 import { DaySchedule, formatWeeklyScheduleSummary, getStoreCurrentStatus } from '../utils/scheduleHelper';
@@ -176,6 +179,10 @@ interface AdminSettingsCollapsibleProps {
   networkPrinterPortState?: number;
   setNetworkPrinterPortState?: (v: number) => void;
 
+  // Modules Config
+  modulesConfigState?: any;
+  setModulesConfigState?: (v: any) => void;
+
   // Submit
   handleSaveSettings: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
 }
@@ -184,6 +191,8 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
   const {
     storeInfo,
     isMaster,
+    modulesConfigState,
+    setModulesConfigState,
     logoPreview,
     setLogoPreview,
     isSavingLogo,
@@ -400,6 +409,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
 
   // Section open/closed state (all collapsed by default as requested)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    modules: false,
     general: false,
     notifications: false,
     printer: true,
@@ -421,6 +431,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
 
   const handleExpandAll = () => {
     setOpenSections({
+      modules: true,
       general: true,
       notifications: true,
       printer: true,
@@ -436,6 +447,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
 
   const handleCollapseAll = () => {
     setOpenSections({
+      modules: false,
       general: false,
       notifications: false,
       printer: false,

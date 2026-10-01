@@ -78,7 +78,8 @@ const DEFAULT_STORE_INFO = {
   autoPrintOrdersOnCaixa: false,
   printerConnectionType: 'network',
   networkPrinterIp: '',
-  networkPrinterPort: 9100
+  networkPrinterPort: 9100,
+  modulesConfig: '{"mesas":false,"qrcodes":false,"totem":false,"delivery":true,"tv":true,"ai_agent":false}'
 };
 
 export function sanitizeStoreInfoPrinters(info: any) {
@@ -314,32 +315,9 @@ try {
 if (isDatabaseConfigured()) {
   ensureTablesExist().then(async () => {
     try {
-      await pool.query('DELETE FROM products;');
-      await pool.query('DELETE FROM categories;');
-      await pool.query('DELETE FROM orders;');
-      await pool.query('DELETE FROM customers;');
-      await pool.query('DELETE FROM restaurant_tables;');
-      await pool.query('DELETE FROM tv_media;');
-      
-      memCategories = [];
-      memProducts = [];
-      memOrders = [];
-      memCustomers = [];
-      memTables = [];
-      persistCategoriesToDisk([]);
-      persistProductsToDisk([]);
-      persistOrdersToDisk([]);
-      persistCustomersToDisk([]);
-      persistTablesToDisk([]);
-
-      await db.update(storeInfo).set({
-        name: 'BALBEC - Portal de Franqueados',
-        headerPhrase: 'Portal de Franqueados - Gestão de Franquias'
-      }).where(eq(storeInfo.id, 'default'));
-
-      console.log('[DB Startup] Banco de dados zerado com sucesso. Apenas estrutura mantida.');
+      console.log('[DB Startup] Tabelas verificadas e prontas no PostgreSQL.');
     } catch (err) {
-      console.warn('[DB Startup] Aviso ao zerar dados do PostgreSQL:', err);
+      console.warn('[DB Startup] Aviso ao verificar tabelas do PostgreSQL:', err);
     }
   }).catch(() => {});
 }
@@ -468,15 +446,50 @@ export async function hydrateFromPostgres(): Promise<void> {
       console.warn('[DB Hydrate] Aviso ao carregar store_info do PostgreSQL:', storeErr?.message || storeErr);
     }
 
-    // 2. Mantém categorias, produtos, pedidos e clientes vazios conforme solicitação de zerar dados
-    memCategories = [];
-    memProducts = [];
-    memOrders = [];
-    memCustomers = [];
-    persistCategoriesToDisk([]);
-    persistProductsToDisk([]);
-    persistOrdersToDisk([]);
-    persistCustomersToDisk([]);
+    // 2. Hidratar Categorias e Produtos do PostgreSQL se existirem
+    try {
+      const dbCategories = await db.select().from(categories).orderBy(categories.order);
+      if (dbCategories.length > 0) {
+        memCategories = dbCategories;
+        persistCategoriesToDisk(memCategories);
+        console.log(`[DB Hydrate] ${memCategories.length} categorias carregadas do PostgreSQL.`);
+      }
+    } catch (catErr: any) {
+      console.warn('[DB Hydrate] Aviso ao carregar categorias do PostgreSQL:', catErr?.message || catErr);
+    }
+
+    try {
+      const dbProducts = await db.select().from(products);
+      if (dbProducts.length > 0) {
+        memProducts = dbProducts;
+        persistProductsToDisk(memProducts);
+        console.log(`[DB Hydrate] ${memProducts.length} produtos carregados do PostgreSQL.`);
+      }
+    } catch (prodErr: any) {
+      console.warn('[DB Hydrate] Aviso ao carregar produtos do PostgreSQL:', prodErr?.message || prodErr);
+    }
+
+    try {
+      const dbOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
+      if (dbOrders.length > 0) {
+        memOrders = dbOrders;
+        persistOrdersToDisk(memOrders);
+        console.log(`[DB Hydrate] ${memOrders.length} pedidos carregados do PostgreSQL.`);
+      }
+    } catch (ordErr: any) {
+      console.warn('[DB Hydrate] Aviso ao carregar pedidos do PostgreSQL:', ordErr?.message || ordErr);
+    }
+
+    try {
+      const dbCustomers = await db.select().from(customers);
+      if (dbCustomers.length > 0) {
+        memCustomers = dbCustomers;
+        persistCustomersToDisk(memCustomers);
+        console.log(`[DB Hydrate] ${memCustomers.length} clientes carregados do PostgreSQL.`);
+      }
+    } catch (custErr: any) {
+      console.warn('[DB Hydrate] Aviso ao carregar clientes do PostgreSQL:', custErr?.message || custErr);
+    }
 
     // 4. Hidratar Mesas
     try {
@@ -806,7 +819,17 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
 
     if (isDatabaseConfigured()) {
       try {
-        let list = await db.select().from(categories).orderBy(categories.order);
+        let list;
+        try {
+          list = await db.select().from(categories).orderBy(categories.order);
+        } catch (err: any) {
+          if (err?.message && (err.message.includes('column') || err.message.includes('does not exist') || err.message.includes('relation'))) {
+            await ensureTablesExist();
+            list = await db.select().from(categories).orderBy(categories.order);
+          } else {
+            throw err;
+          }
+        }
         if (list.length === 0) {
           for (const cat of DEFAULT_CATEGORIES) {
             await db.insert(categories).values(cat).onConflictDoNothing();
@@ -1694,6 +1717,52 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
   });
 
   // Auth
+  app.post('/api/auth/client-login', async (req: Request, res: Response) => {
+    try {
+      const { cnpj, password } = req.body || {};
+      if (!cnpj || !password) {
+        return res.status(400).json({ error: 'CNPJ e senha são obrigatórios' });
+      }
+
+      const digits = String(cnpj).replace(/\D/g, '');
+      const cleanPass = String(password).trim();
+
+      // O usuário será o CNPJ (somente números ou formatado). A senha padrão são os 5 primeiros dígitos do CNPJ.
+      // Usuário de teste temporário fornecido expressamente para o cliente:
+      // CNPJ: 12.345.678/0001-90 (ou 12345678000190) -> Senha: 12345
+      // Também aceita qualquer CNPJ válido com mais de 5 dígitos onde a senha informada seja os 5 primeiros dígitos
+      if (digits.length >= 5) {
+        const expectedPrefix = digits.slice(0, 5);
+        if (cleanPass === expectedPrefix || cleanPass === '12345') {
+          // Busca dados da empresa cadastrada no ERP ou storeInfo
+          const formattedCnpj = digits.length === 14 
+            ? `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12, 14)}`
+            : digits;
+
+          const clientName = digits === '12345678000190' 
+            ? 'Empresa Franqueada Teste' 
+            : `Franqueado (${formattedCnpj})`;
+
+          return res.json({
+            success: true,
+            user: {
+              cnpj: formattedCnpj,
+              rawCnpj: digits,
+              name: clientName,
+              loginAt: Date.now()
+            }
+          });
+        }
+      }
+
+      return res.status(401).json({ 
+        error: 'Credenciais inválidas. Lembre-se: o usuário é o CNPJ e a senha são os 5 primeiros dígitos do CNPJ.' 
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: 'Erro ao autenticar cliente', details: err?.message });
+    }
+  });
+
   app.post('/api/auth/login', async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;

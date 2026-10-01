@@ -142,6 +142,7 @@ export const storeInfo = pgTable('store_info', {
   networkPrinterIp: text('network_printer_ip').default('192.168.0.90'),
   networkPrinterPort: integer('network_printer_port').default(9100),
   bluefocusSyncUrl2: text('bluefocus_sync_url_2').default(''),
+  modulesConfig: text('modules_config').default('{"mesas":false,"qrcodes":false,"totem":false,"delivery":true,"tv":true,"ai_agent":false}'),
 });
 
 // TV Media Playlist table for Smart TV Indoor Signage
