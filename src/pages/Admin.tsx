@@ -833,6 +833,9 @@ export default function Admin() {
     startProdutoId: localStorage.getItem('bluefocus1_start_produto_id') || '0'
   });
 
+  const blueFocusConfig = blueFocusConfig1;
+  const setBlueFocusConfig = setBlueFocusConfig1;
+
   const [blueFocusConfig2, setBlueFocusConfig2] = useState({
     empresaId: localStorage.getItem('bluefocus2_empresa_id') || '',
     usuarioId: localStorage.getItem('bluefocus2_usuario_id') || 'CONSULTA',
@@ -6432,20 +6435,7 @@ export default function Admin() {
                     className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none font-mono text-xs" 
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">URL de Sincronização 2 (Adicional)</label>
-                  <input 
-                    type="text" 
-                    value={blueFocusConfig.syncUrl2 || ''} 
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setBlueFocusConfig(prev => ({ ...prev, syncUrl2: val }));
-                      localStorage.setItem('bluefocus_sync_url_2', val);
-                    }}
-                    placeholder="https://..."
-                    className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none font-mono text-xs" 
-                  />
-                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1">Tipo de Sincronização</label>
                   <select 
