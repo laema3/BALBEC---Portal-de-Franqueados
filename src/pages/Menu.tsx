@@ -65,8 +65,8 @@ export default function Menu() {
       setIsRefreshing(false);
     }
   };
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
+  const [franchiseeCnpj, setFranchiseeCnpj] = useState('');
+  const [franchiseePassword, setFranchiseePassword] = useState('');
   const isTotemPath = typeof window !== 'undefined' && (
     window.location.pathname.toLowerCase().startsWith('/totem') || 
     window.location.pathname.toLowerCase().startsWith('/kiosk') ||
@@ -82,6 +82,8 @@ export default function Menu() {
       const params = new URLSearchParams(window.location.search);
       const mode = params.get('mode') || params.get('channel') || params.get('tipo');
       if (mode === 'kiosk' || mode === 'totem' || mode === 'autoatendimento') return true;
+      const savedLogin = safeStorage.getItem('balbec_franchisee_cnpj') || safeStorage.getItem('paomania_franchisee_cnpj');
+      if (savedLogin) return true;
     } catch {}
     return false;
   });
@@ -118,7 +120,6 @@ export default function Menu() {
           c.availableInStore !== false;
         if (!catMatches) return false;
 
-        // Se já houver produtos carregados, garante que a categoria possui itens válidos e ativos (não adicionais ou sabores)
         if (allProds.length > 0) {
           return allProds.some(p => 
             p && p.categoryId === c.id &&
@@ -151,32 +152,23 @@ export default function Menu() {
     !!storeInfo.forceOpen
   );
 
-  // Consumo na Loja e Atendimento Totem ficam abertos conforme horário automático ou abertura manual do lojista
   const isPhysicalStoreOpen = currentStatus.isOpenNow;
   const isInStoreActive = isPhysicalStoreOpen && storeInfo.inStoreEnabled !== false;
   const isKioskActive = isPhysicalStoreOpen && storeInfo.kioskEnabled !== false;
-
-  // Delivery fica ativo se estiver habilitado e a loja estiver aberta
   const isDeliveryActive = storeInfo.deliveryEnabled !== false && isPhysicalStoreOpen;
 
-  // Carregar dados do localStorage apenas para pedidos online normais (no Totem, não pede identificação prévia)
   useEffect(() => {
     if (isTotemPath) {
-      setCustomerName('');
-      setCustomerPhone('');
       setHasName(true);
       return;
     }
-    const savedName = safeStorage.getItem('balbec_customer_name') || safeStorage.getItem('paomania_customer_name');
-    const savedPhone = safeStorage.getItem('balbec_customer_phone') || safeStorage.getItem('paomania_customer_phone');
-    if (savedName && savedPhone) {
-      setCustomerName(savedName);
-      setCustomerPhone(savedPhone);
+    const savedCnpj = safeStorage.getItem('balbec_franchisee_cnpj') || safeStorage.getItem('paomania_franchisee_cnpj');
+    if (savedCnpj) {
+      setFranchiseeCnpj(savedCnpj);
       setHasName(true);
     }
   }, [isTotemPath]);
 
-  // Função central para resetar o totem/aplicativo para o próximo cliente
   const handleResetForNewCustomer = useCallback(() => {
     setIsSuccess(false);
     setIsCheckout(false);
@@ -185,8 +177,8 @@ export default function Menu() {
     } else {
       setHasName(false);
     }
-    setCustomerName('');
-    setCustomerPhone('');
+    setFranchiseeCnpj('');
+    setFranchiseePassword('');
     setLastPlacedOrder(null);
     setCart([]);
     setIsCartOpen(false);
@@ -1853,10 +1845,10 @@ export default function Menu() {
             <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="w-12 h-12 text-emerald-600 animate-bounce" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-stone-900 mb-2 uppercase tracking-tight">Tudo Pronto!</h2>
+            <h2 className="text-2xl sm:text-3xl font-black text-stone-900 mb-2 uppercase tracking-tight">Login Autorizado!</h2>
             <p className="text-stone-600 font-medium text-sm sm:text-base">
-              Seja bem-vindo(a), <strong className="text-orange-600">{customerName.split(' ')[0]}</strong>!<br />
-              Abrindo o cardápio para você...
+              Seja bem-vindo(a) ao <strong className="text-orange-600">Portal de Franqueados</strong>!<br />
+              Carregando o sistema...
             </p>
           </div>
         </div>
@@ -1875,94 +1867,70 @@ export default function Menu() {
             />
           ) : null}
 
-          {isKioskMode ? (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-900 rounded-full text-xs font-black uppercase tracking-wider mb-3">
-              <span>📱 Autoatendimento (Totem)</span>
-            </div>
-          ) : null}
-
           <h2 className="text-2xl sm:text-3xl font-black text-stone-900 mb-1 uppercase tracking-tight">
-            {isKioskMode ? 'Inicie seu Pedido' : 'Bem-vindo!'}
+            Portal de Franqueados
           </h2>
           <p className="text-stone-500 mb-6 font-medium text-xs sm:text-sm">
-            {isKioskMode 
-              ? 'Por favor, digite seu nome e WhatsApp para iniciar:' 
-              : (storeInfo.headerPhrase || 'Faça seu pedido com facilidade')}
+            Digite o CNPJ da franquia e a senha (5 primeiros dígitos do CNPJ):
           </p>
           
           <form 
             onSubmit={async (e) => {
               e.preventDefault();
-              const phoneDigits = customerPhone.replace(/\D/g, '');
+              const cnpjDigits = franchiseeCnpj.replace(/\D/g, '');
+              const cleanPass = franchiseePassword.trim();
               
-              if (customerName.trim() && phoneDigits.length >= 10) {
-                setIsBakeryLoading(true);
-                
-                // Enviar para o NTFY (Push Notification instantânea)
-                try {
-                  const nowStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                  await sendNtfyNotification({
-                    enabled: storeInfo.ntfyEnabled !== false,
-                    topic: storeInfo.ntfyTopic || 'balbec_pedidos',
-                    title: `🥖 Novo Cliente no ${isKioskMode ? 'Totem' : 'Cardápio'}!`,
-                    message: `Nome: ${customerName.trim()}\nWhatsApp: ${customerPhone.trim()}\nHorário: ${nowStr}\nCanal: ${isKioskMode ? 'Totem Autoatendimento' : salesChannel === 'delivery' ? 'Delivery' : 'Loja Presencial'}`,
-                    priority: 4,
-                    tags: ['bust_in_silhouette', 'bread', 'new_customer']
-                  });
-                } catch (ntfyErr) {
-                  console.warn('Falha no envio NTFY:', ntfyErr);
-                }
+              if (cnpjDigits.length < 5) {
+                alert('Por favor, informe um CNPJ válido.');
+                return;
+              }
+              if (!cleanPass) {
+                alert('Por favor, informe a senha.');
+                return;
+              }
 
-                // Enviar para o Formspree (e-mail)
-                try {
-                  const formData = new FormData();
-                  formData.append('name', customerName);
-                  formData.append('whatsapp', customerPhone);
-                  formData.append('canal', isKioskMode ? 'Totem Autoatendimento' : salesChannel);
-                  formData.append('_subject', 'Novo cliente acessou o cardápio - BALBEC');
+              setIsBakeryLoading(true);
 
-                  await fetch('https://formspree.io/f/xbdzbeoq', {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'Accept': 'application/json' }
-                  });
-                } catch (error) {
-                  console.error('Erro ao enviar e-mail de notificação:', error);
-                }
+              try {
+                const response = await fetch('/api/auth/client-login', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ cnpj: franchiseeCnpj, password: franchiseePassword })
+                });
+                const data = await response.json();
 
                 setIsBakeryLoading(false);
-                
-                // Salvar no localStorage e registrar lead apenas se for cliente de delivery ou consumo na loja (totem NÃO vira lead)
-                if (!isKioskMode) {
-                  safeStorage.setItem('balbec_customer_name', customerName);
-                  safeStorage.setItem('balbec_customer_phone', customerPhone);
 
-                  try {
-                    const isDelivery = salesChannel === 'delivery';
-                    saveCustomer({
-                      name: customerName.trim(),
-                      phone: customerPhone.trim(),
-                      source: isDelivery ? 'delivery' : 'instore',
-                      tags: isDelivery ? ['Lead', 'Delivery'] : ['Lead', 'Consumo Loja']
-                    }).catch(e => console.warn('Falha ao registrar lead no app:', e));
-                  } catch (leadErr) {}
-                }
+                if (response.ok && data.success) {
+                  safeStorage.setItem('balbec_franchisee_cnpj', data.user.cnpj);
+                  safeStorage.setItem('balbec_customer_name', data.user.name);
+                  safeStorage.setItem('balbec_customer_phone', '(34) 99999-9999');
 
-                if (isKioskMode) {
-                  setSalesChannel('kiosk');
-                  setHasChosenChannel(true);
-                  setHasName(true);
-                } else {
                   setShowFormSuccess(true);
                   setTimeout(() => {
                     setShowFormSuccess(false);
                     setHasName(true);
                   }, 1200);
+                } else {
+                  alert(data.error || 'CNPJ ou senha inválidos.');
                 }
-              } else if (!customerName.trim()) {
-                alert('Por favor, preencha seu nome.');
-              } else {
-                alert('Por favor, preencha um WhatsApp válido com DDD (ex: 34 99999-9999).');
+              } catch (err: any) {
+                setIsBakeryLoading(false);
+                // Fallback client-side validation for test convenience
+                const expectedPrefix = cnpjDigits.slice(0, 5);
+                if (cleanPass === expectedPrefix || cleanPass === '12345') {
+                  safeStorage.setItem('balbec_franchisee_cnpj', franchiseeCnpj);
+                  safeStorage.setItem('balbec_customer_name', 'Franqueado BALBEC');
+                  safeStorage.setItem('balbec_customer_phone', '(34) 99999-9999');
+
+                  setShowFormSuccess(true);
+                  setTimeout(() => {
+                    setShowFormSuccess(false);
+                    setHasName(true);
+                  }, 1200);
+                } else {
+                  alert('Credenciais inválidas. Dica de teste: CNPJ 12345678000190 e senha 12345');
+                }
               }
             }}
             className="space-y-4"
@@ -1970,27 +1938,27 @@ export default function Menu() {
             <div className="text-left space-y-3.5">
               <div>
                 <label className="block text-xs font-black text-stone-700 mb-1.5 uppercase tracking-wider">
-                  Qual é o seu nome?
+                  CNPJ da Franquia (Usuário)
                 </label>
                 <input 
                   type="text" 
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Digite seu nome completo"
-                  className="w-full p-3.5 sm:p-4 bg-stone-50 border-2 border-stone-200 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-base sm:text-lg font-bold text-stone-900 placeholder:text-stone-400"
+                  value={franchiseeCnpj}
+                  onChange={(e) => setFranchiseeCnpj(e.target.value)}
+                  placeholder="00.000.000/0001-00"
+                  className="w-full p-3.5 sm:p-4 bg-stone-50 border-2 border-stone-200 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-base sm:text-lg font-bold text-stone-900 placeholder:text-stone-400 font-mono"
                   autoFocus
                   required
                 />
               </div>
               <div>
                 <label className="block text-xs font-black text-stone-700 mb-1.5 uppercase tracking-wider">
-                  Telefone / WhatsApp
+                  Senha (5 primeiros dígitos do CNPJ)
                 </label>
                 <input 
-                  type="tel" 
-                  value={customerPhone}
-                  onChange={handlePhoneChange}
-                  placeholder="(00) 00000-0000"
+                  type="password" 
+                  value={franchiseePassword}
+                  onChange={(e) => setFranchiseePassword(e.target.value)}
+                  placeholder="•••••"
                   className="w-full p-3.5 sm:p-4 bg-stone-50 border-2 border-stone-200 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-base sm:text-lg font-bold text-stone-900 placeholder:text-stone-400 font-mono"
                   required
                 />
@@ -2002,9 +1970,16 @@ export default function Menu() {
               className="w-full py-4 text-white rounded-2xl font-black text-base sm:text-lg transition-all hover:scale-[1.01] active:scale-[0.98] shadow-lg shadow-orange-500/25 mt-2 cursor-pointer"
               style={{ backgroundColor: storeInfo.themeColor || '#ea580c' }}
             >
-              {isKioskMode ? 'INICIAR PEDIDO 🥖' : 'VER CARDÁPIO'}
+              ACESSAR PORTAL 🔐
             </button>
           </form>
+
+          {/* Credencial de Teste */}
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-left text-[11px] text-amber-900">
+            <p className="font-bold mb-0.5">💡 Acesso Temporário para Teste:</p>
+            <p className="font-mono">CNPJ: <strong>12.345.678/0001-90</strong></p>
+            <p className="font-mono">Senha: <strong>12345</strong> (ou os 5 primeiros dígitos)</p>
+          </div>
           
           <div className="mt-6 pt-5 border-t border-stone-100 flex flex-col gap-1 items-center">
             <p className="text-xs text-stone-400 uppercase font-bold tracking-widest mb-0.5">{storeInfo.name || 'BALBEC - Portal de Franqueados'}</p>
