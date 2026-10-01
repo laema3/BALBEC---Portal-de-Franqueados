@@ -346,7 +346,7 @@ export const defaultStoreInfo: StoreInfo = {
   instagram: '',
   whatsapp: '',
   categoryTitleColor: '#ea580c',
-  deliveryEnabled: true,
+  deliveryEnabled: false,
   inStoreEnabled: true,
   kioskEnabled: true,
   isOpen: true,

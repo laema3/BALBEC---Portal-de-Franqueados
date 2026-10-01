@@ -1432,8 +1432,8 @@ export default function Menu() {
                   )}
                 </div>
 
-                {/* Bloco de Mesa para Consumo na Loja */}
-                {deliveryType === 'pickup' && (
+                {/* Bloco de Mesa Desabilitado (Apenas Retirada no Balcão) */}
+                {false && deliveryType === 'pickup' && (
                   <div className="bg-amber-50/80 border-2 border-amber-300 rounded-2xl p-4 sm:p-5 mb-8 space-y-3 shadow-xs">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">

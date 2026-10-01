@@ -28,7 +28,7 @@ const DEFAULT_STORE_INFO = {
   instagram: '',
   whatsapp: '',
   categoryTitleColor: '#ea580c',
-  deliveryEnabled: true,
+  deliveryEnabled: false,
   inStoreEnabled: true,
   kioskEnabled: true,
   requireQrCodeForOrdering: false,
@@ -267,6 +267,52 @@ try {
   memTables = loadJsonFile(TABLES_FILE, masterState?.tables || DEFAULT_TABLES);
   memAppInstalls = loadJsonFile(APP_INSTALLS_FILE, []);
   memTotemBackups = loadJsonFile(TOTEM_BACKUPS_FILE, masterState?.totemBackups || []);
+
+  // Auto-recovery from latest backup in 'backups/' directory if local storage was wiped on deploy
+  if ((!memCategories || memCategories.length === 0 || !memProducts || memProducts.length === 0)) {
+    const AUTO_BACKUP_DIR = path.join(process.cwd(), 'backups');
+    try {
+      if (fs.existsSync(AUTO_BACKUP_DIR)) {
+        const backupFiles = fs.readdirSync(AUTO_BACKUP_DIR)
+          .filter(f => f.startsWith('balbec-backup-') && f.endsWith('.json'))
+          .sort()
+          .reverse();
+        
+        if (backupFiles.length > 0) {
+          const latestBackupPath = path.join(AUTO_BACKUP_DIR, backupFiles[0]);
+          const rawBackup = fs.readFileSync(latestBackupPath, 'utf8');
+          const backupData = JSON.parse(rawBackup);
+          
+          if (backupData) {
+            if (Array.isArray(backupData.categories) && backupData.categories.length > 0) {
+              memCategories = backupData.categories;
+              writeJsonFile(CATEGORIES_FILE, memCategories);
+            }
+            if (Array.isArray(backupData.products) && backupData.products.length > 0) {
+              memProducts = backupData.products;
+              writeJsonFile(PRODUCTS_FILE, memProducts);
+            }
+            if (backupData.storeInfo && typeof backupData.storeInfo === 'object') {
+              memStoreInfo = { ...DEFAULT_STORE_INFO, ...backupData.storeInfo };
+              writeJsonFile(STORE_INFO_FILE, memStoreInfo);
+            }
+            if (Array.isArray(backupData.orders) && backupData.orders.length > 0) {
+              memOrders = backupData.orders;
+              writeJsonFile(ORDERS_FILE, memOrders);
+            }
+            if (Array.isArray(backupData.customers) && backupData.customers.length > 0) {
+              memCustomers = backupData.customers;
+              writeJsonFile(CUSTOMERS_FILE, memCustomers);
+            }
+            persistAllStateToMasterFile();
+            console.log(`[Auto-Recovery] Estado restaurado com sucesso do backup mais recente: ${backupFiles[0]} (${memCategories.length} categorias, ${memProducts.length} produtos)`);
+          }
+        }
+      }
+    } catch (recoveryErr) {
+      console.warn('[Auto-Recovery] Aviso ao tentar recuperar do backup:', recoveryErr);
+    }
+  }
 
   // Sanitização rigorosa: expurgar qualquer resquício legado de produtos/categorias/informações antigas de Pão Mania
   memProducts = memProducts.filter((p: any) => {
