@@ -67,6 +67,20 @@ export default function Menu() {
   };
   const [franchiseeCnpj, setFranchiseeCnpj] = useState('');
   const [franchiseePassword, setFranchiseePassword] = useState('');
+  const [customerName, setCustomerName] = useState(() => {
+    try {
+      return safeStorage.getItem('balbec_customer_name') || safeStorage.getItem('paomania_customer_name') || 'Franqueado BALBEC';
+    } catch {
+      return 'Franqueado BALBEC';
+    }
+  });
+  const [customerPhone, setCustomerPhone] = useState(() => {
+    try {
+      return safeStorage.getItem('balbec_customer_phone') || safeStorage.getItem('paomania_customer_phone') || '(34) 99999-9999';
+    } catch {
+      return '(34) 99999-9999';
+    }
+  });
   const isTotemPath = typeof window !== 'undefined' && (
     window.location.pathname.toLowerCase().startsWith('/totem') || 
     window.location.pathname.toLowerCase().startsWith('/kiosk') ||
