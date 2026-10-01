@@ -150,6 +150,19 @@ export function sanitizeStoreInfoPrinters(info: any) {
   if (info.windowsPrinterCopies === undefined) {
     info.windowsPrinterCopies = 2;
   }
+  info.deliveryEnabled = false;
+  info.inStoreEnabled = false;
+  try {
+    let mod = {};
+    if (typeof info.modulesConfig === 'string') {
+      mod = JSON.parse(info.modulesConfig);
+    } else if (typeof info.modulesConfig === 'object' && info.modulesConfig !== null) {
+      mod = info.modulesConfig;
+    }
+    info.modulesConfig = JSON.stringify({ ...mod, mesas: false, delivery: false });
+  } catch (e) {
+    info.modulesConfig = '{"mesas":false,"qrcodes":false,"totem":false,"delivery":false,"tv":true,"ai_agent":false}';
+  }
   return info;
 }
 

@@ -38,20 +38,7 @@ export default function Menu() {
   }, [fetchData]);
 
   // Controle de Mesas / Consumo na Loja
-  const [selectedTableNumber, setSelectedTableNumber] = useState<number | null>(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const urlTable = params.get('mesa') || params.get('table') || params.get('mesa_num');
-      if (urlTable && !isNaN(parseInt(urlTable, 10))) {
-        return parseInt(urlTable, 10);
-      }
-      const saved = safeStorage.getSession('balbec_selected_table') || safeStorage.getSession('paomania_selected_table');
-      if (saved && !isNaN(parseInt(saved, 10))) {
-        return parseInt(saved, 10);
-      }
-    } catch {}
-    return null;
-  });
+  const [selectedTableNumber, setSelectedTableNumber] = useState<number | null>(null);
   const [showTableSelectModal, setShowTableSelectModal] = useState(false);
 
   const handleManualSync = async () => {
@@ -1415,21 +1402,15 @@ export default function Menu() {
               </div>
             ) : (
               <div>
-                {/* Opções de Entrega */}
-                <h2 className="text-xl font-bold mb-4">Opções de Entrega</h2>
-                <div className="flex gap-4 mb-6">
-                  {isInStoreActive && (
-                    <label className={`flex-1 flex items-center justify-center p-4 border rounded-xl cursor-pointer transition-colors ${deliveryType === 'pickup' ? 'border-orange-600 bg-orange-50 text-orange-700 font-bold' : 'border-stone-200 bg-white hover:bg-stone-50 font-medium'}`}>
-                      <input type="radio" name="deliveryType" value="pickup" checked={deliveryType === 'pickup'} onChange={() => setDeliveryType('pickup')} className="hidden" />
-                      <span>Consumo na Loja / Retirada</span>
-                    </label>
-                  )}
-                  {isDeliveryActive && (
-                    <label className={`flex-1 flex items-center justify-center p-4 border rounded-xl cursor-pointer transition-colors ${deliveryType === 'delivery' ? 'border-orange-600 bg-orange-50 text-orange-700 font-bold' : 'border-stone-200 bg-white hover:bg-stone-50 font-medium'}`}>
-                      <input type="radio" name="deliveryType" value="delivery" checked={deliveryType === 'delivery'} onChange={() => setDeliveryType('delivery')} className="hidden" />
-                      <span>Entrega (Delivery)</span>
-                    </label>
-                  )}
+                {/* Modalidade Fixa: Apenas Retirada no Balcão */}
+                <div className="mb-6 p-4 bg-orange-50 border-2 border-orange-200 rounded-2xl flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center font-black text-xl shadow-sm shrink-0">
+                    🛍️
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-stone-900">Modalidade: Retirada no Balcão</h3>
+                    <p className="text-xs text-stone-600">Mesas e Delivery estão desabilitados no momento.</p>
+                  </div>
                 </div>
 
                 {/* Bloco de Mesa Desabilitado (Apenas Retirada no Balcão) */}
