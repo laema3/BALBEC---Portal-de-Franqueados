@@ -205,6 +205,17 @@ export interface StoreInfo {
   printerConnectionType?: 'network' | 'windows' | 'usb';
   networkPrinterIp?: string;
   networkPrinterPort?: number;
+  bluefocusSyncUrl?: string;
+  bluefocusEmpresaId?: string;
+  bluefocusUsuarioId?: string;
+  bluefocusPdvCodigo?: string;
+  bluefocusAuthToken?: string;
+  bluefocusTipo?: string;
+  bluefocusDataInicial?: string;
+  bluefocusStartCargaNumero?: string;
+  bluefocusStartCargaSequencia?: string;
+  bluefocusStartProdutoId?: string;
+  bluefocusTipoAtualizacao?: string;
   bluefocusSyncUrl2?: string;
   modulesConfig?: {
     mesas?: boolean;
@@ -347,7 +358,7 @@ export const defaultStoreInfo: StoreInfo = {
   whatsapp: '',
   categoryTitleColor: '#ea580c',
   deliveryEnabled: false,
-  inStoreEnabled: true,
+  inStoreEnabled: false,
   kioskEnabled: true,
   isOpen: true,
   ntfyTopic: 'balbec_franquias',

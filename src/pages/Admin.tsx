@@ -820,18 +820,37 @@ export default function Admin() {
   
   // BlueFocus Config States (INTEGRAÇÃO 1 e INTEGRAÇÃO 2)
   const [blueFocusConfig1, setBlueFocusConfig1] = useState({
-    empresaId: localStorage.getItem('bluefocus1_empresa_id') || localStorage.getItem('bluefocus_empresa_id') || 'BALBEC',
-    usuarioId: localStorage.getItem('bluefocus1_usuario_id') || localStorage.getItem('bluefocus_usuario_id') || 'CONSULTA',
-    pdvCodigo: localStorage.getItem('bluefocus1_pdv_codigo') || localStorage.getItem('bluefocus_pdv_codigo') || '1000',
-    syncUrl: localStorage.getItem('bluefocus1_sync_url') || localStorage.getItem('bluefocus_sync_url') || '',
-    tipoAtualizacao: localStorage.getItem('bluefocus1_tipo_atualizacao') || localStorage.getItem('bluefocus_tipo_atualizacao') || 'A',
-    tipo: localStorage.getItem('bluefocus1_tipo') || localStorage.getItem('bluefocus_tipo') || '4',
-    dataInicial: localStorage.getItem('bluefocus1_data_inicial') || '30/12/1899',
-    startCargaNumero: localStorage.getItem('bluefocus1_start_carga_numero') || '0',
-    startCargaSequencia: localStorage.getItem('bluefocus1_start_carga_sequencia') || '0',
-    authToken: localStorage.getItem('bluefocus1_auth_token') || localStorage.getItem('bluefocus_auth_token') || '',
-    startProdutoId: localStorage.getItem('bluefocus1_start_produto_id') || '0'
+    empresaId: storeInfo?.bluefocusEmpresaId || localStorage.getItem('bluefocus1_empresa_id') || localStorage.getItem('bluefocus_empresa_id') || 'BALBEC',
+    usuarioId: storeInfo?.bluefocusUsuarioId || localStorage.getItem('bluefocus1_usuario_id') || localStorage.getItem('bluefocus_usuario_id') || 'CONSULTA',
+    pdvCodigo: storeInfo?.bluefocusPdvCodigo || localStorage.getItem('bluefocus1_pdv_codigo') || localStorage.getItem('bluefocus_pdv_codigo') || '1000',
+    syncUrl: storeInfo?.bluefocusSyncUrl || localStorage.getItem('bluefocus1_sync_url') || localStorage.getItem('bluefocus_sync_url') || '',
+    tipoAtualizacao: storeInfo?.bluefocusTipoAtualizacao || localStorage.getItem('bluefocus1_tipo_atualizacao') || localStorage.getItem('bluefocus_tipo_atualizacao') || 'A',
+    tipo: storeInfo?.bluefocusTipo || localStorage.getItem('bluefocus1_tipo') || localStorage.getItem('bluefocus_tipo') || '4',
+    dataInicial: storeInfo?.bluefocusDataInicial || localStorage.getItem('bluefocus1_data_inicial') || '30/12/1899',
+    startCargaNumero: storeInfo?.bluefocusStartCargaNumero || localStorage.getItem('bluefocus1_start_carga_numero') || '0',
+    startCargaSequencia: storeInfo?.bluefocusStartCargaSequencia || localStorage.getItem('bluefocus1_start_carga_sequencia') || '0',
+    authToken: storeInfo?.bluefocusAuthToken || localStorage.getItem('bluefocus1_auth_token') || localStorage.getItem('bluefocus_auth_token') || '',
+    startProdutoId: storeInfo?.bluefocusStartProdutoId || localStorage.getItem('bluefocus1_start_produto_id') || '0'
   });
+
+  useEffect(() => {
+    if (storeInfo && (storeInfo.bluefocusSyncUrl || storeInfo.bluefocusEmpresaId)) {
+      setBlueFocusConfig1(prev => ({
+        ...prev,
+        empresaId: storeInfo.bluefocusEmpresaId || prev.empresaId,
+        usuarioId: storeInfo.bluefocusUsuarioId || prev.usuarioId,
+        pdvCodigo: storeInfo.bluefocusPdvCodigo || prev.pdvCodigo,
+        syncUrl: storeInfo.bluefocusSyncUrl || prev.syncUrl,
+        tipoAtualizacao: storeInfo.bluefocusTipoAtualizacao || prev.tipoAtualizacao,
+        tipo: storeInfo.bluefocusTipo || prev.tipo,
+        dataInicial: storeInfo.bluefocusDataInicial || prev.dataInicial,
+        startCargaNumero: storeInfo.bluefocusStartCargaNumero || prev.startCargaNumero,
+        startCargaSequencia: storeInfo.bluefocusStartCargaSequencia || prev.startCargaSequencia,
+        authToken: storeInfo.bluefocusAuthToken || prev.authToken,
+        startProdutoId: storeInfo.bluefocusStartProdutoId || prev.startProdutoId,
+      }));
+    }
+  }, [storeInfo]);
 
   const blueFocusConfig = blueFocusConfig1;
   const setBlueFocusConfig = setBlueFocusConfig1;
@@ -2162,6 +2181,17 @@ export default function Admin() {
       // Preserve TV settings so saving general settings never resets TV configuration
       tvSelectedCategories: storeInfo.tvSelectedCategories || localStorage.getItem('paomania_tv_selected_categories') || '[]',
       tvMode: storeInfo.tvMode || 'split_menu',
+      bluefocusSyncUrl: blueFocusConfig1.syncUrl || '',
+      bluefocusEmpresaId: blueFocusConfig1.empresaId || 'BALBEC',
+      bluefocusUsuarioId: blueFocusConfig1.usuarioId || 'CONSULTA',
+      bluefocusPdvCodigo: blueFocusConfig1.pdvCodigo || '1000',
+      bluefocusAuthToken: blueFocusConfig1.authToken || '',
+      bluefocusTipo: blueFocusConfig1.tipo || '4',
+      bluefocusDataInicial: blueFocusConfig1.dataInicial || '30/12/1899',
+      bluefocusStartCargaNumero: blueFocusConfig1.startCargaNumero || '0',
+      bluefocusStartCargaSequencia: blueFocusConfig1.startCargaSequencia || '0',
+      bluefocusStartProdutoId: blueFocusConfig1.startProdutoId || '0',
+      bluefocusTipoAtualizacao: blueFocusConfig1.tipoAtualizacao || 'A',
       tvTickerText: storeInfo.tvTickerText || '',
       tvSoundEnabled: storeInfo.tvSoundEnabled ?? false,
       tvShowClock: storeInfo.tvShowClock ?? true,

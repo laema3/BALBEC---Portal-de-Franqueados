@@ -29,7 +29,7 @@ const DEFAULT_STORE_INFO = {
   whatsapp: '',
   categoryTitleColor: '#ea580c',
   deliveryEnabled: false,
-  inStoreEnabled: true,
+  inStoreEnabled: false,
   kioskEnabled: true,
   requireQrCodeForOrdering: false,
   isOpen: true,
@@ -79,7 +79,18 @@ const DEFAULT_STORE_INFO = {
   printerConnectionType: 'network',
   networkPrinterIp: '',
   networkPrinterPort: 9100,
-  modulesConfig: '{"mesas":false,"qrcodes":false,"totem":false,"delivery":true,"tv":true,"ai_agent":false}'
+  bluefocusSyncUrl: '',
+  bluefocusEmpresaId: 'BALBEC',
+  bluefocusUsuarioId: 'CONSULTA',
+  bluefocusPdvCodigo: '1000',
+  bluefocusAuthToken: '',
+  bluefocusTipo: '4',
+  bluefocusDataInicial: '30/12/1899',
+  bluefocusStartCargaNumero: '0',
+  bluefocusStartCargaSequencia: '0',
+  bluefocusStartProdutoId: '0',
+  bluefocusTipoAtualizacao: 'A',
+  modulesConfig: '{"mesas":false,"qrcodes":false,"totem":false,"delivery":false,"tv":true,"ai_agent":false}'
 };
 
 export function sanitizeStoreInfoPrinters(info: any) {
@@ -1597,6 +1608,17 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
       if (body.aiAgentCustomPrompt !== undefined) sanitized.aiAgentCustomPrompt = String(body.aiAgentCustomPrompt);
       if (body.aiAgentWhatsAppPhone !== undefined) sanitized.aiAgentWhatsAppPhone = String(body.aiAgentWhatsAppPhone);
       if (body.aiAgentWhatsAppDefaultMessage !== undefined) sanitized.aiAgentWhatsAppDefaultMessage = String(body.aiAgentWhatsAppDefaultMessage);
+      if (body.bluefocusSyncUrl !== undefined) sanitized.bluefocusSyncUrl = String(body.bluefocusSyncUrl);
+      if (body.bluefocusEmpresaId !== undefined) sanitized.bluefocusEmpresaId = String(body.bluefocusEmpresaId);
+      if (body.bluefocusUsuarioId !== undefined) sanitized.bluefocusUsuarioId = String(body.bluefocusUsuarioId);
+      if (body.bluefocusPdvCodigo !== undefined) sanitized.bluefocusPdvCodigo = String(body.bluefocusPdvCodigo);
+      if (body.bluefocusAuthToken !== undefined) sanitized.bluefocusAuthToken = String(body.bluefocusAuthToken);
+      if (body.bluefocusTipo !== undefined) sanitized.bluefocusTipo = String(body.bluefocusTipo);
+      if (body.bluefocusDataInicial !== undefined) sanitized.bluefocusDataInicial = String(body.bluefocusDataInicial);
+      if (body.bluefocusStartCargaNumero !== undefined) sanitized.bluefocusStartCargaNumero = String(body.bluefocusStartCargaNumero);
+      if (body.bluefocusStartCargaSequencia !== undefined) sanitized.bluefocusStartCargaSequencia = String(body.bluefocusStartCargaSequencia);
+      if (body.bluefocusStartProdutoId !== undefined) sanitized.bluefocusStartProdutoId = String(body.bluefocusStartProdutoId);
+      if (body.bluefocusTipoAtualizacao !== undefined) sanitized.bluefocusTipoAtualizacao = String(body.bluefocusTipoAtualizacao);
       if (body.aiAgentTrainingExamples !== undefined) {
         sanitized.aiAgentTrainingExamples = typeof body.aiAgentTrainingExamples === 'string'
           ? body.aiAgentTrainingExamples

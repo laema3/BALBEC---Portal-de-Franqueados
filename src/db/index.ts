@@ -247,8 +247,8 @@ export async function ensureTablesExist() {
         instagram TEXT DEFAULT '',
         whatsapp TEXT DEFAULT '',
         category_title_color TEXT DEFAULT '#e6a800',
-        delivery_enabled BOOLEAN DEFAULT TRUE,
-        in_store_enabled BOOLEAN DEFAULT TRUE,
+        delivery_enabled BOOLEAN DEFAULT FALSE,
+        in_store_enabled BOOLEAN DEFAULT FALSE,
         kiosk_enabled BOOLEAN DEFAULT TRUE,
         require_qr_code_for_ordering BOOLEAN DEFAULT TRUE,
         is_open BOOLEAN DEFAULT TRUE,
@@ -299,6 +299,18 @@ export async function ensureTablesExist() {
         network_printer_port INTEGER DEFAULT 9100
       );
     `);
+
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS bluefocus_sync_url TEXT DEFAULT '';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS bluefocus_empresa_id TEXT DEFAULT 'BALBEC';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS bluefocus_usuario_id TEXT DEFAULT 'CONSULTA';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS bluefocus_pdv_codigo TEXT DEFAULT '1000';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS bluefocus_auth_token TEXT DEFAULT '';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS bluefocus_tipo TEXT DEFAULT '4';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS bluefocus_data_inicial TEXT DEFAULT '30/12/1899';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS bluefocus_start_carga_numero TEXT DEFAULT '0';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS bluefocus_start_carga_sequencia TEXT DEFAULT '0';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS bluefocus_start_produto_id TEXT DEFAULT '0';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS bluefocus_tipo_atualizacao TEXT DEFAULT 'A';`);
 
     await runQuery(`
       CREATE TABLE IF NOT EXISTS tv_media (
