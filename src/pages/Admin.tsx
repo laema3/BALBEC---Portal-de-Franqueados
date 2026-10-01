@@ -7423,7 +7423,8 @@ export default function Admin() {
               )}
             </button>
           )}
-          {(isAdminOrMaster || isCaixaUser) && (
+          {/* Mesas & QR Codes Desabilitadas */}
+          {false && (isAdminOrMaster || isCaixaUser) && (
             <button type="button" 
               onClick={() => {
                 setActiveTab('tables');
@@ -7619,7 +7620,7 @@ export default function Admin() {
         {activeTab === 'dashboard' && !isCaixaUser && renderDashboard()}
         {activeTab === 'orders' && renderOrders()}
         {activeTab === 'customers' && (isAdminOrMaster || isCaixaUser) && <CustomersTab />}
-        {activeTab === 'tables' && (isAdminOrMaster || isCaixaUser) && <TableManagerTab orders={orders} />}
+        {false && activeTab === 'tables' && (isAdminOrMaster || isCaixaUser) && <TableManagerTab orders={orders} />}
         {activeTab === 'categories' && !isCaixaUser && isAdminOrMaster && renderCategories()}
         {activeTab === 'products' && !isCaixaUser && isAdminOrMaster && renderProducts()}
         {activeTab === 'flavors' && !isCaixaUser && isAdminOrMaster && renderFlavors()}

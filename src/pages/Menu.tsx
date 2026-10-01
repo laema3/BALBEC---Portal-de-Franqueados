@@ -154,9 +154,9 @@ export default function Menu() {
   );
 
   const isPhysicalStoreOpen = currentStatus.isOpenNow;
-  const isInStoreActive = isPhysicalStoreOpen && storeInfo.inStoreEnabled !== false;
+  const isInStoreActive = isPhysicalStoreOpen; // Ativo para Retirada no Balcão
   const isKioskActive = isPhysicalStoreOpen && storeInfo.kioskEnabled !== false;
-  const isDeliveryActive = storeInfo.deliveryEnabled !== false && isPhysicalStoreOpen;
+  const isDeliveryActive = false; // Delivery desabilitado
 
   useEffect(() => {
     if (isTotemPath) {
@@ -222,35 +222,14 @@ export default function Menu() {
     }
   };
 
-  // Opções de canais visíveis na seleção pública ao iniciar (só aparecem se tiverem pelo menos 1 categoria ativa)
+  // Apenas modalidade Retirada no Balcão ativa (Mesas e Delivery desabilitados)
   const visibleChannels: ('delivery' | 'instore')[] = useMemo(() => {
-    const list: ('delivery' | 'instore')[] = [];
-    if (hasInStoreCategories) list.push('instore');
-    if (hasDeliveryCategories) list.push('delivery');
-    return list;
-  }, [hasInStoreCategories, hasDeliveryCategories]);
+    return ['instore'];
+  }, []);
 
-  const activeAvailableChannels: ('delivery' | 'instore')[] = [];
-  if (isDeliveryActive) activeAvailableChannels.push('delivery');
-  if (isInStoreActive) activeAvailableChannels.push('instore');
+  const activeAvailableChannels: ('delivery' | 'instore')[] = ['instore'];
 
-  const [hasChosenChannel, setHasChosenChannel] = useState<boolean>(() => {
-    try {
-      if (!Array.isArray(categories) || categories.length === 0) return true;
-      const pathname = window.location.pathname.toLowerCase();
-      if (pathname.startsWith('/totem') || pathname.startsWith('/kiosk')) return true;
-      const params = new URLSearchParams(window.location.search);
-      const mode = params.get('mode') || params.get('channel') || params.get('tipo');
-      if (mode === 'instore' || mode === 'loja' || mode === 'presencial' || mode === 'delivery' || mode === 'entrega') {
-        return true;
-      }
-      if (mode === 'kiosk' || mode === 'totem' || mode === 'autoatendimento') {
-        return true;
-      }
-    } catch {}
-    const saved = safeStorage.getSession('selected_sales_channel');
-    return saved === 'delivery' || saved === 'instore' || saved === 'kiosk';
-  });
+  const [hasChosenChannel, setHasChosenChannel] = useState<boolean>(true);
 
   const [isQrValidated, setIsQrValidated] = useState<boolean>(() => {
     try {
@@ -2134,31 +2113,12 @@ export default function Menu() {
                   <div className="flex items-center gap-2">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs ${
                       canBuy 
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' 
+                        ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40' 
                         : 'bg-stone-500/20 text-stone-300 border border-stone-500/40'
                     }`}>
-                      <span className={`w-2 h-2 rounded-full ${canBuy ? 'bg-amber-400 animate-pulse' : 'bg-stone-400'}`}></span>
-                      🍽️ Consumo na Loja {canBuy ? (selectedTableNumber ? `(Mesa ${selectedTableNumber})` : '(Mesa / Balcão)') : '(Apenas Visualização 👁️)'}
+                      <span className={`w-2 h-2 rounded-full ${canBuy ? 'bg-orange-400 animate-pulse' : 'bg-stone-400'}`}></span>
+                      🛍️ Retirada no Balcão {canBuy ? '' : '(Apenas Visualização 👁️)'}
                     </span>
-                    {selectedTableNumber ? (
-                      <button
-                        type="button"
-                        onClick={() => setShowTableSelectModal(true)}
-                        className="text-[11px] bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 px-2 py-0.5 rounded-md font-bold transition-colors cursor-pointer border border-amber-500/40 flex items-center gap-1"
-                      >
-                        <UtensilsCrossed className="w-3 h-3" />
-                        <span>Mesa {selectedTableNumber}</span>
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setShowTableSelectModal(true)}
-                        className="text-[11px] bg-amber-600/30 text-amber-200 hover:bg-amber-600/50 px-2 py-0.5 rounded-md font-bold transition-colors cursor-pointer border border-amber-500/40 flex items-center gap-1"
-                      >
-                        <QrCode className="w-3 h-3" />
-                        <span>Escolher Mesa</span>
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
@@ -2203,8 +2163,8 @@ export default function Menu() {
           </div>
         )}
 
-        {/* Modal Obrigatório de Seleção de Canal de Venda */}
-        {!hasChosenChannel && (
+        {/* Modal Obrigatório de Seleção de Canal de Venda (Desabilitado - Apenas Retirada no Balcão) */}
+        {false && !hasChosenChannel && (
           <div className="fixed inset-0 z-[100] bg-stone-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
             <div className="bg-white rounded-3xl max-w-3xl w-full p-4 sm:p-8 shadow-2xl border border-stone-100 space-y-4 sm:space-y-6 text-center transform transition-all animate-fadeIn my-auto max-h-[95vh] overflow-y-auto">
               
@@ -2937,8 +2897,8 @@ export default function Menu() {
         </div>
       )})()}
 
-      {/* Modal de Seleção de Mesa */}
-      {showTableSelectModal && (
+      {/* Modal de Seleção de Mesa (Desabilitado) */}
+      {false && showTableSelectModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
           <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-stone-200 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-stone-100 mb-4">

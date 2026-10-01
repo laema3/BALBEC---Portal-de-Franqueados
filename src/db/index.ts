@@ -55,21 +55,23 @@ export const createPool = () => {
 
       const isUnixSocket = !!host && (host.startsWith('/') || host.startsWith('/app/cloudsql') || host.startsWith('/cloudsql'));
       const useSSL = !isUnixSocket && (process.env.SQL_SSL === 'true' || (!host?.includes('localhost') && !host?.includes('127.0.0.1')));
-      const sslConfig = useSSL ? { rejectUnauthorized: false } : false;
 
       console.log(`[DB] Criando Pool PG para ${host} (User: ${user}, DB: ${database}, SSL: ${useSSL}, UnixSocket: ${isUnixSocket})`);
-      global._postgresPool = new Pool({
+      const poolConfig: any = {
         host,
         user,
         password,
         database,
-        port,
-        max: 10, 
-        connectionTimeoutMillis: 15000,
+        max: 10,
         idleTimeoutMillis: 30000,
-        keepAlive: true,
-        ssl: sslConfig
-      });
+        connectionTimeoutMillis: 10000
+      };
+      if (!isUnixSocket) {
+        poolConfig.port = port;
+        if (useSSL) poolConfig.ssl = { rejectUnauthorized: false };
+      }
+
+      global._postgresPool = new Pool(poolConfig);
     } else {
       // Local development dummy pool
       global._postgresPool = new Pool({
