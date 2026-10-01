@@ -296,12 +296,9 @@ export async function ensureTablesExist() {
         auto_print_orders_on_caixa BOOLEAN DEFAULT FALSE,
         printer_connection_type TEXT DEFAULT 'network',
         network_printer_ip TEXT DEFAULT '192.168.0.90',
-        network_printer_port INTEGER DEFAULT 9100,
-        blue_focus_sync_url_2 TEXT DEFAULT ''
+        network_printer_port INTEGER DEFAULT 9100
       );
     `);
-
-    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS blue_focus_sync_url_2 TEXT DEFAULT '';`);
 
     await runQuery(`
       CREATE TABLE IF NOT EXISTS tv_media (

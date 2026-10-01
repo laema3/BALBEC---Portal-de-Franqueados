@@ -5152,11 +5152,6 @@ export default function Admin() {
       handleSyncBlueFocus1={handleSyncBlueFocus1}
       handleTestBlueFocus1={handleTestBlueFocus1}
       isTestingBlueFocus1={isTestingBlueFocus1}
-      blueFocusConfig2={blueFocusConfig2}
-      setBlueFocusConfig2={setBlueFocusConfig2}
-      handleSyncBlueFocus2={handleSyncBlueFocus2}
-      handleTestBlueFocus2={handleTestBlueFocus2}
-      isTestingBlueFocus2={isTestingBlueFocus2}
       isSyncing={isSyncing}
       isAutoSyncEnabled={isAutoSyncEnabled}
       setIsAutoSyncEnabled={setIsAutoSyncEnabled}
