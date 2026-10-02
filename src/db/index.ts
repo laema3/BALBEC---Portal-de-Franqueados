@@ -435,6 +435,14 @@ export async function ensureTablesExist() {
     await runQuery(`ALTER TABLE tv_media ADD COLUMN IF NOT EXISTS show_captions BOOLEAN DEFAULT FALSE;`);
     await runQuery(`ALTER TABLE tv_media ADD COLUMN IF NOT EXISTS fit_mode TEXT DEFAULT 'fit';`);
 
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS scheduling_enabled BOOLEAN DEFAULT FALSE;`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS scheduling_start_time TEXT DEFAULT '09:00';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS scheduling_end_time TEXT DEFAULT '20:30';`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS scheduling_interval_minutes INTEGER DEFAULT 30;`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS scheduling_max_orders_per_slot INTEGER DEFAULT 4;`);
+    await runQuery(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS scheduled_time TEXT;`);
+    await runQuery(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS scheduled_date TEXT;`);
+
   } catch (err: any) {
     // Non-fatal init catch
   }

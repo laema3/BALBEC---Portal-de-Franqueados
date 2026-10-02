@@ -750,6 +750,11 @@ export const getFullReceiptHTML = (order: Order, storeInfo: StoreInfo, autoPrint
                 ? `Canal: Celular (Mesa ${order.tableNumber})` 
                 : (order.deliveryType === 'delivery' ? 'Canal: Entrega em Domicílio' : 'Canal: Celular (QR Code Balcão)'))}
         </div>
+        ${order.scheduledTime ? `
+        <div class="center bold" style="margin-top: 4px; font-size: 13px; border: 1px dashed #000; padding: 2px;">
+          ⏰ HORARIO AGENDADO: ${order.scheduledTime}
+        </div>
+        ` : ''}
 
         <div class="divider"></div>
 
@@ -947,6 +952,9 @@ export const getEscPosReceiptBase64 = (order: Order, storeInfo: StoreInfo): stri
           ? `Canal: Celular (Mesa ${order.tableNumber})` 
           : (order.deliveryType === 'delivery' ? 'Canal: Delivery' : 'Canal: Celular (QR Code Balcao)'));
     lines.push(`${channelEscPos}\n`);
+    if (order.scheduledTime) {
+      lines.push(`*** AGENDAMENTO: ${order.scheduledTime} ***\n`);
+    }
     lines.push('--------------------------------\n');
     
     // Left alignment for items

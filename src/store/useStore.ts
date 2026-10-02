@@ -141,6 +141,8 @@ export interface Order {
   tableNumber?: string | number;
   tableId?: string;
   deliveryAddress?: string;
+  scheduledTime?: string;
+  scheduledDate?: string;
 }
 
 export interface TvMediaItem {
@@ -238,7 +240,13 @@ export interface StoreInfo {
     delivery?: boolean;
     tv?: boolean;
     ai_agent?: boolean;
+    scheduling?: boolean;
   } | string;
+  schedulingEnabled?: boolean;
+  schedulingStartTime?: string;
+  schedulingEndTime?: string;
+  schedulingIntervalMinutes?: number;
+  schedulingMaxOrdersPerSlot?: number;
 }
 
 export interface PrinterItem {
@@ -428,8 +436,14 @@ export const defaultStoreInfo: StoreInfo = {
     totem: false,
     delivery: true,
     tv: true,
-    ai_agent: false
+    ai_agent: false,
+    scheduling: false
   },
+  schedulingEnabled: false,
+  schedulingStartTime: '09:00',
+  schedulingEndTime: '20:30',
+  schedulingIntervalMinutes: 30,
+  schedulingMaxOrdersPerSlot: 4,
 };
 
 const getInitialStoreInfo = (): StoreInfo => {

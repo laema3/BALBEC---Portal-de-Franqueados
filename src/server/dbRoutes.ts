@@ -90,7 +90,12 @@ const DEFAULT_STORE_INFO = {
   bluefocusStartCargaSequencia: '0',
   bluefocusStartProdutoId: '0',
   bluefocusTipoAtualizacao: 'A',
-  modulesConfig: '{"mesas":false,"qrcodes":false,"totem":false,"delivery":false,"tv":true,"ai_agent":false}'
+  modulesConfig: '{"mesas":false,"qrcodes":false,"totem":false,"delivery":false,"tv":true,"ai_agent":false,"scheduling":false}',
+  schedulingEnabled: false,
+  schedulingStartTime: '09:00',
+  schedulingEndTime: '20:30',
+  schedulingIntervalMinutes: 30,
+  schedulingMaxOrdersPerSlot: 4
 };
 
 export function sanitizeStoreInfoPrinters(info: any) {
@@ -1685,6 +1690,16 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
         sanitized.tvSelectedCategories = typeof body.tvSelectedCategories === 'string'
           ? body.tvSelectedCategories
           : JSON.stringify(body.tvSelectedCategories);
+      }
+      if (body.schedulingEnabled !== undefined) sanitized.schedulingEnabled = Boolean(body.schedulingEnabled);
+      if (body.schedulingStartTime !== undefined) sanitized.schedulingStartTime = String(body.schedulingStartTime);
+      if (body.schedulingEndTime !== undefined) sanitized.schedulingEndTime = String(body.schedulingEndTime);
+      if (body.schedulingIntervalMinutes !== undefined) sanitized.schedulingIntervalMinutes = Number(body.schedulingIntervalMinutes) || 30;
+      if (body.schedulingMaxOrdersPerSlot !== undefined) sanitized.schedulingMaxOrdersPerSlot = Number(body.schedulingMaxOrdersPerSlot) || 4;
+      if (body.modulesConfig !== undefined) {
+        sanitized.modulesConfig = typeof body.modulesConfig === 'string'
+          ? body.modulesConfig
+          : JSON.stringify(body.modulesConfig);
       }
 
       // Preserve existing memory properties if not explicitly provided

@@ -59,6 +59,8 @@ export const orders = pgTable('orders', {
   deliveryAddress: text('delivery_address'),
   tableNumber: text('table_number'),
   tableId: text('table_id'),
+  scheduledTime: text('scheduled_time'),
+  scheduledDate: text('scheduled_date'),
 });
 
 // Restaurant Tables (Controle de Mesas e QR Codes)
@@ -152,7 +154,12 @@ export const storeInfo = pgTable('store_info', {
   bluefocusStartCargaSequencia: text('bluefocus_start_carga_sequencia').default('0'),
   bluefocusStartProdutoId: text('bluefocus_start_produto_id').default('0'),
   bluefocusTipoAtualizacao: text('bluefocus_tipo_atualizacao').default('A'),
-  modulesConfig: text('modules_config').default('{"mesas":false,"qrcodes":false,"totem":false,"delivery":true,"tv":true,"ai_agent":false}'),
+  modulesConfig: text('modules_config').default('{"mesas":false,"qrcodes":false,"totem":false,"delivery":true,"tv":true,"ai_agent":false,"scheduling":false}'),
+  schedulingEnabled: boolean('scheduling_enabled').default(false),
+  schedulingStartTime: text('scheduling_start_time').default('09:00'),
+  schedulingEndTime: text('scheduling_end_time').default('20:30'),
+  schedulingIntervalMinutes: integer('scheduling_interval_minutes').default(30),
+  schedulingMaxOrdersPerSlot: integer('scheduling_max_orders_per_slot').default(4),
 });
 
 // TV Media Playlist table for Smart TV Indoor Signage

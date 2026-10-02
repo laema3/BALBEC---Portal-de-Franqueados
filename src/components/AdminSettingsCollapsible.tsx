@@ -44,7 +44,7 @@ import {
   QrCode,
   UtensilsCrossed
 } from 'lucide-react';
-import { StoreInfo, AiTrainingExample, DEFAULT_AI_TRAINING_EXAMPLES } from '../store/useStore';
+import { useStore, StoreInfo, AiTrainingExample, DEFAULT_AI_TRAINING_EXAMPLES } from '../store/useStore';
 import { DaySchedule, formatWeeklyScheduleSummary, getStoreCurrentStatus } from '../utils/scheduleHelper';
 import { sendNtfyNotification } from '../utils/ntfy';
 import { AiAssistantModal } from './AiAssistantModal';
@@ -183,6 +183,7 @@ interface AdminSettingsCollapsibleProps {
 }
 
 export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
+  const { updateStoreInfo } = useStore();
   const {
     storeInfo,
     isMaster,
@@ -1229,10 +1230,10 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                 <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">Logo da Padaria</label>
                 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-stone-50 p-4 rounded-2xl border border-stone-200">
-                  <div className="w-20 h-20 bg-stone-200/60 rounded-2xl border-2 border-dashed border-stone-300 flex items-center justify-center overflow-hidden shadow-inner group relative shrink-0">
+                  <div className="w-36 h-36 sm:w-40 sm:h-40 bg-stone-200/60 rounded-full border-2 border-dashed border-stone-300 flex items-center justify-center overflow-hidden shadow-inner group relative shrink-0">
                     {logoPreview ? (
                       <>
-                        <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" />
+                        <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2.5 rounded-full" />
                         <button 
                           type="button"
                           onClick={() => setLogoPreview('')}
@@ -1691,6 +1692,48 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                           className="sr-only peer"
                         />
                         <div className="w-11 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                      </div>
+                    </label>
+
+                    {/* Módulo de Agendamento */}
+                    <label className="flex items-center justify-between p-3 bg-stone-50 hover:bg-stone-100/80 rounded-xl border border-stone-200 cursor-pointer transition-colors">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-stone-800">Módulo de Agendamento (Horários & Vagas)</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            storeInfo.schedulingEnabled
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-stone-200 text-stone-600'
+                          }`}>
+                            {storeInfo.schedulingEnabled ? 'Ativo (Vagas Limitadas)' : 'Desativado (Compra Livre)'}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-stone-500">
+                          Quando ativado, os clientes escolhem horários ({storeInfo.schedulingStartTime || '09:00'} às {storeInfo.schedulingEndTime || '20:30'}) com limite de {storeInfo.schedulingMaxOrdersPerSlot || 4} pedidos por horário.
+                        </span>
+                      </div>
+                      <div className="relative shrink-0 ml-3">
+                        <input 
+                          type="checkbox" 
+                          name="schedulingEnabled" 
+                          checked={!!storeInfo.schedulingEnabled}
+                          onChange={async (e) => {
+                            const val = e.target.checked;
+                            let mod: any = {};
+                            if (typeof storeInfo.modulesConfig === 'string') {
+                              try { mod = JSON.parse(storeInfo.modulesConfig); } catch {}
+                            } else if (typeof storeInfo.modulesConfig === 'object' && storeInfo.modulesConfig !== null) {
+                              mod = { ...storeInfo.modulesConfig };
+                            }
+                            mod.scheduling = val;
+                            await updateStoreInfo({
+                              schedulingEnabled: val,
+                              modulesConfig: mod
+                            });
+                          }}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
                       </div>
                     </label>
                   </>

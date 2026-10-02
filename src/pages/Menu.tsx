@@ -4,6 +4,8 @@ import { formatCurrency, formatCapitalized, expandAbbreviations } from '../lib/u
 import { ShoppingCart, Plus, Minus, Trash2, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Settings, Droplets, Search, X, Printer, User as UserIcon, RefreshCw, Store, Tv, BellRing, Clock, MapPin, KeyRound, ShieldAlert, ShieldCheck, LocateFixed, AlertTriangle, Navigation, UtensilsCrossed, QrCode, Scissors, UserCheck } from 'lucide-react';
 import { getCurrentPosition, calculateDistanceMeters, formatDistance } from '../utils/geolocation';
 import { ProductImage } from '../components/ProductImage';
+import { SchedulingSelector } from '../components/SchedulingSelector';
+import { isSchedulingEnabled, getSlotAvailability, getLocalDateString } from '../utils/scheduling';
 import { Link } from 'react-router-dom';
 import { BakeryLoader } from '../components/BakeryLoader';
 import { MaintenancePage } from '../components/MaintenancePage';
@@ -16,10 +18,11 @@ import { AiAssistantFloatingButton } from '../components/AiAssistantFloatingButt
 import { getStoreCurrentStatus, parseWeeklySchedule, formatWeeklyScheduleSummary } from '../utils/scheduleHelper';
 
 export default function Menu() {
-  const { categories, products, tables, storeInfo, placeOrder, saveCustomer, isInitialized, fetchData } = useStore();
+  const { categories, products, tables, orders, storeInfo, placeOrder, saveCustomer, isInitialized, fetchData } = useStore();
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedScheduledSlot, setSelectedScheduledSlot] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -180,6 +183,7 @@ export default function Menu() {
     }
     setFranchiseeCnpj('');
     setFranchiseePassword('');
+    setSelectedScheduledSlot(null);
     setLastPlacedOrder(null);
     setCart([]);
     setIsCartOpen(false);
@@ -893,6 +897,21 @@ export default function Menu() {
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     
+    if (isSchedulingEnabled(storeInfo)) {
+      if (!selectedScheduledSlot) {
+        alert('Por favor, selecione um horário para o agendamento da retirada do seu pedido antes de finalizar.');
+        const el = document.getElementById('scheduling-checkout-box') || document.getElementById('scheduling-section') || document.getElementById('product-feed');
+        el?.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      const slotAvail = getSlotAvailability(selectedScheduledSlot, orders, storeInfo.schedulingMaxOrdersPerSlot || 4);
+      if (slotAvail.isFull) {
+        alert(`O horário ${selectedScheduledSlot} acabou de atingir o limite de 4 pedidos e foi esgotado. Por favor, selecione outro horário disponível.`);
+        setSelectedScheduledSlot(null);
+        return;
+      }
+    }
+    
     if (!currentStatus.isOpenNow || !canBuy) {
       if ((salesChannel === 'kiosk' || salesChannel === 'instore') && !currentStatus.isOpenNow) {
         alert(`Desculpe, o atendimento presencial (${salesChannel === 'kiosk' ? 'Totem Autoatendimento' : 'Consumo na Loja'}) está indisponível no momento.\n${currentStatus.details}`);
@@ -933,6 +952,8 @@ export default function Menu() {
         deliveryAddress: (!isKioskMode && deliveryType === 'delivery') ? deliveryAddress : undefined,
         tableNumber: isTableOrder ? String(selectedTableNumber) : undefined,
         tableId: isTableOrder ? `table-${selectedTableNumber}` : undefined,
+        scheduledTime: isSchedulingEnabled(storeInfo) && selectedScheduledSlot ? selectedScheduledSlot : undefined,
+        scheduledDate: isSchedulingEnabled(storeInfo) && selectedScheduledSlot ? getLocalDateString() : undefined,
       });
       
       if (createdOrder) {
@@ -1078,6 +1099,12 @@ export default function Menu() {
                   <div className="inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 bg-amber-100 text-amber-900 rounded-lg text-xs font-black border border-amber-300">
                     <UtensilsCrossed className="w-3.5 h-3.5 text-amber-700" />
                     <span>MESA {lastPlacedOrder.tableNumber}</span>
+                  </div>
+                ) : null}
+                {lastPlacedOrder?.scheduledTime ? (
+                  <div className="inline-flex items-center gap-1.5 mt-1.5 px-3 py-1 bg-orange-600 text-white rounded-xl text-xs font-black shadow-xs">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>RETIRADA AGENDADA: {lastPlacedOrder.scheduledTime}</span>
                   </div>
                 ) : null}
                 {!isKioskMode && clientNameDisplay && (
@@ -1287,7 +1314,7 @@ export default function Menu() {
                     <ProductImage 
                       src={item.imageUrl} 
                       alt={item.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-xl"
                     />
                   </div>
                   <div className="flex-1 flex justify-between items-center">
@@ -1334,6 +1361,16 @@ export default function Menu() {
           </div>
 
           <div>
+            {/* Agendamento no Checkout (quando ativo) */}
+            {isSchedulingEnabled(storeInfo) && (
+              <div id="scheduling-checkout-box" className="mb-6">
+                <SchedulingSelector
+                  selectedSlot={selectedScheduledSlot}
+                  onSelectSlot={(slot) => setSelectedScheduledSlot(slot)}
+                />
+              </div>
+            )}
+
             {/* Opções de Entrega / Retirada */}
             {isKioskMode ? (
               <div className="space-y-6">
@@ -1833,7 +1870,7 @@ export default function Menu() {
       <div className="min-h-screen bg-[#f8f7f5] flex flex-col items-center justify-center p-4 sm:p-6">
         <div className="bg-white p-6 sm:p-10 rounded-3xl shadow-xl max-w-md w-full text-center border border-stone-200">
           {storeInfo.logoUrl ? (
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden border-2 border-stone-200/80 shadow-md bg-white flex items-center justify-center p-1.5 shrink-0">
+            <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-full mx-auto mb-5 overflow-hidden border-4 border-stone-200/80 shadow-lg bg-white flex items-center justify-center p-2.5 shrink-0">
               <img 
                 src={storeInfo.logoUrl} 
                 alt="Logo" 
@@ -1978,11 +2015,11 @@ export default function Menu() {
         <div className="h-8 shrink-0 w-full bg-[#5c4033]"></div>
 
         {/* Modern Header */}
-        <header className="bg-white border-b border-stone-200 shrink-0 z-30 pt-2 sm:pt-3 md:pt-4 pb-2 md:pb-3">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 min-h-[3.25rem] md:min-h-[4.5rem] flex items-center justify-between gap-2.5 sm:gap-3 md:gap-4">
+        <header className="bg-white border-b border-stone-200 shrink-0 z-30 pt-3 sm:pt-4 md:pt-5 pb-3 sm:pb-4 md:pb-5">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 min-h-[6.5rem] sm:min-h-[8.5rem] md:min-h-[10.5rem] flex items-center justify-between gap-2.5 sm:gap-3 md:gap-4">
             <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4 truncate">
               {storeInfo.logoUrl ? (
-                <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-orange-500/20 shadow-xs bg-white flex items-center justify-center p-1 shrink-0">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 sm:border-3 border-orange-500/20 shadow-md bg-white flex items-center justify-center p-1.5 sm:p-2 shrink-0">
                   <img 
                     src={storeInfo.logoUrl} 
                     alt="Logo" 
@@ -2306,6 +2343,15 @@ export default function Menu() {
         <div className="flex-1 flex overflow-hidden">
           {/* Product Feed */}
           <main ref={productsContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-6 md:p-8 scroll-smooth" id="product-feed">
+            {/* Módulo de Agendamento (visível assim que o usuário entra no cardápio) */}
+            {isSchedulingEnabled(storeInfo) && (
+              <div id="scheduling-section" className="mb-6 max-w-4xl lg:max-w-7xl mx-auto">
+                <SchedulingSelector
+                  selectedSlot={selectedScheduledSlot}
+                  onSelectSlot={(slot) => setSelectedScheduledSlot(slot)}
+                />
+              </div>
+            )}
             {availableCategories.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-stone-500 p-8 text-center">
                 <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-sm">
@@ -2411,7 +2457,7 @@ export default function Menu() {
             {/* Redesigned Footer */}
             <footer className="mt-12 py-12 border-t border-stone-200 flex flex-col items-center text-center">
               {storeInfo.logoUrl ? (
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-stone-200/80 shadow-xs bg-white flex items-center justify-center p-1 mb-6 opacity-60">
+                <div className="w-24 h-24 rounded-full overflow-hidden border border-stone-200/80 shadow-xs bg-white flex items-center justify-center p-2 mb-6 opacity-75">
                   <img 
                     src={storeInfo.logoUrl} 
                     alt="Logo" 
@@ -2531,7 +2577,7 @@ export default function Menu() {
                   <ProductImage 
                     src={item.imageUrl} 
                     alt={item.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-xl"
                   />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -2595,6 +2641,19 @@ export default function Menu() {
 
         {cart.length > 0 && (
           <div className="p-5 border-t border-stone-200 bg-stone-50 space-y-3 shrink-0">
+            {isSchedulingEnabled(storeInfo) && (
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-orange-950">
+                  <Clock className="w-4 h-4 text-orange-600" />
+                  <span>Horário Agendado:</span>
+                </div>
+                <span className={`text-xs font-mono font-black px-2.5 py-0.5 rounded-lg ${
+                  selectedScheduledSlot ? 'bg-orange-600 text-white' : 'bg-amber-200 text-amber-900'
+                }`}>
+                  {selectedScheduledSlot || 'Selecione abaixo'}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between items-center">
               <span className="text-sm font-bold text-stone-600">Total do Pedido</span>
               <span className="text-2xl font-black text-stone-900">{formatCurrency(total)}</span>

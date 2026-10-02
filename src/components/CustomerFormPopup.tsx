@@ -78,7 +78,7 @@ export const CustomerFormPopup: React.FC<CustomerFormPopupProps> = ({ isOpen, on
         
         <div className="flex flex-col items-center mb-6">
           {logoUrl ? (
-            <div className="w-20 h-20 rounded-full mx-auto mb-4 overflow-hidden border-2 border-stone-200/80 shadow-md bg-white flex items-center justify-center p-1.5 shrink-0">
+            <div className="w-40 h-40 rounded-full mx-auto mb-4 overflow-hidden border-3 border-stone-200/80 shadow-md bg-white flex items-center justify-center p-2 shrink-0">
               <img src={logoUrl} alt="Logo" className="w-full h-full object-contain rounded-full" referrerPolicy="no-referrer" />
             </div>
           ) : null}

@@ -143,6 +143,11 @@ Pagamento: ${order.paymentMethod || 'Não informado'}
             <div className="text-center text-[11px] font-bold mt-0.5">
               {order.type === 'kiosk' ? 'Tipo: Retirada no Balcão (Totem)' : (order.deliveryType === 'delivery' ? 'Tipo: Entrega em Domicílio' : 'Tipo: Retirada no Balcão')}
             </div>
+            {order.scheduledTime && (
+              <div className="text-center text-xs font-black my-1.5 py-1 border border-dashed border-black bg-stone-50">
+                ⏰ RETIRADA AGENDADA: {order.scheduledTime}
+              </div>
+            )}
 
             <div className="border-t border-dashed border-black my-2"></div>
 

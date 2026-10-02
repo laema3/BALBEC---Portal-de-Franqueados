@@ -13,6 +13,7 @@ import TvManagerTab from '../components/TvManagerTab';
 import CustomersTab from '../components/CustomersTab';
 import { TableManagerTab } from '../components/TableManagerTab';
 import { TotemBackupModal } from '../components/TotemBackupModal';
+import { SchedulingManagerTab } from '../components/SchedulingManagerTab';
 import { Link } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -30,6 +31,7 @@ import {
   CheckCircle,
   Save,
   Clock,
+  CalendarClock,
   ChefHat,
   X,
   Volume2,
@@ -4778,11 +4780,11 @@ export default function Admin() {
                         />
                       </td>
                       <td className="p-4">
-                        <div className="w-10 h-10 rounded overflow-hidden shadow-inner border border-stone-100">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden shadow-inner border border-stone-100">
                           <ProductImage 
                             src={product.imageUrl} 
                             alt={product.name} 
-                            className="w-full h-full object-cover" 
+                            className="w-full h-full object-cover rounded-xl" 
                           />
                         </div>
                       </td>
@@ -4965,11 +4967,11 @@ export default function Admin() {
               return (
                 <tr key={product.id} className="hover:bg-stone-50">
                   <td className="p-4">
-                    <div className="w-10 h-10 rounded overflow-hidden">
+                    <div className="w-10 h-10 rounded-xl overflow-hidden">
                       <ProductImage 
                         src={product.imageUrl} 
                         alt={product.name} 
-                        className="w-full h-full object-cover" 
+                        className="w-full h-full object-cover rounded-xl" 
                       />
                     </div>
                   </td>
@@ -7355,6 +7357,7 @@ export default function Admin() {
                activeTab === 'products' ? 'Produtos' :
                activeTab === 'flavors' ? 'Sabores' :
                activeTab === 'tv' ? 'Smart TV / Mídia' :
+               activeTab === 'scheduling' ? 'Agendamento' :
                activeTab === 'settings' ? 'Configurações' :
                activeTab === 'users' ? 'Usuários' :
                activeTab === 'documentation' ? 'Documentação & SaaS' :
@@ -7561,6 +7564,22 @@ export default function Admin() {
           {!isCaixaUser && isAdminOrMaster && (
             <button type="button" 
               onClick={() => {
+                setActiveTab('scheduling');
+                setIsMobileNavOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors cursor-pointer font-medium text-sm ${activeTab === 'scheduling' ? 'bg-orange-600 text-white' : 'hover:bg-stone-800'}`}
+            >
+              <CalendarClock className="w-5 h-5" /> Agendamento
+              {storeInfo.schedulingEnabled && (
+                <span className="ml-auto bg-emerald-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full">
+                  ATIVO
+                </span>
+              )}
+            </button>
+          )}
+          {!isCaixaUser && isAdminOrMaster && (
+            <button type="button" 
+              onClick={() => {
                 setActiveTab('settings');
                 setIsMobileNavOpen(false);
               }}
@@ -7677,6 +7696,9 @@ export default function Admin() {
         {activeTab === 'flavors' && !isCaixaUser && isAdminOrMaster && renderFlavors()}
         {activeTab === 'sync_logs' && !isCaixaUser && isAdminOrMaster && renderSyncLogs()}
         {activeTab === 'tv' && (isAdminOrMaster || isCaixaUser) && <TvManagerTab />}
+        {activeTab === 'scheduling' && !isCaixaUser && isAdminOrMaster && (
+          <SchedulingManagerTab onViewOrder={(o) => setSelectedOrderForReceipt(o)} />
+        )}
         {activeTab === 'settings' && !isCaixaUser && isAdminOrMaster && renderSettings()}
         {activeTab === 'users' && !isCaixaUser && isMaster && renderUsers()}
       </main>
