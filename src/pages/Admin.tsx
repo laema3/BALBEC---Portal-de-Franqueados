@@ -3521,7 +3521,7 @@ export default function Admin() {
     // Ordenação dos pedidos em andamento:
     // Pedidos agendados com horários mais próximos/vencidos aparecem primeiro na fila da cozinha/estabelecimento
     const pendingOrders = filteredOrders
-      .filter(o => o.status === 'pending' || o.status === 'preparing')
+      .filter(o => o.status === 'pending' || o.status === 'preparing' || o.status === 'ready')
       .sort((a, b) => {
         const timeA = getOrderSortTimestamp(a);
         const timeB = getOrderSortTimestamp(b);
@@ -3530,7 +3530,7 @@ export default function Admin() {
       });
 
     const completedOrders = filteredOrders
-      .filter(o => o.status === 'ready' || o.status === 'completed' || o.status === 'cancelled')
+      .filter(o => o.status === 'completed' || o.status === 'cancelled')
       .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
     const ordersPerPage = 10;
@@ -3978,6 +3978,14 @@ export default function Admin() {
                         <CheckCircle2 className="w-4 h-4" /> Pronto p/ Retirar
                       </button>
                     )}
+                    {order.status === 'ready' && (
+                      <button type="button" 
+                        onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
+                        className="flex-1 bg-emerald-600 text-white py-2 rounded-lg font-medium hover:bg-emerald-700 flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                      >
+                        <CheckCircle2 className="w-4 h-4" /> Concluir / Entregar
+                      </button>
+                    )}
                     <button
                       onClick={() => handleCancelOrder(order.id)}
                       className="bg-red-100 text-red-600 p-2 rounded-lg hover:bg-red-200 flex items-center justify-center transition-colors"
@@ -4010,7 +4018,7 @@ export default function Admin() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold text-stone-800 flex items-center gap-2">
-              <CheckCircle2 className="w-6 h-6 text-green-600" /> Pedidos Prontos / Concluídos
+              <CheckCircle2 className="w-6 h-6 text-green-600" /> Pedidos Concluídos / Entregues
               <span className="text-xs bg-stone-100 text-stone-800 font-extrabold px-2.5 py-0.5 rounded-full">
                 {completedOrders.length}
               </span>
