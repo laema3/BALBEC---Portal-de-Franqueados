@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Order, StoreInfo } from '../store/useStore';
 import { getFullReceiptHTML, printViaRawBT, getRawBTIntentUrl, getActiveOrderPrinter, resolveItemCode, resolveAddonCode } from '../utils/printer';
-import { Printer, X, Copy, Check, ExternalLink, Loader2 } from 'lucide-react';
+import { ScheduledCountdownBadge } from './ScheduledCountdownBadge';
+import { Printer, X, Copy, Check, ExternalLink, Loader2, Clock } from 'lucide-react';
 
 interface ReceiptModalProps {
   order: Order | null;
@@ -59,7 +60,7 @@ ${order.customerPhone ? `Tel: ${order.customerPhone}` : ''}
 ${order.deliveryAddress ? `End: ${order.deliveryAddress}` : ''}
 Data: ${orderDate}
 Tipo: ${order.type === 'kiosk' ? 'Quiosque' : (order.deliveryType === 'delivery' ? 'Entrega' : 'Retirada')}
-------------------------------
+${order.scheduledTime ? `⏰ RETIRADA AGENDADA: ${order.scheduledTime}\n` : ''}------------------------------
 ${items.map(item => {
   const itemCode = resolveItemCode(item);
   const codeStr = itemCode ? ` [CÓD: ${itemCode}]` : '';
@@ -119,6 +120,17 @@ Pagamento: ${order.paymentMethod || 'Não informado'}
             </span>
           </div>
         </div>
+
+        {/* Cronômetro e Confirmação de Retirada Agendada para o Estabelecimento */}
+        {order.scheduledTime && (
+          <div className="p-3 bg-orange-50/90 border-b border-orange-200/90">
+            <ScheduledCountdownBadge 
+              scheduledTime={order.scheduledTime} 
+              scheduledDate={order.scheduledDate} 
+              variant="card" 
+            />
+          </div>
+        )}
 
         {/* Visualização de Uma Via Exata e Limpa */}
         <div className="p-4 overflow-y-auto bg-stone-100 flex justify-center">

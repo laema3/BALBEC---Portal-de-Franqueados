@@ -831,7 +831,7 @@ export const useStore = create<StoreState>((set, get) => ({
           if (Array.isArray(ordersData)) {
             const orders = ordersData.map((o: any) => ({
               ...o,
-              status: o.status === 'cancelled' ? 'cancelled' : 'completed',
+              status: o.status || 'pending',
               items: typeof o.items === 'string' ? JSON.parse(o.items) : o.items
             }));
             if (orders.length === 0) {
@@ -957,7 +957,7 @@ export const useStore = create<StoreState>((set, get) => ({
       if (Array.isArray(ordersData)) {
         const orders = ordersData.map((o: any) => ({
           ...o,
-          status: o.status === 'cancelled' ? 'cancelled' : 'completed',
+          status: o.status || 'pending',
           items: typeof o.items === 'string' ? JSON.parse(o.items) : o.items
         }));
         set({ orders, ordersError: null });
@@ -1366,7 +1366,7 @@ export const useStore = create<StoreState>((set, get) => ({
       id,
       ...order,
       createdAt: Date.now(),
-      status: 'completed',
+      status: 'pending',
       customerName: order.customerName || (order.type === 'kiosk' ? 'Cliente Totem' : 'Cliente')
     };
     

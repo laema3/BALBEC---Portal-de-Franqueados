@@ -14,6 +14,8 @@ import CustomersTab from '../components/CustomersTab';
 import { TableManagerTab } from '../components/TableManagerTab';
 import { TotemBackupModal } from '../components/TotemBackupModal';
 import { SchedulingManagerTab } from '../components/SchedulingManagerTab';
+import { ScheduledCountdownBadge } from '../components/ScheduledCountdownBadge';
+import { getLocalDateString } from '../utils/scheduling';
 import { Link } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -2334,7 +2336,8 @@ export default function Admin() {
           orderId: order.id,
           orderNumber: order.id.slice(-4).toUpperCase(),
           customerName: order.customerName || 'Cliente',
-          type: order.type || 'balcao'
+          type: order.type || 'balcao',
+          scheduledTime: order.scheduledTime || ''
         })
       });
     } catch (err) {
@@ -3483,8 +3486,31 @@ export default function Admin() {
       return true;
     });
 
-    const pendingOrders = filteredOrders.filter(o => o.status === 'pending' || o.status === 'preparing');
-    const completedOrders = filteredOrders.filter(o => o.status === 'ready' || o.status === 'completed' || o.status === 'cancelled');
+    const getOrderSortTimestamp = (o: Order) => {
+      if (o.scheduledTime) {
+        const todayStr = getLocalDateString();
+        const dateStr = o.scheduledDate || todayStr;
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const [hh, mm] = o.scheduledTime.split(':').map(Number);
+        return new Date(y, (m || 1) - 1, d, hh, mm, 0, 0).getTime();
+      }
+      return o.createdAt ? new Date(o.createdAt).getTime() : 0;
+    };
+
+    // Ordenação dos pedidos em andamento:
+    // Pedidos agendados com horários mais próximos/vencidos aparecem primeiro na fila da cozinha/estabelecimento
+    const pendingOrders = filteredOrders
+      .filter(o => o.status === 'pending' || o.status === 'preparing')
+      .sort((a, b) => {
+        const timeA = getOrderSortTimestamp(a);
+        const timeB = getOrderSortTimestamp(b);
+        if (timeA !== timeB) return timeA - timeB;
+        return (a.createdAt || 0) - (b.createdAt || 0);
+      });
+
+    const completedOrders = filteredOrders
+      .filter(o => o.status === 'ready' || o.status === 'completed' || o.status === 'cancelled')
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
     const ordersPerPage = 10;
 
@@ -3776,6 +3802,23 @@ export default function Admin() {
                     </span>
                   </div>
                   <div className="p-4 flex-1">
+                    {order.scheduledTime ? (
+                      <div className="mb-3.5 p-3 bg-orange-50 border border-orange-200 rounded-xl flex flex-wrap items-center justify-between gap-2 shadow-xs">
+                        <div>
+                          <span className="text-[10px] font-black uppercase text-orange-600 block tracking-wider">
+                            Retirada Agendada
+                          </span>
+                          <span className="font-mono text-sm font-black text-stone-900">
+                            {order.scheduledTime}
+                          </span>
+                        </div>
+                        <ScheduledCountdownBadge 
+                          scheduledTime={order.scheduledTime} 
+                          scheduledDate={order.scheduledDate} 
+                          variant="badge" 
+                        />
+                      </div>
+                    ) : null}
                     <div className="text-sm text-stone-500 mb-4">
                       {new Date(order.createdAt).toLocaleTimeString()} • {order.paymentMethod}
                     </div>
@@ -3905,8 +3948,11 @@ export default function Admin() {
                     )}
                     {order.status === 'preparing' && (
                       <button type="button" 
-                        onClick={() => handleUpdateOrderStatus(order.id, 'ready')}
-                        className="flex-1 bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 flex items-center justify-center gap-2"
+                        onClick={async () => {
+                          await handleUpdateOrderStatus(order.id, 'ready');
+                          handleCallOnTv(order);
+                        }}
+                        className="flex-1 bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                       >
                         <CheckCircle2 className="w-4 h-4" /> Pronto p/ Retirar
                       </button>
@@ -3974,7 +4020,18 @@ export default function Admin() {
                   <tr key={order.id} className="hover:bg-stone-50">
                     <td className="p-4 font-medium">#{String(order.id).slice(-4).padStart(4, '0')}</td>
                     <td className="p-4">{order.customerName}</td>
-                    <td className="p-4">{new Date(order.createdAt).toLocaleTimeString()}</td>
+                    <td className="p-4">
+                      <div>{new Date(order.createdAt).toLocaleTimeString()}</div>
+                      {order.scheduledTime && (
+                        <div className="mt-1">
+                          <ScheduledCountdownBadge 
+                            scheduledTime={order.scheduledTime} 
+                            scheduledDate={order.scheduledDate} 
+                            variant="compact" 
+                          />
+                        </div>
+                      )}
+                    </td>
                     <td className="p-4 text-xs text-stone-500 max-w-[240px] truncate" title={order.items.map(item => {
                       const code = resolveItemCode(item);
                       const flavorStr = item.flavor ? ` (Sabor: ${item.flavor.name}${resolveAddonCode(item.flavor) ? ` [CÓD: ${resolveAddonCode(item.flavor)}]` : ''})` : '';

@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useStore, OrderItem, Order } from '../store/useStore';
 import { formatCurrency, formatCapitalized, expandAbbreviations } from '../lib/utils';
-import { ShoppingCart, Plus, Minus, Trash2, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Settings, Droplets, Search, X, Printer, User as UserIcon, RefreshCw, Store, Tv, BellRing, Clock, MapPin, KeyRound, ShieldAlert, ShieldCheck, LocateFixed, AlertTriangle, Navigation, UtensilsCrossed, QrCode, Scissors, UserCheck } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Settings, Droplets, Search, X, Printer, User as UserIcon, RefreshCw, Store, Tv, BellRing, Clock, MapPin, KeyRound, ShieldAlert, ShieldCheck, LocateFixed, AlertTriangle, Navigation, UtensilsCrossed, QrCode, Scissors, UserCheck, ChefHat, Sparkles, Volume2 } from 'lucide-react';
 import { getCurrentPosition, calculateDistanceMeters, formatDistance } from '../utils/geolocation';
 import { ProductImage } from '../components/ProductImage';
 import { SchedulingSelector } from '../components/SchedulingSelector';
+import { ScheduledCountdownBadge } from '../components/ScheduledCountdownBadge';
 import { isSchedulingEnabled, getSlotAvailability, getLocalDateString } from '../utils/scheduling';
+import { playOrderChime, speakClientOrderAlert, requestBrowserNotificationPermission, showBrowserNotification, vibrateDevice } from '../utils/audioAlert';
 import { Link } from 'react-router-dom';
 import { BakeryLoader } from '../components/BakeryLoader';
 import { MaintenancePage } from '../components/MaintenancePage';
@@ -189,12 +191,105 @@ export default function Menu() {
     setIsCartOpen(false);
   }, [isTotemPath]);
 
-  // Timer na tela de conclusão / impressão do pedido (15s no totem, 45s no celular para dar tempo do cliente ir ao balcão)
+  const prevStatusRef = useRef<string>('');
+
+  // Sincronização em tempo real do status do pedido e disparo de notificações ao cliente
+  useEffect(() => {
+    if (!lastPlacedOrder?.id) return;
+
+    // Checa na lista reativa de orders da store
+    const storeOrder = orders.find(o => String(o.id) === String(lastPlacedOrder.id));
+    if (storeOrder && storeOrder.status && storeOrder.status !== lastPlacedOrder.status) {
+      const prev = prevStatusRef.current || lastPlacedOrder.status;
+      const next = storeOrder.status;
+      prevStatusRef.current = next;
+      setLastPlacedOrder(curr => curr ? { ...curr, status: next } : storeOrder);
+
+      const ordNum = String(storeOrder.id).slice(-4).padStart(4, '0');
+      const custName = storeOrder.customerName || 'Cliente';
+
+      if (next === 'preparing' && prev !== 'preparing') {
+        playOrderChime('preparing');
+        speakClientOrderAlert(ordNum, 'preparing', custName);
+        showBrowserNotification(
+          `👨‍🍳 Pedido #${ordNum} em Preparação!`,
+          'Seu pedido começou a ser preparado com todo carinho na cozinha.',
+          storeInfo.logoUrl
+        );
+        vibrateDevice([200, 100, 200]);
+      } else if (next === 'ready' && prev !== 'ready') {
+        playOrderChime('ready');
+        speakClientOrderAlert(ordNum, 'ready', custName);
+        showBrowserNotification(
+          `🔔 SEU PEDIDO #${ordNum} ESTÁ PRONTO!`,
+          'Atenção! Seu pedido está pronto para retirada no balcão.',
+          storeInfo.logoUrl
+        );
+        vibrateDevice([500, 200, 500, 200, 500]);
+      }
+    }
+  }, [orders, lastPlacedOrder?.id, lastPlacedOrder?.status, storeInfo.logoUrl]);
+
+  // Polling ativo de backup para garantir recebimento instantâneo da notificação no celular
+  useEffect(() => {
+    if (!isSuccess || !lastPlacedOrder?.id) return;
+    if (lastPlacedOrder.status === 'completed' || lastPlacedOrder.status === 'cancelled') return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/db/orders?_t=${Date.now()}`, { cache: 'no-store' });
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list)) {
+            const found = list.find((o: any) => String(o.id) === String(lastPlacedOrder.id));
+            if (found && found.status && found.status !== lastPlacedOrder.status) {
+              const prev = prevStatusRef.current || lastPlacedOrder.status;
+              const next = found.status;
+              prevStatusRef.current = next;
+              setLastPlacedOrder(curr => curr ? { ...curr, status: next } : found);
+
+              const ordNum = String(found.id).slice(-4).padStart(4, '0');
+              const custName = found.customerName || 'Cliente';
+
+              if (next === 'preparing' && prev !== 'preparing') {
+                playOrderChime('preparing');
+                speakClientOrderAlert(ordNum, 'preparing', custName);
+                showBrowserNotification(
+                  `👨‍🍳 Pedido #${ordNum} em Preparação!`,
+                  'Seu pedido começou a ser preparado com todo carinho na cozinha.',
+                  storeInfo.logoUrl
+                );
+                vibrateDevice([200, 100, 200]);
+              } else if (next === 'ready' && prev !== 'ready') {
+                playOrderChime('ready');
+                speakClientOrderAlert(ordNum, 'ready', custName);
+                showBrowserNotification(
+                  `🔔 SEU PEDIDO #${ordNum} ESTÁ PRONTO!`,
+                  'Atenção! Seu pedido está pronto para retirada no balcão.',
+                  storeInfo.logoUrl
+                );
+                vibrateDevice([500, 200, 500, 200, 500]);
+              }
+            }
+          }
+        }
+      } catch {}
+    }, 2500);
+
+    return () => clearInterval(pollInterval);
+  }, [isSuccess, lastPlacedOrder?.id, lastPlacedOrder?.status, storeInfo.logoUrl]);
+
+  // Timer regressivo exclusivo do Totem de Autoatendimento (15s para liberar para o próximo cliente da fila física)
   useEffect(() => {
     if (!isSuccess) return;
 
-    const initialTime = (salesChannel === 'kiosk' || isTotemPath) ? 15 : 45;
-    setSuccessCountdown(initialTime);
+    const isKiosk = salesChannel === 'kiosk' || isTotemPath;
+    if (!isKiosk) {
+      // No smartphone/computador pessoal, o cliente acompanha os status até o aviso de PRONTO PARA RETIRADA
+      return;
+    }
+
+    setSuccessCountdown(15);
     const interval = setInterval(() => {
       setSuccessCountdown((prev) => {
         if (prev <= 1) {
@@ -905,8 +1000,15 @@ export default function Menu() {
         return;
       }
       const slotAvail = getSlotAvailability(selectedScheduledSlot, orders, storeInfo.schedulingMaxOrdersPerSlot || 4);
+      if (slotAvail.isPast) {
+        alert(`O horário ${selectedScheduledSlot} já passou do relógio e não está mais disponível para agendamento. Por favor, selecione um horário posterior.`);
+        setSelectedScheduledSlot(null);
+        const el = document.getElementById('scheduling-checkout-box') || document.getElementById('scheduling-section') || document.getElementById('product-feed');
+        el?.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
       if (slotAvail.isFull) {
-        alert(`O horário ${selectedScheduledSlot} acabou de atingir o limite de 4 pedidos e foi esgotado. Por favor, selecione outro horário disponível.`);
+        alert(`O horário ${selectedScheduledSlot} acabou de atingir o limite de ${storeInfo.schedulingMaxOrdersPerSlot || 4} pedidos e foi esgotado. Por favor, selecione outro horário disponível.`);
         setSelectedScheduledSlot(null);
         return;
       }
@@ -1061,36 +1163,190 @@ export default function Menu() {
         <div className="bg-white text-stone-900 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-stone-200 animate-in fade-in zoom-in duration-200 my-0 sm:my-auto">
           
           {/* Header de Sucesso */}
-          <div className="bg-emerald-600 text-white p-4 sm:p-5 text-center flex flex-col items-center justify-center">
-            <CheckCircle2 className="w-12 h-12 sm:w-14 sm:h-14 mb-1.5 animate-bounce" />
-            <h2 className="text-xl sm:text-3xl font-black tracking-tight uppercase">PEDIDO REALIZADO!</h2>
-            <p className="text-emerald-100 text-xs sm:text-sm font-medium">
-              {isKioskMode ? 'Imprima seu comprovante e retire no balcão' : 'Recebemos seu pedido com sucesso!'}
+          <div className={`p-4 sm:p-5 text-center flex flex-col items-center justify-center transition-all ${
+            (lastPlacedOrder?.status === 'ready')
+              ? 'bg-emerald-600 text-white animate-pulse'
+              : (lastPlacedOrder?.status === 'preparing')
+              ? 'bg-orange-600 text-white'
+              : 'bg-amber-600 text-white'
+          }`}>
+            {(lastPlacedOrder?.status === 'ready') ? (
+              <BellRing className="w-12 h-12 sm:w-14 sm:h-14 mb-1.5 animate-bounce text-amber-300" />
+            ) : (lastPlacedOrder?.status === 'preparing') ? (
+              <ChefHat className="w-12 h-12 sm:w-14 sm:h-14 mb-1.5 animate-pulse text-white" />
+            ) : (
+              <CheckCircle2 className="w-12 h-12 sm:w-14 sm:h-14 mb-1.5 animate-bounce text-white" />
+            )}
+            
+            <h2 className="text-xl sm:text-3xl font-black tracking-tight uppercase">
+              {lastPlacedOrder?.status === 'ready' 
+                ? 'PRONTO PARA RETIRADA!' 
+                : lastPlacedOrder?.status === 'preparing'
+                ? 'EM PREPARAÇÃO!'
+                : 'PEDIDO RECEBIDO (PENDENTE)'}
+            </h2>
+            <p className="text-white/90 text-xs sm:text-sm font-medium">
+              {lastPlacedOrder?.status === 'ready'
+                ? 'Seu pedido já está pronto! Favor retirar no balcão.'
+                : lastPlacedOrder?.status === 'preparing'
+                ? 'Nossa cozinha está preparando seu pedido com todo cuidado.'
+                : 'Recebemos seu pedido com sucesso! Aguardando preparo.'}
             </p>
+          </div>
+
+          {/* Stepper de Etapas do Pedido em Tempo Real para o Cliente */}
+          <div className="p-4 sm:p-5 bg-stone-50 border-b border-stone-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-black uppercase tracking-wider text-stone-500">
+                Progresso do Pedido em Tempo Real
+              </span>
+              <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                lastPlacedOrder?.status === 'ready'
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 animate-bounce'
+                  : lastPlacedOrder?.status === 'preparing'
+                  ? 'bg-orange-100 text-orange-800 border border-orange-300 animate-pulse'
+                  : 'bg-amber-100 text-amber-800 border border-amber-300'
+              }`}>
+                {lastPlacedOrder?.status === 'ready'
+                  ? 'Pronto no Balcão'
+                  : lastPlacedOrder?.status === 'preparing'
+                  ? 'Cozinha Preparando'
+                  : 'Aguardando Preparo'}
+              </span>
+            </div>
+
+            {/* Linha das 3 Etapas */}
+            <div className="grid grid-cols-3 gap-2 pt-2">
+              {/* Etapa 1: Pendente / Recebido */}
+              <div className={`p-2.5 rounded-xl text-center border transition-all ${
+                lastPlacedOrder?.status === 'pending' || !lastPlacedOrder?.status
+                  ? 'bg-amber-100 border-amber-400 text-amber-950 ring-2 ring-amber-300'
+                  : 'bg-emerald-50 border-emerald-300 text-emerald-900'
+              }`}>
+                <div className="flex justify-center mb-1">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                </div>
+                <span className="text-[10px] font-black uppercase block">1. Recebido</span>
+                <span className="text-[9px] text-stone-500 leading-tight">Pendente</span>
+              </div>
+
+              {/* Etapa 2: Em Preparação */}
+              <div className={`p-2.5 rounded-xl text-center border transition-all ${
+                lastPlacedOrder?.status === 'preparing'
+                  ? 'bg-orange-100 border-orange-400 text-orange-950 ring-2 ring-orange-300 animate-pulse'
+                  : (lastPlacedOrder?.status === 'ready' || lastPlacedOrder?.status === 'completed')
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                  : 'bg-stone-100 border-stone-200 text-stone-400 opacity-60'
+              }`}>
+                <div className="flex justify-center mb-1">
+                  <ChefHat className={`w-5 h-5 ${
+                    (lastPlacedOrder?.status === 'ready' || lastPlacedOrder?.status === 'completed')
+                      ? 'text-emerald-600'
+                      : lastPlacedOrder?.status === 'preparing'
+                      ? 'text-orange-600 animate-pulse'
+                      : 'text-stone-400'
+                  }`} />
+                </div>
+                <span className="text-[10px] font-black uppercase block">2. Preparando</span>
+                <span className="text-[9px] leading-tight text-stone-500">
+                  {lastPlacedOrder?.status === 'preparing' ? 'Cozinha' : (lastPlacedOrder?.status === 'ready' || lastPlacedOrder?.status === 'completed') ? 'Concluído' : 'Aguardando'}
+                </span>
+              </div>
+
+              {/* Etapa 3: Pronto para Retirada */}
+              <div className={`p-2.5 rounded-xl text-center border transition-all ${
+                lastPlacedOrder?.status === 'ready'
+                  ? 'bg-emerald-500 border-emerald-600 text-white ring-4 ring-emerald-300 shadow-md animate-bounce'
+                  : lastPlacedOrder?.status === 'completed'
+                  ? 'bg-stone-200 border-stone-300 text-stone-700'
+                  : 'bg-stone-100 border-stone-200 text-stone-400 opacity-60'
+              }`}>
+                <div className="flex justify-center mb-1">
+                  <BellRing className={`w-5 h-5 ${lastPlacedOrder?.status === 'ready' ? 'text-white animate-spin' : lastPlacedOrder?.status === 'completed' ? 'text-stone-600' : 'text-stone-400'}`} />
+                </div>
+                <span className={`text-[10px] font-black uppercase block ${lastPlacedOrder?.status === 'ready' ? 'text-white' : ''}`}>
+                  3. Pronto!
+                </span>
+                <span className={`text-[9px] leading-tight ${lastPlacedOrder?.status === 'ready' ? 'text-emerald-100 font-bold' : 'text-stone-500'}`}>
+                  {lastPlacedOrder?.status === 'ready' ? 'Retire Já!' : 'Retirada'}
+                </span>
+              </div>
+            </div>
+
+            {/* Botão para ativar Notificações Web se ainda não ativou */}
+            {typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted' && (
+              <button
+                type="button"
+                onClick={() => requestBrowserNotificationPermission()}
+                className="mt-3 w-full py-2 px-3 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border border-amber-300"
+              >
+                <Volume2 className="w-4 h-4 text-amber-700" />
+                <span>Ativar notificações e avisos sonoros no celular</span>
+              </button>
+            )}
           </div>
 
           {/* Mensagem em destaque no Smartphone: Atenção prezado (CLIENTE). Aguarde ser chamado... */}
           {!isKioskMode && (
-            <div id="order-attention-banner" className="p-4 sm:p-5 bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white text-center border-b-2 border-orange-600 shadow-md">
+            <div id="order-attention-banner" className={`p-4 sm:p-5 text-white text-center border-b-2 shadow-md transition-all ${
+              lastPlacedOrder?.status === 'ready'
+                ? 'bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 border-emerald-800'
+                : 'bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 border-orange-600'
+            }`}>
               <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white text-orange-600 shadow-lg mb-2">
-                <UserCheck className="w-7 h-7 sm:w-8 sm:h-8 stroke-[2.5]" />
+                {lastPlacedOrder?.status === 'ready' ? (
+                  <BellRing className="w-7 h-7 sm:w-8 sm:h-8 stroke-[2.5] text-emerald-600 animate-bounce" />
+                ) : (
+                  <UserCheck className="w-7 h-7 sm:w-8 sm:h-8 stroke-[2.5]" />
+                )}
               </div>
               <h3 className="text-lg sm:text-2xl font-black uppercase tracking-tight text-white drop-shadow-xs">
-                Atenção prezado {clientNameDisplay || 'CLIENTE'}
+                {lastPlacedOrder?.status === 'ready' 
+                  ? `🔔 PREZADO(A) ${clientNameDisplay || 'CLIENTE'}: SEU PEDIDO ESTÁ PRONTO!`
+                  : `Atenção prezado(a) ${clientNameDisplay || 'CLIENTE'}`}
               </h3>
               <div className="mt-2 bg-white/20 backdrop-blur-xs rounded-2xl p-3.5 sm:p-4 border border-white/25">
                 <p className="text-sm sm:text-lg font-black text-white leading-snug">
-                  Aguarde ser chamado pelo seu nome pelo atendente. O pedido ficará pronto no máximo em 10 minutos.
+                  {lastPlacedOrder?.status === 'ready'
+                    ? `Dirija-se agora ao balcão e retire seu pedido apresentando a Senha #${orderNumber}!`
+                    : lastPlacedOrder?.status === 'preparing'
+                    ? `Seu pedido #${orderNumber} já está no forno/cozinha sendo preparado. Fique atento!`
+                    : `Aguarde ser chamado pelo seu nome e senha #${orderNumber}. Notificaremos você em cada etapa!`}
                 </p>
               </div>
               <div className="mt-2.5 inline-flex items-center justify-center gap-1.5 bg-black/25 px-3 py-1 rounded-full text-xs font-bold text-amber-100 border border-white/10">
-                <span>🖨️ Pedido #{orderNumber} já impresso no balcão da loja!</span>
+                <span>🖨️ Pedido #{orderNumber} impresso e sincronizado com a equipe da loja!</span>
               </div>
             </div>
           )}
 
           {/* Senha e TV Chamada */}
           <div className="p-5 bg-orange-50 border-b border-orange-100">
+            {/* Banner de Confirmação Oficial do Agendamento */}
+            {lastPlacedOrder?.scheduledTime && (
+              <div className="mb-4 bg-emerald-600 text-white p-3.5 rounded-2xl flex items-center justify-between gap-3 shadow-md animate-fade-in">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-100 block">
+                      Agendamento Confirmado com Sucesso!
+                    </span>
+                    <strong className="text-sm sm:text-base font-black">
+                      Retirada Agendada para hoje às {lastPlacedOrder.scheduledTime}
+                    </strong>
+                  </div>
+                </div>
+                <div className="text-right shrink-0 hidden sm:block">
+                  <span className="text-[10px] text-emerald-200 block uppercase font-bold">Vaga Garantida</span>
+                  <span className="text-xs font-mono font-bold bg-white text-emerald-900 px-2 py-0.5 rounded-lg shadow-xs">
+                    {lastPlacedOrder.scheduledTime}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left bg-white p-4 rounded-2xl border border-orange-200 shadow-xs">
               <div>
                 <p className="text-xs font-black uppercase tracking-wider text-orange-600">Sua Senha de Chamada</p>
@@ -1116,6 +1372,17 @@ export default function Menu() {
                 <span>{lastPlacedOrder?.tableNumber ? 'Entregaremos na sua mesa' : 'Acompanhe na TV da Loja'}</span>
               </div>
             </div>
+
+            {/* Cronômetro Regressivo de Agendamento em Tempo Real para o Cliente */}
+            {lastPlacedOrder?.scheduledTime && (
+              <div className="mt-3">
+                <ScheduledCountdownBadge 
+                  scheduledTime={lastPlacedOrder.scheduledTime}
+                  scheduledDate={lastPlacedOrder.scheduledDate}
+                  variant="card"
+                />
+              </div>
+            )}
           </div>
 
           {/* Visual do Cupom / Comprovante para Impressão */}
@@ -1139,6 +1406,11 @@ export default function Menu() {
                   <div className="font-black text-sm tracking-wider">
                     PEDIDO #{orderNumber}
                   </div>
+                  {lastPlacedOrder.scheduledTime && (
+                    <div className="mt-1 pt-1 border-t border-stone-700 text-xs font-black text-amber-300 uppercase tracking-wide">
+                      ⏰ RETIRADA AGENDADA: {lastPlacedOrder.scheduledTime}
+                    </div>
+                  )}
                 </div>
 
                 <div className="border-t border-dashed border-stone-400 my-2"></div>
@@ -1219,28 +1491,27 @@ export default function Menu() {
             </div>
           )}
 
-          {/* Temporizador regressivo */}
-          <div className="px-5 pt-4 pb-1 bg-white">
-            <div className="bg-amber-50 border border-amber-200/90 p-3 rounded-2xl text-center">
-              <div className="flex items-center justify-center gap-2 text-xs font-black text-amber-950 mb-1.5">
-                <Clock className="w-4 h-4 text-amber-600 animate-spin" />
-                <span>
-                  {isKioskMode 
-                    ? <>Voltando para a tela inicial em <strong className="text-amber-700 text-sm font-mono">{successCountdown}s</strong> para o próximo cliente</>
-                    : <>Retornando ao cardápio em <strong className="text-amber-700 text-sm font-mono">{successCountdown}s</strong></>
-                  }
-                </span>
-              </div>
-              <div className="w-full bg-amber-200/70 h-2.5 rounded-full overflow-hidden">
-                <div 
-                  className="bg-amber-500 h-full transition-all duration-1000 ease-linear rounded-full"
-                  style={{ width: `${Math.max(0, Math.min(100, (successCountdown / (isKioskMode ? 15 : 45)) * 100))}%` }}
-                />
+          {/* Temporizador regressivo apenas para o Totem de Autoatendimento */}
+          {isKioskMode && (
+            <div className="px-5 pt-4 pb-1 bg-white">
+              <div className="bg-amber-50 border border-amber-200/90 p-3 rounded-2xl text-center">
+                <div className="flex items-center justify-center gap-2 text-xs font-black text-amber-950 mb-1.5">
+                  <Clock className="w-4 h-4 text-amber-600 animate-spin" />
+                  <span>
+                    Voltando para a tela inicial em <strong className="text-amber-700 text-sm font-mono">{successCountdown}s</strong> para o próximo cliente
+                  </span>
+                </div>
+                <div className="w-full bg-amber-200/70 h-2.5 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-amber-500 h-full transition-all duration-1000 ease-linear rounded-full"
+                    style={{ width: `${Math.max(0, Math.min(100, (successCountdown / 15) * 100))}%` }}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Botões de Ação: Totem (Imprimir) vs Smartphone/Consumo na Loja (Finalizar Pedido) */}
+          {/* Botões de Ação: Totem (Imprimir) vs Smartphone/Consumo na Loja */}
           <div className="p-5 space-y-3 bg-white">
             {isKioskMode ? (
               <>
@@ -1267,14 +1538,38 @@ export default function Menu() {
                 </button>
               </>
             ) : (
-              <button 
-                type="button"
-                onClick={handleResetForNewCustomer}
-                className="w-full py-4 px-5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 active:scale-[0.98] text-white rounded-2xl font-black text-base sm:text-lg flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer select-none"
-              >
-                <CheckCircle2 className="w-6 h-6" />
-                <span>Entendi / Fazer Novo Pedido</span>
-              </button>
+              <div className="space-y-2.5">
+                {lastPlacedOrder?.status === 'ready' && (
+                  <div className="p-3.5 bg-emerald-50 border-2 border-emerald-400 rounded-2xl text-center animate-pulse">
+                    <span className="text-emerald-900 font-black text-sm block">
+                      🔔 SEU PEDIDO ESTÁ PRONTO NO BALCÃO!
+                    </span>
+                    <span className="text-xs text-emerald-700 mt-0.5 block">
+                      Apresente sua senha #{orderNumber} ao atendente.
+                    </span>
+                  </div>
+                )}
+
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setIsSuccess(false);
+                    setCart([]);
+                  }}
+                  className="w-full py-3.5 px-4 bg-orange-600 hover:bg-orange-700 active:scale-[0.98] text-white rounded-2xl font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-md shadow-orange-600/20 transition-all cursor-pointer"
+                >
+                  <Store className="w-5 h-5" />
+                  <span>Ver Cardápio / Fazer Outro Pedido</span>
+                </button>
+
+                <button 
+                  type="button"
+                  onClick={handleResetForNewCustomer}
+                  className="w-full py-2.5 px-4 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-xl font-bold text-xs transition-colors cursor-pointer text-center"
+                >
+                  Concluir e Limpar Pedido
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -2482,6 +2777,52 @@ export default function Menu() {
           </main>
         </div>
       </div>
+
+      {/* Floating Active Order Tracker Banner when browsing the menu */}
+      {!isSuccess && !isCheckout && lastPlacedOrder && lastPlacedOrder.status !== 'completed' && lastPlacedOrder.status !== 'cancelled' && (
+        <div className={`fixed left-0 right-0 p-3 sm:p-4 z-[39] max-w-xl mx-auto pointer-events-auto transition-all ${
+          cart.length > 0 ? 'bottom-20 sm:bottom-24' : 'bottom-0'
+        }`}>
+          <div 
+            onClick={() => setIsSuccess(true)}
+            className={`w-full p-3 sm:p-3.5 rounded-2xl shadow-xl border-2 flex items-center justify-between gap-3 cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99] ${
+              lastPlacedOrder.status === 'ready'
+                ? 'bg-emerald-600 border-emerald-400 text-white animate-bounce'
+                : lastPlacedOrder.status === 'preparing'
+                ? 'bg-orange-600 border-orange-400 text-white'
+                : 'bg-amber-600 border-amber-400 text-white'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                {lastPlacedOrder.status === 'ready' ? (
+                  <BellRing className="w-5 h-5 text-white animate-spin" />
+                ) : lastPlacedOrder.status === 'preparing' ? (
+                  <ChefHat className="w-5 h-5 text-white" />
+                ) : (
+                  <Clock className="w-5 h-5 text-white animate-spin" />
+                )}
+              </div>
+              <div className="truncate">
+                <span className="text-[10px] font-black uppercase tracking-wider block text-white/80">
+                  Acompanhar Pedido #{String(lastPlacedOrder.id).slice(-4).padStart(4, '0')}
+                </span>
+                <strong className="text-xs sm:text-sm font-black truncate block">
+                  {lastPlacedOrder.status === 'ready'
+                    ? 'PRONTO PARA RETIRADA NO BALCÃO!'
+                    : lastPlacedOrder.status === 'preparing'
+                    ? 'Em Preparação na Cozinha...'
+                    : 'Pedido Recebido (Aguardando Preparo)'}
+                </strong>
+              </div>
+            </div>
+
+            <span className="px-3 py-1.5 rounded-xl bg-white/20 text-white font-bold text-xs uppercase tracking-wider shrink-0">
+              Ver Status
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Sticky Bottom Red Checkout Bar (For All Screens: Mobile, Tablet & Desktop) */}
       {!isCartOpen && cart.length > 0 && !isCheckout && (

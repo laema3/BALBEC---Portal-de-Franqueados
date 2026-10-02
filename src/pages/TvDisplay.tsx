@@ -26,6 +26,8 @@ import {
   Film,
   X
 } from 'lucide-react';
+import { ScheduledCountdownBadge } from '../components/ScheduledCountdownBadge';
+import { getLocalDateString } from '../utils/scheduling';
 
 // Extract YouTube Video ID from any YouTube URL format (including Shorts, Live, Embed, youtu.be, etc.)
 export function extractYouTubeId(url: string | undefined | null): string | null {
@@ -156,11 +158,14 @@ function playChimeSound() {
 }
 
 // Speak Portuguese announcement
-function speakOrderCall(orderNumber: string, customerName: string) {
+function speakOrderCall(orderNumber: string, customerName: string, scheduledTime?: string) {
   try {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    const text = `Atenção: Senha número ${orderNumber}, ${customerName || 'cliente'}, favor retirar o pedido no balcão!`;
+    let text = `Atenção: Senha número ${orderNumber}, ${customerName || 'cliente'}, favor retirar o pedido no balcão!`;
+    if (scheduledTime) {
+      text = `Atenção: Senha número ${orderNumber}, ${customerName || 'cliente'}, com retirada agendada para ${scheduledTime}, favor retirar no balcão!`;
+    }
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'pt-BR';
     utterance.rate = 0.95;
@@ -178,6 +183,7 @@ export interface TvCallItem {
   customerName: string;
   type?: string;
   tableOrDesk?: string;
+  scheduledTime?: string;
   calledAt: number;
 }
 
@@ -352,7 +358,7 @@ export default function TvDisplay() {
               if (!isMuted) {
                 playChimeSound();
                 setTimeout(() => {
-                  speakOrderCall(call.orderNumber, call.customerName);
+                  speakOrderCall(call.orderNumber, call.customerName, call.scheduledTime);
                 }, 900);
               }
 
@@ -828,13 +834,41 @@ export default function TvDisplay() {
     return () => clearInterval(interval);
   }, [activeSlideIndex, allMenuSlides.length > 0]);
 
-  // Ready orders for the order call panel mode
+  // Helper para determinar o timestamp cronológico real de atendimento do pedido
+  const getOrderEffectiveTimestamp = (o: any) => {
+    if (o.scheduledTime) {
+      const todayStr = getLocalDateString();
+      const dateStr = o.scheduledDate || todayStr;
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const [hh, mm] = o.scheduledTime.split(':').map(Number);
+      return new Date(y, (m || 1) - 1, d, hh, mm, 0, 0).getTime();
+    }
+    return o.createdAt ? new Date(o.createdAt).getTime() : 0;
+  };
+
+  // Ready orders for the order call panel mode - ordenados cronologicamente pelo horário do agendamento e chamadas
   const readyOrders = useMemo(() => {
-    return orders.filter(o => o.status === 'ready').slice(0, 6);
+    return orders
+      .filter(o => o.status === 'ready')
+      .sort((a, b) => {
+        const timeA = getOrderEffectiveTimestamp(a);
+        const timeB = getOrderEffectiveTimestamp(b);
+        if (timeA !== timeB) return timeA - timeB;
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      })
+      .slice(0, 8);
   }, [orders]);
 
   const preparingOrders = useMemo(() => {
-    return orders.filter(o => o.status === 'preparing').slice(0, 6);
+    return orders
+      .filter(o => o.status === 'preparing')
+      .sort((a, b) => {
+        const timeA = getOrderEffectiveTimestamp(a);
+        const timeB = getOrderEffectiveTimestamp(b);
+        if (timeA !== timeB) return timeA - timeB;
+        return (a.createdAt || 0) - (b.createdAt || 0);
+      })
+      .slice(0, 8);
   }, [orders]);
 
   // Helper function to aggressively disable YouTube closed captions / subtitles via postMessage API
@@ -1473,12 +1507,23 @@ export default function TvDisplay() {
               <div className="grid grid-cols-2 gap-2.5">
                 {readyOrders.length > 0 ? (
                   readyOrders.map(o => (
-                    <div key={o.id} className="bg-emerald-950/60 border-2 border-emerald-500/70 p-3 rounded-2xl text-center shadow-lg animate-pulse">
-                      <span className="text-xs text-emerald-300 font-semibold block">Senha</span>
-                      <span className="text-2xl font-black text-white tracking-widest font-mono">
-                        #{String(o.id).slice(-4).padStart(4, '0')}
-                      </span>
-                      <p className="text-[11px] text-emerald-200 truncate font-medium mt-1">{o.customerName || 'Cliente'}</p>
+                    <div key={o.id} className="bg-emerald-950/60 border-2 border-emerald-500/70 p-3 rounded-2xl text-center shadow-lg animate-pulse flex flex-col justify-between">
+                      <div>
+                        <span className="text-xs text-emerald-300 font-semibold block">Senha</span>
+                        <span className="text-2xl font-black text-white tracking-widest font-mono">
+                          #{String(o.id).slice(-4).padStart(4, '0')}
+                        </span>
+                        <p className="text-[11px] text-emerald-200 truncate font-medium mt-1">{o.customerName || 'Cliente'}</p>
+                      </div>
+                      {o.scheduledTime && (
+                        <div className="mt-2 flex justify-center">
+                          <ScheduledCountdownBadge 
+                            scheduledTime={o.scheduledTime} 
+                            scheduledDate={o.scheduledDate} 
+                            variant="tv" 
+                          />
+                        </div>
+                      )}
                     </div>
                   ))
                 ) : (
@@ -1498,12 +1543,23 @@ export default function TvDisplay() {
               <div className="grid grid-cols-2 gap-2.5">
                 {preparingOrders.length > 0 ? (
                   preparingOrders.map(o => (
-                    <div key={o.id} className="bg-stone-800/80 border border-stone-700/80 p-2.5 rounded-xl text-center">
-                      <span className="text-[10px] text-stone-400 block font-semibold">Senha</span>
-                      <span className="text-lg font-bold text-amber-300 font-mono">
-                        #{String(o.id).slice(-4).padStart(4, '0')}
-                      </span>
-                      <p className="text-[10px] text-stone-300 truncate mt-0.5">{o.customerName || 'Cliente'}</p>
+                    <div key={o.id} className="bg-stone-800/80 border border-stone-700/80 p-2.5 rounded-xl text-center flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] text-stone-400 block font-semibold">Senha</span>
+                        <span className="text-lg font-bold text-amber-300 font-mono">
+                          #{String(o.id).slice(-4).padStart(4, '0')}
+                        </span>
+                        <p className="text-[10px] text-stone-300 truncate mt-0.5">{o.customerName || 'Cliente'}</p>
+                      </div>
+                      {o.scheduledTime && (
+                        <div className="mt-1.5 flex justify-center">
+                          <ScheduledCountdownBadge 
+                            scheduledTime={o.scheduledTime} 
+                            scheduledDate={o.scheduledDate} 
+                            variant="tv" 
+                          />
+                        </div>
+                      )}
                     </div>
                   ))
                 ) : (
@@ -1555,7 +1611,7 @@ export default function TvDisplay() {
             </div>
 
             {/* Customer Name */}
-            <div className="mt-6 mb-8">
+            <div className="mt-6 mb-6">
               <span className="text-stone-400 text-xs uppercase tracking-widest block mb-1">
                 Cliente
               </span>
@@ -1568,6 +1624,18 @@ export default function TvDisplay() {
                 </p>
               )}
             </div>
+
+            {/* Scheduled Time info & countdown on TV Call overlay */}
+            {activeCall.scheduledTime && (
+              <div className="mb-6 flex justify-center max-w-md mx-auto">
+                <ScheduledCountdownBadge 
+                  scheduledTime={activeCall.scheduledTime} 
+                  variant="card"
+                  dark={true}
+                  className="w-full"
+                />
+              </div>
+            )}
 
             {/* Instruction Footer */}
             <div className="pt-6 border-t border-stone-800 flex items-center justify-center gap-3">

@@ -747,6 +747,7 @@ let latestTvCall: {
   customerName: string;
   type?: string;
   tableOrDesk?: string;
+  scheduledTime?: string;
   calledAt: number;
 } | null = null;
 
@@ -1289,13 +1290,12 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
   app.get('/api/db/orders', async (req: Request, res: Response) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     if (!isDatabaseConfigured()) {
-      // Todos os pedidos ativos chegam com status 'completed' (entregues)
-      const sanitized = memOrders.map(o => o.status === 'cancelled' ? o : { ...o, status: 'completed' });
+      const sanitized = memOrders.map(o => ({ ...o, status: o.status || 'pending' }));
       return res.json(sanitized);
     }
     try {
       const list = await db.select().from(orders).orderBy(desc(orders.createdAt)).limit(5000);
-      const sanitized = list.map(o => o.status === 'cancelled' ? o : { ...o, status: 'completed' as const });
+      const sanitized = list.map(o => ({ ...o, status: o.status || 'pending' }));
       
       const orderMap = new Map<string, any>();
       (memOrders || []).forEach(o => {
@@ -1313,7 +1313,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
 
       return res.json(memOrders);
     } catch (error: any) {
-      const sanitized = memOrders.map(o => o.status === 'cancelled' ? o : { ...o, status: 'completed' });
+      const sanitized = memOrders.map(o => ({ ...o, status: o.status || 'pending' }));
       return res.json(sanitized);
     }
   });
@@ -1342,11 +1342,12 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
       finalId = calculateNextOrderNumber(currentOrders);
     }
 
+    // Novos pedidos chegam sempre como 'pending' (pendente) para preparo
     const newOrder = {
       ...data,
       id: finalId,
       createdAt: data.createdAt || Date.now(),
-      status: 'completed',
+      status: data.status || 'pending',
       customerName: data.customerName || (data.type === 'kiosk' ? 'Cliente Totem' : 'Cliente')
     };
 
@@ -1455,6 +1456,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
         customerName: data.customerName || 'Cliente',
         type: data.type || 'balcao',
         tableOrDesk: data.tableOrDesk || '',
+        scheduledTime: data.scheduledTime || '',
         calledAt: Date.now()
       };
       broadcastSSE({ type: 'sync', target: 'tv_call', call: latestTvCall, time: Date.now() });
@@ -1465,26 +1467,89 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
     }
   });
 
+  const triggerOrderStatusNotification = (order: any, newStatus: string) => {
+    try {
+      const orderNum = String(order.id).slice(-4).padStart(4, '0');
+      const cust = order.customerName && order.customerName.toLowerCase() !== 'cliente' ? order.customerName : 'Cliente';
+      let title = '';
+      let message = '';
+      let priority = 4;
+      let tags: string[] = [];
+
+      if (newStatus === 'preparing') {
+        title = `👨‍🍳 Pedido #${orderNum} em Preparação!`;
+        message = `Olá ${cust}! Seu pedido começou a ser preparado com carinho na cozinha.`;
+        priority = 3;
+        tags = ['cook', 'hourglass_flowing_sand'];
+      } else if (newStatus === 'ready') {
+        title = `🔔 Pedido #${orderNum} PRONTO PARA RETIRADA!`;
+        message = `Atenção ${cust}! Seu pedido #${orderNum} já está pronto para retirada no balcão.`;
+        priority = 5;
+        tags = ['bell', 'tada', 'white_check_mark'];
+      } else if (newStatus === 'completed') {
+        title = `✅ Pedido #${orderNum} Entregue!`;
+        message = `Pedido #${orderNum} concluído com sucesso. Bom apetite!`;
+        priority = 3;
+        tags = ['package', 'white_check_mark'];
+      }
+
+      if (title && message) {
+        // Envia para o tópico geral da loja
+        fetch('https://ntfy.sh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            topic: 'balbec_pedidos',
+            title,
+            message,
+            priority,
+            tags
+          })
+        }).catch(() => {});
+
+        // Também envia para o canal individual deste pedido específico
+        fetch('https://ntfy.sh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            topic: `balbec_order_${orderNum}`,
+            title,
+            message,
+            priority,
+            tags
+          })
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Erro ao disparar notificação de status:', e);
+    }
+  };
+
   app.put('/api/db/orders/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
     const data = req.body;
     memOrders = memOrders.map(o => o.id === id ? { ...o, ...data } : o);
     persistOrdersToDisk(memOrders);
 
-    if (data.status === 'ready') {
-      const orderData = memOrders.find(o => o.id === id) || { id, ...data };
-      latestTvCall = {
-        id: `call_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        orderId: id,
-        orderNumber: String(id).slice(-4).padStart(4, '0'),
-        customerName: orderData.customerName || 'Cliente',
-        type: orderData.type || 'balcao',
-        tableOrDesk: orderData.table || '',
-        calledAt: Date.now()
-      };
+    const orderData = memOrders.find(o => o.id === id) || { id, ...data };
+
+    if (data.status) {
+      if (data.status === 'ready') {
+        latestTvCall = {
+          id: `call_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          orderId: id,
+          orderNumber: String(id).slice(-4).padStart(4, '0'),
+          customerName: orderData.customerName || 'Cliente',
+          type: orderData.type || 'balcao',
+          tableOrDesk: orderData.table || '',
+          scheduledTime: orderData.scheduledTime || '',
+          calledAt: Date.now()
+        };
+      }
+      triggerOrderStatusNotification(orderData, data.status);
     }
 
-    broadcastSSE({ type: 'sync', target: 'orders', orderId: id, time: Date.now() });
+    broadcastSSE({ type: 'sync', target: 'orders', orderId: id, status: data.status, time: Date.now() });
 
     if (isDatabaseConfigured()) {
       try {
