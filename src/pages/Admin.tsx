@@ -1520,6 +1520,46 @@ export default function Admin() {
     }
   };
 
+  const handleSyncBlueFocusCustomers = async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    setSyncProgress({
+      current: 0,
+      total: 0,
+      ignored: 0,
+      status: 'Sincronizando clientes do BlueFocus...'
+    });
+
+    try {
+      const res = await fetch('/api/bluefocus/sync-customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(blueFocusConfig)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao sincronizar clientes');
+
+      await fetchData();
+      setSyncProgress(null);
+      setConfirmModal({
+        isOpen: true,
+        title: 'Sincronização de Clientes Concluída',
+        message: `Sucesso! Foram sincronizados ${data.count || 0} clientes do BlueFocus.`,
+        onConfirm: () => setConfirmModal(null)
+      });
+    } catch (err: any) {
+      setSyncProgress(null);
+      setConfirmModal({
+        isOpen: true,
+        title: 'Erro na Sincronização de Clientes',
+        message: err?.message || 'Falha ao sincronizar clientes do BlueFocus.',
+        onConfirm: () => setConfirmModal(null)
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleExportOrder = async (order: Order) => {
     if (exportingOrderId) return;
     setExportingOrderId(order.id);
@@ -1780,25 +1820,6 @@ export default function Admin() {
       });
     }
   }, [orders, isSoundEnabled, storeInfo]);
-
-  // Auto-atualização: todos os pedidos de clientes que chegarem no painel são marcados como entregue ('completed')
-  const processedOrderIds = useRef<Set<string>>(new Set());
-  useEffect(() => {
-    const uncompletedOrders = orders.filter(
-      o => o.status !== 'completed' && o.status !== 'cancelled' && !processedOrderIds.current.has(o.id)
-    );
-    if (uncompletedOrders.length > 0) {
-      uncompletedOrders.forEach(async (ord) => {
-        processedOrderIds.current.add(ord.id);
-        try {
-          await updateOrderStatus(ord.id, 'completed');
-        } catch (e) {
-          console.warn(`[Auto-Entregue] Falha ao marcar pedido #${ord.id} como entregue:`, e);
-          processedOrderIds.current.delete(ord.id);
-        }
-      });
-    }
-  }, [orders, updateOrderStatus]);
 
   useEffect(() => {
     return () => {
@@ -4488,6 +4509,14 @@ export default function Admin() {
                 >
                   <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
                   {isSyncing ? 'Sincronizando...' : 'Zerar & Sincronizar Tudo (Carga Total)'}
+                </button>
+                <button type="button" 
+                  onClick={handleSyncBlueFocusCustomers}
+                  disabled={isSyncing}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
+                >
+                  <Users className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                  {isSyncing ? 'Sincronizando...' : 'Sincronizar Clientes BlueFocus'}
                 </button>
               </>
             )}

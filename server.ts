@@ -4,7 +4,7 @@ import axios from "axios";
 import { XMLParser, XMLBuilder } from "fast-xml-parser";
 import dotenv from "dotenv";
 import compression from "compression";
-import { setupDatabaseRoutes, hydrateFromPostgres, getMemStoreInfo } from "./src/server/dbRoutes";
+import { setupDatabaseRoutes, hydrateFromPostgres, getMemStoreInfo, upsertCustomerLead } from "./src/server/dbRoutes";
 import { setupPrinterRoutes } from "./src/server/printerRoutes";
 import { setupPrinterAgentRoutes } from "./src/server/printerAgentRoutes";
 import { ensureTablesExist } from "./src/db/index";
@@ -688,6 +688,170 @@ ${itemsXml}
         error: "Erro ao exportar venda para BlueFocus",
         details: errorDetail
       });
+    }
+  });
+
+  // API Route for BlueFocus Customer Sync (Tipo 1)
+  app.post("/api/bluefocus/sync-customers", async (req, res) => {
+    console.log(`[Sync Customers] Recebida requisição de sincronização de clientes do BlueFocus: ${req.method} ${req.url}`);
+    try {
+      const {
+        empresaId: reqEmpresaId, 
+        usuarioId: reqUsuarioId, 
+        pdvCodigo: reqPdvCodigo, 
+        syncUrl: reqSyncUrl,
+        authToken,
+        dataInicial = '30/12/1899'
+      } = req.body || {};
+
+      const authKey = process.env.BLUE_FOCUS_AUTH_KEY || process.env.BLUEFOCUS_AUTH_KEY || process.env.BLUEFOCUS_AUTH_TOKEN;
+      const empresaId = reqEmpresaId || process.env.BLUEFOCUS_EMPRESA_ID || process.env.BLUEFOCUS_EMPRESA || 'BALBEC';
+      const usuarioId = reqUsuarioId || process.env.BLUEFOCUS_USUARIO_ID || process.env.BLUEFOCUS_USUARIO || 'CONSULTA';
+      const pdvCodigo = reqPdvCodigo || process.env.BLUEFOCUS_PDV_CODIGO || '1000';
+      const syncUrl = reqSyncUrl || process.env.BLUEFOCUS_SYNC_URL || "";
+
+      if (!syncUrl) {
+        return res.status(400).json({ error: "URL de sincronização do BlueFocus não informada." });
+      }
+
+      const isValidToken = (t?: string) => {
+        if (!t) return false;
+        const clean = String(t).trim();
+        return clean.length > 5 && !clean.includes('XXXX') && clean !== 'AGUARDANDO_CHAVE' && clean !== 'undefined' && clean !== 'null';
+      };
+
+      const headers: any = {
+        "Content-Type": "text/xml; charset=utf-8"
+      };
+      
+      if (isValidToken(authToken)) {
+        headers["autentica"] = authToken.trim();
+      } else if (isValidToken(authKey)) {
+        headers["autentica"] = authKey.trim();
+      }
+
+      const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: "@_",
+        isArray: (name) => ["ClienteItem", "clienteitem", "Cliente", "cliente", "PessoaItem", "pessoaitem", "Pessoa", "pessoa"].includes(name)
+      });
+
+      const getVal = (obj: any, key: string) => {
+        if (!obj || typeof obj !== 'object') return undefined;
+        const lowerKey = key.toLowerCase();
+        for (const k in obj) {
+          const cleanK = k.toLowerCase().split(':').pop();
+          if (cleanK === lowerKey) {
+            const val = obj[k];
+            if (val && typeof val === 'object' && val['#text'] !== undefined) return val['#text'];
+            return val;
+          }
+        }
+        return undefined;
+      };
+
+      let currentCargaNumero = 0;
+      let currentCargaSequencia = 0;
+      let currentPessoaId = 0;
+      let hasMore = true;
+      let iterations = 0;
+      let totalSynced = 0;
+
+      while (hasMore && iterations < 50) {
+        iterations++;
+        const soapEnvelope = `<?xml version="1.0"?>
+<SOAP-ENV:Envelope 
+xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<SOAP-ENV:Body>
+<IntegracaoFcxExportaCadSAT.Execute xmlns="Valim">
+<Sdtwebserviceentradaexpcadastro>
+<EmpresaId>${empresaId}</EmpresaId>
+<UsuarioId>${usuarioId}</UsuarioId>
+<PDVCodigo>${pdvCodigo}</PDVCodigo>
+<TipoAtualizacao>A</TipoAtualizacao>
+<Tipo>1</Tipo>
+<PessoaId>${currentPessoaId}</PessoaId>
+<CargaPDVNumero>${currentCargaNumero}</CargaPDVNumero>
+<CargaPDVSequencia>${currentCargaSequencia}</CargaPDVSequencia>
+<ProdutoId>0</ProdutoId>
+<DataHoraInicio>${dataInicial}</DataHoraInicio>
+</Sdtwebserviceentradaexpcadastro>
+</IntegracaoFcxExportaCadSAT.Execute>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>`;
+
+        const response = await axios.post(syncUrl, soapEnvelope, { headers, timeout: 30000 });
+        const jsonObj = parser.parse(response.data);
+        const envelope = getVal(jsonObj, "Envelope");
+        const body = getVal(envelope, "Body");
+        const executeResponse = getVal(body, "IntegracaoFcxExportaCadSAT.ExecuteResponse") || getVal(body, "ExecuteResponse");
+        const saiaExp = getVal(executeResponse, "Sdtwebservicesaidaexpcadastrosat") || getVal(executeResponse, "Sdtwebserviceout") || executeResponse;
+
+        if (!saiaExp) {
+          hasMore = false;
+          break;
+        }
+
+        const msgErro = getVal(saiaExp, "MsgErro");
+        if (msgErro && msgErro !== "" && msgErro !== "OK") {
+          return res.status(400).json({ error: msgErro });
+        }
+
+        let customersArr = getVal(saiaExp, "ClienteItem") || getVal(saiaExp, "Cliente") || getVal(saiaExp, "PessoaItem") || getVal(saiaExp, "Pessoa");
+        if (!customersArr) {
+          hasMore = false;
+          break;
+        }
+
+        const items = Array.isArray(customersArr) ? customersArr : [customersArr];
+        if (items.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        for (const item of items) {
+          const cId = String(getVal(item, "ClienteId") || getVal(item, "PessoaId") || getVal(item, "Codigo") || "");
+          const cName = String(getVal(item, "ClienteNome") || getVal(item, "PessoaNome") || getVal(item, "Nome") || getVal(item, "RazaoSocial") || "");
+          const cPhone = String(getVal(item, "ClienteTelefone") || getVal(item, "Telefone") || getVal(item, "Celular") || getVal(item, "Fone") || "");
+          const cEmail = String(getVal(item, "ClienteEmail") || getVal(item, "Email") || "");
+          const cAddress = String(getVal(item, "ClienteEndereco") || getVal(item, "Endereco") || getVal(item, "Logradouro") || "");
+
+          if (cId) {
+            const numId = parseInt(cId);
+            if (!isNaN(numId)) currentPessoaId = numId;
+          }
+
+          if (cName || cPhone) {
+            await upsertCustomerLead({
+              name: cName || 'Cliente BlueFocus',
+              phone: cPhone,
+              email: cEmail,
+              address: cAddress,
+              source: 'bluefocus',
+              tags: ['Cliente', 'BlueFocus']
+            });
+            totalSynced++;
+          }
+        }
+
+        const snFim = String(getVal(saiaExp, "SnFim") || getVal(saiaExp, "Fim") || "S");
+        const proxCargaNum = parseInt(String(getVal(saiaExp, "CargaPDVNumero") || "0"));
+        const proxCargaSeq = parseInt(String(getVal(saiaExp, "CargaPDVSequencia") || "0"));
+
+        if (snFim === 'S' || (proxCargaNum === currentCargaNumero && proxCargaSeq === currentCargaSequencia)) {
+          hasMore = false;
+        } else {
+          currentCargaNumero = proxCargaNum;
+          currentCargaSequencia = proxCargaSeq;
+        }
+      }
+
+      res.json({ success: true, count: totalSynced });
+    } catch (err: any) {
+      console.error("[BlueFocus Customer Sync Error]:", err?.response?.data || err?.message || err);
+      res.status(500).json({ error: err?.message || "Erro ao sincronizar clientes do BlueFocus" });
     }
   });
 
