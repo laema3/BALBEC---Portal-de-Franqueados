@@ -2258,7 +2258,7 @@ export default function Admin() {
   const handleSaveBlueFocusDirect = async () => {
     try {
       const dataToSave = {
-        bluefocusSyncUrl: blueFocusConfig1.syncUrl || '',
+        bluefocusSyncUrl: blueFocusConfig1.syncUrl || storeInfo.bluefocusSyncUrl || localStorage.getItem('bluefocus_sync_url') || localStorage.getItem('bluefocus1_sync_url') || '',
         bluefocusEmpresaId: blueFocusConfig1.empresaId || 'BALBEC',
         bluefocusUsuarioId: blueFocusConfig1.usuarioId || 'CONSULTA',
         bluefocusPdvCodigo: blueFocusConfig1.pdvCodigo || '1000',
@@ -6687,10 +6687,19 @@ export default function Admin() {
             </div>
           )}
 
-          <div className="pt-6 border-t flex justify-between items-center">
-            <div className="flex gap-4">
+          <div className="pt-6 border-t flex flex-wrap justify-between items-center gap-3">
+            <div className="flex flex-wrap gap-3">
               <button type="submit" className="bg-stone-800 text-white px-8 py-3 rounded-xl font-bold hover:bg-stone-900 transition-all shadow-md cursor-pointer">
                 Salvar Configurações
+              </button>
+              <button 
+                type="button"
+                onClick={handleSyncBlueFocusCustomers}
+                disabled={isSyncing}
+                className="bg-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-purple-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-md"
+              >
+                <Users className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                {isSyncing ? 'Sincronizando...' : 'Sincronizar Clientes BlueFocus'}
               </button>
               {isMaster && (
                 <button 
