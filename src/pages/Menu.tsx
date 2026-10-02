@@ -1833,12 +1833,14 @@ export default function Menu() {
       <div className="min-h-screen bg-[#f8f7f5] flex flex-col items-center justify-center p-4 sm:p-6">
         <div className="bg-white p-6 sm:p-10 rounded-3xl shadow-xl max-w-md w-full text-center border border-stone-200">
           {storeInfo.logoUrl ? (
-            <img 
-              src={storeInfo.logoUrl} 
-              alt="Logo" 
-              className="h-20 sm:h-24 w-auto mx-auto mb-4 object-contain"
-              referrerPolicy="no-referrer"
-            />
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden border-2 border-stone-200/80 shadow-md bg-white flex items-center justify-center p-1.5 shrink-0">
+              <img 
+                src={storeInfo.logoUrl} 
+                alt="Logo" 
+                className="w-full h-full object-contain rounded-full"
+                referrerPolicy="no-referrer"
+              />
+            </div>
           ) : null}
 
           <h2 className="text-2xl sm:text-3xl font-black text-stone-900 mb-1 uppercase tracking-tight">
@@ -1980,12 +1982,14 @@ export default function Menu() {
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 min-h-[3.25rem] md:min-h-[4.5rem] flex items-center justify-between gap-2.5 sm:gap-3 md:gap-4">
             <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4 truncate">
               {storeInfo.logoUrl ? (
-                <img 
-                  src={storeInfo.logoUrl} 
-                  alt="Logo" 
-                  className="h-12 sm:h-16 md:h-24 w-auto object-contain shrink-0"
-                  referrerPolicy="no-referrer"
-                />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-orange-500/20 shadow-xs bg-white flex items-center justify-center p-1 shrink-0">
+                  <img 
+                    src={storeInfo.logoUrl} 
+                    alt="Logo" 
+                    className="w-full h-full object-contain rounded-full"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
               ) : null}
               <div className="block truncate">
                 <h1 className="text-xs sm:text-base md:text-lg font-bold text-[#5c4033] truncate leading-tight uppercase tracking-tight">{storeInfo.name}</h1>
@@ -2351,11 +2355,11 @@ export default function Menu() {
                           key={product.id} 
                           className="bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 p-3 sm:p-5 md:p-6 lg:p-5 flex gap-3 sm:gap-6 lg:gap-4 hover:shadow-xl hover:shadow-stone-200/50 transition-all group items-center"
                         >
-                          <div className="w-22 h-22 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-32 lg:h-32 xl:w-36 xl:h-36 shrink-0 bg-stone-50 rounded-xl sm:rounded-2xl overflow-hidden relative flex items-center justify-center border border-stone-100">
+                          <div className="w-22 h-22 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-32 lg:h-32 xl:w-36 xl:h-36 shrink-0 bg-stone-50 rounded-2xl sm:rounded-3xl overflow-hidden relative flex items-center justify-center border border-stone-100 shadow-xs">
                             <ProductImage 
                               src={product.imageUrl} 
                               alt={product.name}
-                              className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-500"
+                              className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-500 rounded-2xl sm:rounded-3xl"
                             />
                           </div>
 
@@ -2407,12 +2411,14 @@ export default function Menu() {
             {/* Redesigned Footer */}
             <footer className="mt-12 py-12 border-t border-stone-200 flex flex-col items-center text-center">
               {storeInfo.logoUrl ? (
-                <img 
-                  src={storeInfo.logoUrl} 
-                  alt="Logo" 
-                  className="h-10 w-auto object-contain opacity-20 mb-6"
-                  referrerPolicy="no-referrer"
-                />
+                <div className="w-12 h-12 rounded-full overflow-hidden border border-stone-200/80 shadow-xs bg-white flex items-center justify-center p-1 mb-6 opacity-60">
+                  <img 
+                    src={storeInfo.logoUrl} 
+                    alt="Logo" 
+                    className="w-full h-full object-contain rounded-full"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
               ) : null}
               <p className="text-stone-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
                 © {new Date().getFullYear()} {storeInfo.name}

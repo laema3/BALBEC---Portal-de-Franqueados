@@ -11,8 +11,8 @@ interface ProductImageProps {
 export const ProductImage: React.FC<ProductImageProps> = ({ 
   src, 
   alt, 
-  className = "w-full h-full object-cover",
-  containerClassName = "w-full h-full flex items-center justify-center overflow-hidden"
+  className = "w-full h-full object-cover rounded-2xl",
+  containerClassName = "w-full h-full flex items-center justify-center overflow-hidden rounded-2xl"
 }) => {
   const storeLogo = useStore(state => state.storeInfo.logoUrl);
   const logoUrl = storeLogo || '/logo.svg';

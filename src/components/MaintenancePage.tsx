@@ -37,11 +37,11 @@ export const MaintenancePage: React.FC = () => {
       {/* Top Header */}
       <header className="max-w-4xl mx-auto w-full flex items-center justify-between py-2">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 p-1.5 flex items-center justify-center shadow-inner">
+          <div className="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500/40 p-1 flex items-center justify-center shadow-inner overflow-hidden">
             <img 
               src={storeInfo.logoUrl || '/logo.svg'} 
               alt={storeInfo.name || 'BALBEC - Portal de Franqueados'} 
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain rounded-full"
             />
           </div>
           <div>
