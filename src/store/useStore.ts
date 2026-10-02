@@ -6,6 +6,13 @@ const CATALOG_CATEGORIES_CACHE_KEY = 'balbec_cached_categories_v1';
 const CATALOG_PRODUCTS_CACHE_KEY = 'balbec_cached_products_v1';
 
 const getInitialCategories = (): Category[] => {
+  try {
+    const raw = safeStorage.getItem(CATALOG_CATEGORIES_CACHE_KEY) || safeStorage.getItem('paomania_cached_categories_v1');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {}
   return [];
 };
 
@@ -18,6 +25,13 @@ const saveCategoriesToStorage = (list: Category[]): void => {
 };
 
 const getInitialProducts = (): Product[] => {
+  try {
+    const raw = safeStorage.getItem(CATALOG_PRODUCTS_CACHE_KEY) || safeStorage.getItem('paomania_cached_products_v1');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {}
   return [];
 };
 
@@ -635,9 +649,24 @@ export const useStore = create<StoreState>((set, get) => ({
           if (Array.isArray(categories) && categories.length > 0) {
             saveCategoriesToStorage(categories);
             set({ categories });
+          } else {
+            const cached = getInitialCategories();
+            if (cached.length > 0) {
+              set({ categories: cached });
+              fetch('/api/db/categories/batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cached)
+              }).catch(() => {});
+            }
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          const cached = getInitialCategories();
+          if (cached.length > 0) {
+            set({ categories: cached });
+          }
+        });
 
       // 2. Fetch Products (Main catalog, updates as soon as ready without waiting for heavy orders/users)
       const pProd = fetchWithTimeout('/api/db/products', 15000)
@@ -670,11 +699,26 @@ export const useStore = create<StoreState>((set, get) => ({
             saveProductsToStorage(products);
             set({ products, isInitialized: true });
           } else {
-            set({ isInitialized: true });
+            const cached = getInitialProducts();
+            if (cached.length > 0) {
+              set({ products: cached, isInitialized: true });
+              fetch('/api/db/products/batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cached)
+              }).catch(() => {});
+            } else {
+              set({ isInitialized: true });
+            }
           }
         })
         .catch(() => {
-          set({ isInitialized: true });
+          const cached = getInitialProducts();
+          if (cached.length > 0) {
+            set({ products: cached, isInitialized: true });
+          } else {
+            set({ isInitialized: true });
+          }
         });
 
       // 3. Fetch Store Info
