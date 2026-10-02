@@ -433,6 +433,7 @@ export async function ensureTablesExist() {
     await runQuery(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS available_for_kiosk BOOLEAN DEFAULT TRUE;`);
 
     await runQuery(`ALTER TABLE tv_media ADD COLUMN IF NOT EXISTS show_captions BOOLEAN DEFAULT FALSE;`);
+    await runQuery(`ALTER TABLE tv_media ADD COLUMN IF NOT EXISTS fit_mode TEXT DEFAULT 'fit';`);
 
   } catch (err: any) {
     // Non-fatal init catch

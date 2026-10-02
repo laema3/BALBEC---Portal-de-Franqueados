@@ -290,12 +290,12 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
 
   const activePrinter = getActiveOrderPrinter(storeInfo);
 
-  const handleTestPrintRawBT = () => {
+  const handleTestPrintTotem = () => {
     try {
       const sample = createSampleOrder(storeInfo);
       printViaRawBT(sample, storeInfo);
     } catch (err) {
-      console.error('Erro ao testar impressão no RawBT:', err);
+      console.error('Erro ao testar impressão no dispositivo:', err);
     }
   };
 
@@ -1130,7 +1130,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
-                      onClick={handleTestPrintRawBT}
+                      onClick={handleTestPrintTotem}
                       className="bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
                       title="Dispara um cupom de teste diretamente para o dispositivo térmico (Totem / Tablet / Android)"
                     >

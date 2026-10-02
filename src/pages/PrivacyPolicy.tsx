@@ -55,7 +55,7 @@ export default function PrivacyPolicy() {
                 Introdução
               </h2>
               <p>
-                A <strong>{storeName}</strong> (CNPJ: 03.162.220/0001-00), com sede em {storeAddress}, valoriza a segurança, o sigilo e a privacidade de todos os seus clientes e usuários.
+                A <strong>{storeName}</strong>, com sede em {storeAddress}, valoriza a segurança, o sigilo e a privacidade de todos os seus clientes e usuários.
               </p>
               <p className="mt-2">
                 Esta Política explica de forma clara como tratamos, coletamos e protegemos seus dados pessoais ao navegar em nosso Cardápio Digital, realizar pedidos no balcão, no autoatendimento (totem) ou pelo serviço de Delivery e Retirada.
