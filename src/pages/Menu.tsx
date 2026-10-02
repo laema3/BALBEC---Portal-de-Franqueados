@@ -2312,9 +2312,9 @@ export default function Menu() {
         {/* Modern Header */}
         <header className="bg-white border-b border-stone-200 shrink-0 z-30 pt-3 sm:pt-4 md:pt-5 pb-3 sm:pb-4 md:pb-5">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 min-h-[6.5rem] sm:min-h-[8.5rem] md:min-h-[10.5rem] flex items-center justify-between gap-2.5 sm:gap-3 md:gap-4">
-            <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4 truncate">
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-1.5 sm:gap-3 md:gap-4 shrink-0">
               {storeInfo.logoUrl ? (
-                <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 sm:border-3 border-orange-500/20 shadow-md bg-white flex items-center justify-center p-1.5 sm:p-2 shrink-0">
+                <div className="w-12 h-12 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 sm:border-3 border-orange-500/20 shadow-md bg-white flex items-center justify-center p-1 sm:p-2 shrink-0">
                   <img 
                     src={storeInfo.logoUrl} 
                     alt="Logo" 
@@ -2323,9 +2323,9 @@ export default function Menu() {
                   />
                 </div>
               ) : null}
-              <div className="block truncate">
-                <h1 className="text-xs sm:text-base md:text-lg font-bold text-[#5c4033] truncate leading-tight uppercase tracking-tight">{storeInfo.name}</h1>
-                <p className="text-[10px] sm:text-xs text-stone-500 font-medium truncate italic hidden sm:block">{storeInfo.headerPhrase}</p>
+              <div className="text-center sm:text-left max-w-[110px] sm:max-w-none">
+                <h1 className="text-[9px] sm:text-base md:text-lg font-bold text-[#5c4033] leading-tight uppercase tracking-tight line-clamp-2 sm:line-clamp-none">{storeInfo.name}</h1>
+                <p className="text-[9px] sm:text-xs text-stone-500 font-medium truncate italic hidden sm:block">{storeInfo.headerPhrase}</p>
               </div>
             </div>
 
