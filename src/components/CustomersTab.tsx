@@ -300,6 +300,37 @@ export const CustomersTab: React.FC = () => {
     }
   };
 
+  const handleSyncBlueFocusCustomers = async () => {
+    setIsSyncing(true);
+    try {
+      const config = {
+        syncUrl: storeInfo?.bluefocusSyncUrl || localStorage.getItem('bluefocus_sync_url') || localStorage.getItem('bluefocus1_sync_url') || '',
+        empresaId: storeInfo?.bluefocusEmpresaId || localStorage.getItem('bluefocus_empresa_id') || localStorage.getItem('bluefocus1_empresa_id') || 'BALBEC',
+        usuarioId: storeInfo?.bluefocusUsuarioId || localStorage.getItem('bluefocus_usuario_id') || localStorage.getItem('bluefocus1_usuario_id') || 'CONSULTA',
+        pdvCodigo: storeInfo?.bluefocusPdvCodigo || localStorage.getItem('bluefocus_pdv_codigo') || localStorage.getItem('bluefocus1_pdv_codigo') || '1000',
+        authToken: storeInfo?.bluefocusAuthToken || localStorage.getItem('bluefocus_auth_token') || localStorage.getItem('bluefocus1_auth_token') || '',
+        dataInicial: storeInfo?.bluefocusDataInicial || localStorage.getItem('bluefocus_data_inicial') || '30/12/1899'
+      };
+
+      const res = await fetch('/api/bluefocus/sync-customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao sincronizar clientes');
+
+      await fetchCustomers();
+      setSyncSuccessMsg(`Sucesso! Sincronizados ${data.count || 0} clientes do BlueFocus.`);
+      setTimeout(() => setSyncSuccessMsg(''), 4000);
+    } catch (err: any) {
+      console.error('Erro ao sincronizar do BlueFocus:', err);
+      alert(err?.message || 'Falha ao sincronizar clientes do BlueFocus.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   // Extract all unique tags
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -486,6 +517,17 @@ export const CustomersTab: React.FC = () => {
           >
             <RefreshCw className={`w-4 h-4 text-stone-600 ${isSyncing ? 'animate-spin' : ''}`} />
             <span>{isSyncing ? 'Sincronizando...' : 'Sincronizar Pedidos'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSyncBlueFocusCustomers}
+            disabled={isSyncing}
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-xl text-xs transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+            title="Sincronizar clientes diretamente do sistema BlueFocus (ERP)"
+          >
+            <RefreshCw className={`w-4 h-4 text-white ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'Sincronizando...' : 'Sincronizar Clientes BlueFocus'}</span>
           </button>
 
           <button
