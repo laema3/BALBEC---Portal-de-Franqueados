@@ -968,7 +968,7 @@ export const CaixaPrinterStationCard: React.FC<CaixaPrinterStationCardProps> = (
           <div className="bg-amber-50/70 border border-amber-300/80 rounded-xl p-3.5 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-amber-200/80">
               <span className="text-xs font-black text-amber-950 flex items-center gap-1.5">
-                📱 1. Impressora do TOTEM (RawBT)
+                📱 1. Impressora do TOTEM (Tablet / Android)
               </span>
               <span className="text-[10px] bg-amber-200 text-amber-900 font-bold px-1.5 py-0.5 rounded">
                 Autoatendimento

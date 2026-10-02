@@ -139,6 +139,7 @@ interface AdminSettingsCollapsibleProps {
   handleSyncBlueFocus1: (override?: any) => Promise<void>;
   handleTestBlueFocus1: () => Promise<void>;
   isTestingBlueFocus1: boolean;
+  handleSaveBlueFocusDirect?: () => Promise<void>;
 
   isSyncing: boolean;
   isAutoSyncEnabled: boolean;
@@ -249,6 +250,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
     handleSyncBlueFocus1,
     handleTestBlueFocus1,
     isTestingBlueFocus1,
+    handleSaveBlueFocusDirect,
     isSyncing,
     isAutoSyncEnabled,
     setIsAutoSyncEnabled,
@@ -941,11 +943,11 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                   )}
                 </div>
 
-                {/* Configuração de Picote / Guilhotina para Totem & RawBT */}
+                {/* Configuração de Picote / Guilhotina para Totem & Balcão */}
                 <div className="p-3.5 bg-amber-50/60 rounded-xl border border-amber-200/80 space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-xs font-bold text-stone-900 block">Comando de Corte / Picote de Papel (Totem & RawBT)</span>
+                      <span className="text-xs font-bold text-stone-900 block">Comando de Corte / Picote de Papel (Totem & Balcão)</span>
                       <span className="text-[11px] text-stone-500">Defina como a guilhotina da impressora térmica deve se comportar ao finalizar o cupom.</span>
                     </div>
                   </div>
@@ -992,7 +994,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                       />
                       <div>
                         <span className="text-xs font-bold text-stone-900 block">Sem Corte no Código</span>
-                        <span className="text-[10px] text-stone-500 block leading-tight">Não envia comando de corte. Ideal caso seu RawBT já tenha corte automático nativo.</span>
+                        <span className="text-[10px] text-stone-500 block leading-tight">Não envia comando de corte. Ideal caso sua impressora já tenha corte automático nativo.</span>
                       </div>
                     </label>
                   </div>
@@ -1130,10 +1132,10 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                       type="button"
                       onClick={handleTestPrintRawBT}
                       className="bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
-                      title="Dispara um cupom de teste diretamente para o aplicativo RawBT (Totem / Tablet / Android)"
+                      title="Dispara um cupom de teste diretamente para o dispositivo térmico (Totem / Tablet / Android)"
                     >
                       <Printer className="w-3.5 h-3.5 text-orange-600" />
-                      <span>Testar no RawBT</span>
+                      <span>Testar no Totem / Tablet</span>
                     </button>
 
                     <button
@@ -1173,7 +1175,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                     3. O Windows e o navegador <strong>memorizam sua escolha automaticamente</strong>. Nas próximas impressões, ela já virá selecionada por padrão, bastando apenas pressionar <em>Enter</em>!
                   </p>
                   <div className="pt-2 border-t border-amber-200/60 text-stone-500">
-                    📱 <strong>No Tablet e Celular (Android / Totem):</strong> A impressão e o corte automático de papel são enviados diretamente via aplicativo RawBT.
+                    📱 <strong>No Tablet e Celular (Android / Totem):</strong> A impressão e o corte automático de papel são enviados diretamente para a impressora térmica conectada.
                   </div>
                 </div>
               </div>
@@ -2574,6 +2576,17 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                       <RefreshCw className={`w-3 h-3 ${isTestingBlueFocus1 ? 'animate-spin' : ''}`} />
                       Testar Conexão
                     </button>
+                    {handleSaveBlueFocusDirect && (
+                      <button 
+                        type="button" 
+                        onClick={handleSaveBlueFocusDirect}
+                        className="text-xs bg-orange-600 hover:bg-orange-700 text-white font-bold px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                        title="Salvar imediatamente dados do BlueFocus no banco de dados"
+                      >
+                        <Save className="w-3.5 h-3.5 text-white" />
+                        Salvar BlueFocus
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -2587,6 +2600,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         const val = e.target.value;
                         setBlueFocusConfig1((prev: any) => ({ ...prev, authToken: val }));
                         localStorage.setItem('bluefocus1_auth_token', val);
+                        localStorage.setItem('bluefocus_auth_token', val);
                       }}
                       placeholder="Opcional"
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none font-mono text-xs" 
@@ -2601,6 +2615,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         const val = e.target.value;
                         setBlueFocusConfig1((prev: any) => ({ ...prev, empresaId: val }));
                         localStorage.setItem('bluefocus1_empresa_id', val);
+                        localStorage.setItem('bluefocus_empresa_id', val);
                       }}
                       placeholder="Ex: BALBEC"
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs font-semibold" 
@@ -2615,6 +2630,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         const val = e.target.value;
                         setBlueFocusConfig1((prev: any) => ({ ...prev, usuarioId: val }));
                         localStorage.setItem('bluefocus1_usuario_id', val);
+                        localStorage.setItem('bluefocus_usuario_id', val);
                       }}
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
                     />
@@ -2628,6 +2644,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         const val = e.target.value;
                         setBlueFocusConfig1((prev: any) => ({ ...prev, pdvCodigo: val }));
                         localStorage.setItem('bluefocus1_pdv_codigo', val);
+                        localStorage.setItem('bluefocus_pdv_codigo', val);
                       }}
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
                     />
@@ -2641,6 +2658,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         const val = e.target.value;
                         setBlueFocusConfig1((prev: any) => ({ ...prev, syncUrl: val }));
                         localStorage.setItem('bluefocus1_sync_url', val);
+                        localStorage.setItem('bluefocus_sync_url', val);
                       }}
                       placeholder="https://..."
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none font-mono text-xs" 
@@ -2654,6 +2672,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         const val = e.target.value;
                         setBlueFocusConfig1((prev: any) => ({ ...prev, tipoAtualizacao: val }));
                         localStorage.setItem('bluefocus1_tipo_atualizacao', val);
+                        localStorage.setItem('bluefocus_tipo_atualizacao', val);
                       }}
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
                     >
@@ -2670,6 +2689,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         const val = e.target.value;
                         setBlueFocusConfig1((prev: any) => ({ ...prev, tipo: val }));
                         localStorage.setItem('bluefocus1_tipo', val);
+                        localStorage.setItem('bluefocus_tipo', val);
                       }}
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
                     />
@@ -2683,6 +2703,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         const val = e.target.value;
                         setBlueFocusConfig1((prev: any) => ({ ...prev, dataInicial: val }));
                         localStorage.setItem('bluefocus1_data_inicial', val);
+                        localStorage.setItem('bluefocus_data_inicial', val);
                       }}
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
                     />
@@ -2696,6 +2717,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         const val = e.target.value;
                         setBlueFocusConfig1((prev: any) => ({ ...prev, startCargaNumero: val }));
                         localStorage.setItem('bluefocus1_start_carga_numero', val);
+                        localStorage.setItem('bluefocus_start_carga_numero', val);
                       }}
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
                     />
@@ -2709,6 +2731,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         const val = e.target.value;
                         setBlueFocusConfig1((prev: any) => ({ ...prev, startCargaSequencia: val }));
                         localStorage.setItem('bluefocus1_start_carga_sequencia', val);
+                        localStorage.setItem('bluefocus_start_carga_sequencia', val);
                       }}
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
                     />
@@ -2722,11 +2745,28 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                         const val = e.target.value;
                         setBlueFocusConfig1((prev: any) => ({ ...prev, startProdutoId: val }));
                         localStorage.setItem('bluefocus1_start_produto_id', val);
+                        localStorage.setItem('bluefocus_start_produto_id', val);
                       }}
                       className="w-full p-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-xs" 
                     />
                   </div>
                 </div>
+
+                {handleSaveBlueFocusDirect && (
+                  <div className="pt-3 border-t border-stone-200/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <span className="text-[11px] text-stone-500">
+                      💾 Clique para salvar suas credenciais no banco de dados e garantir que nunca sejam perdidas ao navegar.
+                    </span>
+                    <button 
+                      type="button" 
+                      onClick={handleSaveBlueFocusDirect}
+                      className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                    >
+                      <Save className="w-4 h-4 text-white" />
+                      Salvar Dados do BlueFocus
+                    </button>
+                  </div>
+                )}
               </div>
 
 

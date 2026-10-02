@@ -738,8 +738,12 @@ ${itemsXml}
 
   // Start server and initialize services
   async function startServer() {
-    // Vite middleware for development or Static Serving for production
-    if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+    const fs = await import("fs");
+    const distPath = path.resolve(process.cwd(), "dist");
+    const hasDist = fs.existsSync(path.join(distPath, "index.html"));
+
+    // Vite middleware for development or fallback when dist is not built
+    if (!hasDist || (process.env.NODE_ENV !== "production" && !process.env.VERCEL)) {
       console.log("[Dev] Configurando middleware do Vite...");
       try {
         const { createServer: createViteServer } = await import("vite");
@@ -756,7 +760,6 @@ ${itemsXml}
         console.error("[Dev] Erro ao iniciar Vite:", viteErr);
       }
     } else if (!process.env.VERCEL) {
-      const distPath = path.resolve(process.cwd(), "dist");
       console.log(`[Prod] Servindo arquivos estáticos de: ${distPath}`);
       
       app.get('/manifest.json', (req, res) => {

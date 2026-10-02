@@ -42,7 +42,6 @@ let agentStatus: {
 
 /**
  * Enfileira um pedido para impressão automática pelo Agente Windows do Caixa.
- * Ignora pedidos do tipo 'kiosk' (Totem) pois já são impressos no próprio Totem via RawBT.
  */
 export function queueOrderForAgent(order: any, storeInfo: any): AgentPrintJob | null {
   if (!order || !order.id) return null;

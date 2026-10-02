@@ -694,6 +694,23 @@ export const useStore = create<StoreState>((set, get) => ({
               if (!storeInfo.address && local.address) merged.address = local.address;
               if (!storeInfo.hours && local.hours) merged.hours = local.hours;
               if (!storeInfo.instagram && local.instagram) merged.instagram = local.instagram;
+              
+              // Preserve BlueFocus credentials so navigating never wipes local/saved keys
+              const savedBfUrl = local.bluefocusSyncUrl || localStorage.getItem('bluefocus_sync_url') || localStorage.getItem('bluefocus1_sync_url');
+              if (!storeInfo.bluefocusSyncUrl && savedBfUrl) merged.bluefocusSyncUrl = savedBfUrl;
+              
+              const savedBfToken = local.bluefocusAuthToken || localStorage.getItem('bluefocus_auth_token') || localStorage.getItem('bluefocus1_auth_token');
+              if (!storeInfo.bluefocusAuthToken && savedBfToken) merged.bluefocusAuthToken = savedBfToken;
+
+              const savedBfEmpresa = local.bluefocusEmpresaId || localStorage.getItem('bluefocus_empresa_id') || localStorage.getItem('bluefocus1_empresa_id');
+              if (!storeInfo.bluefocusEmpresaId && savedBfEmpresa) merged.bluefocusEmpresaId = savedBfEmpresa;
+
+              const savedBfUsuario = local.bluefocusUsuarioId || localStorage.getItem('bluefocus_usuario_id') || localStorage.getItem('bluefocus1_usuario_id');
+              if (!storeInfo.bluefocusUsuarioId && savedBfUsuario) merged.bluefocusUsuarioId = savedBfUsuario;
+
+              const savedBfPdv = local.bluefocusPdvCodigo || localStorage.getItem('bluefocus_pdv_codigo') || localStorage.getItem('bluefocus1_pdv_codigo');
+              if (!storeInfo.bluefocusPdvCodigo && savedBfPdv) merged.bluefocusPdvCodigo = savedBfPdv;
+
               if (local.weeklySchedule && local.weeklySchedule !== '[]' && local.weeklySchedule !== defaultStoreInfo.weeklySchedule) {
                 merged.weeklySchedule = local.weeklySchedule;
               }

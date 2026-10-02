@@ -1621,17 +1621,38 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
       if (body.aiAgentCustomPrompt !== undefined) sanitized.aiAgentCustomPrompt = String(body.aiAgentCustomPrompt);
       if (body.aiAgentWhatsAppPhone !== undefined) sanitized.aiAgentWhatsAppPhone = String(body.aiAgentWhatsAppPhone);
       if (body.aiAgentWhatsAppDefaultMessage !== undefined) sanitized.aiAgentWhatsAppDefaultMessage = String(body.aiAgentWhatsAppDefaultMessage);
-      if (body.bluefocusSyncUrl !== undefined) sanitized.bluefocusSyncUrl = String(body.bluefocusSyncUrl);
-      if (body.bluefocusEmpresaId !== undefined) sanitized.bluefocusEmpresaId = String(body.bluefocusEmpresaId);
-      if (body.bluefocusUsuarioId !== undefined) sanitized.bluefocusUsuarioId = String(body.bluefocusUsuarioId);
-      if (body.bluefocusPdvCodigo !== undefined) sanitized.bluefocusPdvCodigo = String(body.bluefocusPdvCodigo);
-      if (body.bluefocusAuthToken !== undefined) sanitized.bluefocusAuthToken = String(body.bluefocusAuthToken);
-      if (body.bluefocusTipo !== undefined) sanitized.bluefocusTipo = String(body.bluefocusTipo);
-      if (body.bluefocusDataInicial !== undefined) sanitized.bluefocusDataInicial = String(body.bluefocusDataInicial);
-      if (body.bluefocusStartCargaNumero !== undefined) sanitized.bluefocusStartCargaNumero = String(body.bluefocusStartCargaNumero);
-      if (body.bluefocusStartCargaSequencia !== undefined) sanitized.bluefocusStartCargaSequencia = String(body.bluefocusStartCargaSequencia);
-      if (body.bluefocusStartProdutoId !== undefined) sanitized.bluefocusStartProdutoId = String(body.bluefocusStartProdutoId);
-      if (body.bluefocusTipoAtualizacao !== undefined) sanitized.bluefocusTipoAtualizacao = String(body.bluefocusTipoAtualizacao);
+      const bfSyncUrl = body.bluefocusSyncUrl ?? body.bluefocus_sync_url;
+      if (bfSyncUrl !== undefined) sanitized.bluefocusSyncUrl = String(bfSyncUrl);
+      
+      const bfEmpresaId = body.bluefocusEmpresaId ?? body.bluefocus_empresa_id;
+      if (bfEmpresaId !== undefined) sanitized.bluefocusEmpresaId = String(bfEmpresaId);
+
+      const bfUsuarioId = body.bluefocusUsuarioId ?? body.bluefocus_usuario_id;
+      if (bfUsuarioId !== undefined) sanitized.bluefocusUsuarioId = String(bfUsuarioId);
+
+      const bfPdvCodigo = body.bluefocusPdvCodigo ?? body.bluefocus_pdv_codigo;
+      if (bfPdvCodigo !== undefined) sanitized.bluefocusPdvCodigo = String(bfPdvCodigo);
+
+      const bfAuthToken = body.bluefocusAuthToken ?? body.bluefocus_auth_token;
+      if (bfAuthToken !== undefined) sanitized.bluefocusAuthToken = String(bfAuthToken);
+
+      const bfTipo = body.bluefocusTipo ?? body.bluefocus_tipo;
+      if (bfTipo !== undefined) sanitized.bluefocusTipo = String(bfTipo);
+
+      const bfDataInicial = body.bluefocusDataInicial ?? body.bluefocus_data_inicial;
+      if (bfDataInicial !== undefined) sanitized.bluefocusDataInicial = String(bfDataInicial);
+
+      const bfStartCargaNumero = body.bluefocusStartCargaNumero ?? body.bluefocus_start_carga_numero;
+      if (bfStartCargaNumero !== undefined) sanitized.bluefocusStartCargaNumero = String(bfStartCargaNumero);
+
+      const bfStartCargaSequencia = body.bluefocusStartCargaSequencia ?? body.bluefocus_start_carga_sequencia;
+      if (bfStartCargaSequencia !== undefined) sanitized.bluefocusStartCargaSequencia = String(bfStartCargaSequencia);
+
+      const bfStartProdutoId = body.bluefocusStartProdutoId ?? body.bluefocus_start_produto_id;
+      if (bfStartProdutoId !== undefined) sanitized.bluefocusStartProdutoId = String(bfStartProdutoId);
+
+      const bfTipoAtualizacao = body.bluefocusTipoAtualizacao ?? body.bluefocus_tipo_atualizacao;
+      if (bfTipoAtualizacao !== undefined) sanitized.bluefocusTipoAtualizacao = String(bfTipoAtualizacao);
       if (body.aiAgentTrainingExamples !== undefined) {
         sanitized.aiAgentTrainingExamples = typeof body.aiAgentTrainingExamples === 'string'
           ? body.aiAgentTrainingExamples
@@ -1672,7 +1693,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
 
       if (isDatabaseConfigured()) {
         try {
-          let currentDbRow = {};
+          let currentDbRow: any = {};
           try {
             const list = await db.select().from(storeInfo).where(eq(storeInfo.id, 'default'));
             if (list.length > 0) currentDbRow = list[0];
@@ -1680,7 +1701,25 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
             console.warn('[DB] Select prévio em store_info:', e?.message);
           }
 
-          const fullRecordToPersist = { ...DEFAULT_STORE_INFO, ...currentDbRow, ...memStoreInfo, ...sanitized, id: 'default' };
+          const fullRecordToPersist: any = { ...DEFAULT_STORE_INFO, ...currentDbRow, ...memStoreInfo, ...sanitized, id: 'default' };
+          
+          // Never overwrite existing DB BlueFocus credentials with empty values from partial updates
+          if (currentDbRow.bluefocusSyncUrl && !sanitized.bluefocusSyncUrl) {
+            fullRecordToPersist.bluefocusSyncUrl = currentDbRow.bluefocusSyncUrl;
+          }
+          if (currentDbRow.bluefocusAuthToken && !sanitized.bluefocusAuthToken) {
+            fullRecordToPersist.bluefocusAuthToken = currentDbRow.bluefocusAuthToken;
+          }
+          if (currentDbRow.bluefocusEmpresaId && !sanitized.bluefocusEmpresaId) {
+            fullRecordToPersist.bluefocusEmpresaId = currentDbRow.bluefocusEmpresaId;
+          }
+          if (currentDbRow.bluefocusUsuarioId && !sanitized.bluefocusUsuarioId) {
+            fullRecordToPersist.bluefocusUsuarioId = currentDbRow.bluefocusUsuarioId;
+          }
+          if (currentDbRow.bluefocusPdvCodigo && !sanitized.bluefocusPdvCodigo) {
+            fullRecordToPersist.bluefocusPdvCodigo = currentDbRow.bluefocusPdvCodigo;
+          }
+
           memStoreInfo = fullRecordToPersist;
           persistStoreInfoToDisk(memStoreInfo);
 

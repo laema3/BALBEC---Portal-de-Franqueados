@@ -112,7 +112,7 @@ Pagamento: ${order.paymentMethod || 'Não informado'}
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-blue-200">
-              RawBT
+              Térmica / Mobile
             </span>
             <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-amber-200">
               Windows
@@ -240,10 +240,10 @@ Pagamento: ${order.paymentMethod || 'Não informado'}
             href={rawbtIntentUrl}
             onClick={handlePrint}
             className="flex-1 bg-orange-600 hover:bg-orange-700 active:scale-[0.98] text-white py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer select-none"
-            title="Imprimir Cupom via RawBT"
+            title="Imprimir Cupom Térmico"
           >
             {isPrinting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
-            <span>{isPrinting ? 'Enviando ao RawBT...' : 'Imprimir Cupom (RawBT)'}</span>
+            <span>{isPrinting ? 'Enviando impressão...' : 'Imprimir Cupom'}</span>
           </a>
 
           <a

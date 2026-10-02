@@ -819,35 +819,35 @@ export default function Admin() {
   const [exportingOrderId, setExportingOrderId] = useState<string | null>(null);
   
   // BlueFocus Config States (INTEGRAÇÃO 1 e INTEGRAÇÃO 2)
-  const [blueFocusConfig1, setBlueFocusConfig1] = useState({
+  const [blueFocusConfig1, setBlueFocusConfig1] = useState(() => ({
     empresaId: storeInfo?.bluefocusEmpresaId || localStorage.getItem('bluefocus1_empresa_id') || localStorage.getItem('bluefocus_empresa_id') || 'BALBEC',
     usuarioId: storeInfo?.bluefocusUsuarioId || localStorage.getItem('bluefocus1_usuario_id') || localStorage.getItem('bluefocus_usuario_id') || 'CONSULTA',
     pdvCodigo: storeInfo?.bluefocusPdvCodigo || localStorage.getItem('bluefocus1_pdv_codigo') || localStorage.getItem('bluefocus_pdv_codigo') || '1000',
     syncUrl: storeInfo?.bluefocusSyncUrl || localStorage.getItem('bluefocus1_sync_url') || localStorage.getItem('bluefocus_sync_url') || '',
     tipoAtualizacao: storeInfo?.bluefocusTipoAtualizacao || localStorage.getItem('bluefocus1_tipo_atualizacao') || localStorage.getItem('bluefocus_tipo_atualizacao') || 'A',
     tipo: storeInfo?.bluefocusTipo || localStorage.getItem('bluefocus1_tipo') || localStorage.getItem('bluefocus_tipo') || '4',
-    dataInicial: storeInfo?.bluefocusDataInicial || localStorage.getItem('bluefocus1_data_inicial') || '30/12/1899',
-    startCargaNumero: storeInfo?.bluefocusStartCargaNumero || localStorage.getItem('bluefocus1_start_carga_numero') || '0',
-    startCargaSequencia: storeInfo?.bluefocusStartCargaSequencia || localStorage.getItem('bluefocus1_start_carga_sequencia') || '0',
+    dataInicial: storeInfo?.bluefocusDataInicial || localStorage.getItem('bluefocus1_data_inicial') || localStorage.getItem('bluefocus_data_inicial') || '30/12/1899',
+    startCargaNumero: storeInfo?.bluefocusStartCargaNumero || localStorage.getItem('bluefocus1_start_carga_numero') || localStorage.getItem('bluefocus_start_carga_numero') || '0',
+    startCargaSequencia: storeInfo?.bluefocusStartCargaSequencia || localStorage.getItem('bluefocus1_start_carga_sequencia') || localStorage.getItem('bluefocus_start_carga_sequencia') || '0',
     authToken: storeInfo?.bluefocusAuthToken || localStorage.getItem('bluefocus1_auth_token') || localStorage.getItem('bluefocus_auth_token') || '',
-    startProdutoId: storeInfo?.bluefocusStartProdutoId || localStorage.getItem('bluefocus1_start_produto_id') || '0'
-  });
+    startProdutoId: storeInfo?.bluefocusStartProdutoId || localStorage.getItem('bluefocus1_start_produto_id') || localStorage.getItem('bluefocus_start_produto_id') || '0'
+  }));
 
   useEffect(() => {
-    if (storeInfo && (storeInfo.bluefocusSyncUrl || storeInfo.bluefocusEmpresaId)) {
+    if (storeInfo) {
       setBlueFocusConfig1(prev => ({
         ...prev,
-        empresaId: storeInfo.bluefocusEmpresaId || prev.empresaId,
-        usuarioId: storeInfo.bluefocusUsuarioId || prev.usuarioId,
-        pdvCodigo: storeInfo.bluefocusPdvCodigo || prev.pdvCodigo,
-        syncUrl: storeInfo.bluefocusSyncUrl || prev.syncUrl,
-        tipoAtualizacao: storeInfo.bluefocusTipoAtualizacao || prev.tipoAtualizacao,
-        tipo: storeInfo.bluefocusTipo || prev.tipo,
-        dataInicial: storeInfo.bluefocusDataInicial || prev.dataInicial,
-        startCargaNumero: storeInfo.bluefocusStartCargaNumero || prev.startCargaNumero,
-        startCargaSequencia: storeInfo.bluefocusStartCargaSequencia || prev.startCargaSequencia,
-        authToken: storeInfo.bluefocusAuthToken || prev.authToken,
-        startProdutoId: storeInfo.bluefocusStartProdutoId || prev.startProdutoId,
+        empresaId: storeInfo.bluefocusEmpresaId || prev.empresaId || localStorage.getItem('bluefocus1_empresa_id') || localStorage.getItem('bluefocus_empresa_id') || 'BALBEC',
+        usuarioId: storeInfo.bluefocusUsuarioId || prev.usuarioId || localStorage.getItem('bluefocus1_usuario_id') || localStorage.getItem('bluefocus_usuario_id') || 'CONSULTA',
+        pdvCodigo: storeInfo.bluefocusPdvCodigo || prev.pdvCodigo || localStorage.getItem('bluefocus1_pdv_codigo') || localStorage.getItem('bluefocus_pdv_codigo') || '1000',
+        syncUrl: storeInfo.bluefocusSyncUrl || prev.syncUrl || localStorage.getItem('bluefocus1_sync_url') || localStorage.getItem('bluefocus_sync_url') || '',
+        tipoAtualizacao: storeInfo.bluefocusTipoAtualizacao || prev.tipoAtualizacao || localStorage.getItem('bluefocus1_tipo_atualizacao') || 'A',
+        tipo: storeInfo.bluefocusTipo || prev.tipo || localStorage.getItem('bluefocus1_tipo') || '4',
+        dataInicial: storeInfo.bluefocusDataInicial || prev.dataInicial || localStorage.getItem('bluefocus1_data_inicial') || '30/12/1899',
+        startCargaNumero: storeInfo.bluefocusStartCargaNumero || prev.startCargaNumero || localStorage.getItem('bluefocus1_start_carga_numero') || '0',
+        startCargaSequencia: storeInfo.bluefocusStartCargaSequencia || prev.startCargaSequencia || localStorage.getItem('bluefocus1_start_carga_sequencia') || '0',
+        authToken: storeInfo.bluefocusAuthToken || prev.authToken || localStorage.getItem('bluefocus1_auth_token') || localStorage.getItem('bluefocus_auth_token') || '',
+        startProdutoId: storeInfo.bluefocusStartProdutoId || prev.startProdutoId || localStorage.getItem('bluefocus1_start_produto_id') || '0',
       }));
     }
   }, [storeInfo]);
@@ -1747,8 +1747,8 @@ export default function Admin() {
     }
     prevPendingIds.current = currentPendingIds;
 
-    // Auto-impressão no Caixa: imprime apenas pedidos feitos por clientes (smartphone, mesa, balcão, delivery).
-    // Pedidos originados no TOTEM (newOrder.type === 'kiosk') são 100% independentes e já são impressos no próprio Totem via RawBT.
+    // Auto-impressão no Caixa: imprime apenas pedidos feitos por clientes (smartphone, balcão).
+    // Pedidos originados no TOTEM (newOrder.type === 'kiosk') são 100% independentes e já são impressos no próprio Totem.
     const isCaixaAutoPrintEnabled = storeInfo?.autoPrintOrdersOnCaixa !== false;
     if (isCaixaAutoPrintEnabled && brandNewOrders.length > 0) {
       brandNewOrders.forEach(async (newOrder) => {
@@ -1756,7 +1756,7 @@ export default function Admin() {
           // Se o pedido for do TOTEM, não dispara impressão no Caixa
           if (newOrder.type === 'kiosk') {
             autoPrintedOrderIds.current.add(newOrder.id);
-            console.log(`[Caixa Auto-Print] Pedido #${newOrder.id} é do Totem. Ignorando impressão no Caixa para evitar duplicação (o Totem imprime via RawBT).`);
+            console.log(`[Caixa Auto-Print] Pedido #${newOrder.id} é do Totem. Ignorando impressão no Caixa para evitar duplicação.`);
             return;
           }
 
@@ -2227,6 +2227,56 @@ export default function Admin() {
       });
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleSaveBlueFocusDirect = async () => {
+    try {
+      const dataToSave = {
+        bluefocusSyncUrl: blueFocusConfig1.syncUrl || '',
+        bluefocusEmpresaId: blueFocusConfig1.empresaId || 'BALBEC',
+        bluefocusUsuarioId: blueFocusConfig1.usuarioId || 'CONSULTA',
+        bluefocusPdvCodigo: blueFocusConfig1.pdvCodigo || '1000',
+        bluefocusAuthToken: blueFocusConfig1.authToken || '',
+        bluefocusTipo: blueFocusConfig1.tipo || '4',
+        bluefocusDataInicial: blueFocusConfig1.dataInicial || '30/12/1899',
+        bluefocusStartCargaNumero: blueFocusConfig1.startCargaNumero || '0',
+        bluefocusStartCargaSequencia: blueFocusConfig1.startCargaSequencia || '0',
+        bluefocusStartProdutoId: blueFocusConfig1.startProdutoId || '0',
+        bluefocusTipoAtualizacao: blueFocusConfig1.tipoAtualizacao || 'A',
+      };
+      
+      // Save directly to localStorage as immediate persistent cache
+      ['bluefocus1_', 'bluefocus_'].forEach(prefix => {
+        localStorage.setItem(`${prefix}sync_url`, dataToSave.bluefocusSyncUrl);
+        localStorage.setItem(`${prefix}empresa_id`, dataToSave.bluefocusEmpresaId);
+        localStorage.setItem(`${prefix}usuario_id`, dataToSave.bluefocusUsuarioId);
+        localStorage.setItem(`${prefix}pdv_codigo`, dataToSave.bluefocusPdvCodigo);
+        localStorage.setItem(`${prefix}auth_token`, dataToSave.bluefocusAuthToken);
+        localStorage.setItem(`${prefix}tipo`, dataToSave.bluefocusTipo);
+        localStorage.setItem(`${prefix}data_inicial`, dataToSave.bluefocusDataInicial);
+        localStorage.setItem(`${prefix}start_carga_numero`, dataToSave.bluefocusStartCargaNumero);
+        localStorage.setItem(`${prefix}start_carga_sequencia`, dataToSave.bluefocusStartCargaSequencia);
+        localStorage.setItem(`${prefix}start_produto_id`, dataToSave.bluefocusStartProdutoId);
+        localStorage.setItem(`${prefix}tipo_atualizacao`, dataToSave.bluefocusTipoAtualizacao);
+      });
+      
+      await updateStoreInfo(dataToSave);
+      
+      setConfirmModal({
+        isOpen: true,
+        title: 'Dados BlueFocus Salvos',
+        message: 'Os dados e credenciais de integração do BlueFocus foram gravados com sucesso no banco de dados e serão mantidos permanentemente!',
+        onConfirm: () => setConfirmModal(null)
+      });
+    } catch (err: any) {
+      console.error('Erro ao salvar BlueFocus:', err);
+      setConfirmModal({
+        isOpen: true,
+        title: 'Erro ao Salvar',
+        message: 'Não foi possível salvar os dados do BlueFocus. Verifique a conexão com o servidor.',
+        onConfirm: () => setConfirmModal(null)
+      });
     }
   };
 
@@ -5182,6 +5232,7 @@ export default function Admin() {
       handleSyncBlueFocus1={handleSyncBlueFocus1}
       handleTestBlueFocus1={handleTestBlueFocus1}
       isTestingBlueFocus1={isTestingBlueFocus1}
+      handleSaveBlueFocusDirect={handleSaveBlueFocusDirect}
       isSyncing={isSyncing}
       isAutoSyncEnabled={isAutoSyncEnabled}
       setIsAutoSyncEnabled={setIsAutoSyncEnabled}
