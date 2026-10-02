@@ -664,14 +664,23 @@ export const useStore = create<StoreState>((set, get) => ({
             saveCategoriesToStorage(categories);
             set({ categories });
           } else {
-            const cached = getInitialCategories();
-            if (cached.length > 0) {
-              set({ categories: cached });
+            const currentCat = get().categories;
+            if (currentCat && currentCat.length > 0) {
               fetch('/api/db/categories/batch', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(cached)
+                body: JSON.stringify(currentCat)
               }).catch(() => {});
+            } else {
+              const cached = getInitialCategories();
+              if (cached.length > 0) {
+                set({ categories: cached });
+                fetch('/api/db/categories/batch', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(cached)
+                }).catch(() => {});
+              }
             }
           }
         })
@@ -713,16 +722,26 @@ export const useStore = create<StoreState>((set, get) => ({
             saveProductsToStorage(products);
             set({ products, isInitialized: true });
           } else {
-            const cached = getInitialProducts();
-            if (cached.length > 0) {
-              set({ products: cached, isInitialized: true });
+            const currentProd = get().products;
+            if (currentProd && currentProd.length > 0) {
+              set({ isInitialized: true });
               fetch('/api/db/products/batch', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(cached)
+                body: JSON.stringify(currentProd)
               }).catch(() => {});
             } else {
-              set({ isInitialized: true });
+              const cached = getInitialProducts();
+              if (cached.length > 0) {
+                set({ products: cached, isInitialized: true });
+                fetch('/api/db/products/batch', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(cached)
+                }).catch(() => {});
+              } else {
+                set({ isInitialized: true });
+              }
             }
           }
         })
@@ -828,13 +847,23 @@ export const useStore = create<StoreState>((set, get) => ({
       const pOrders = fetchWithTimeout('/api/db/orders', 15000)
         .then(safeParseResponse)
         .then(ordersData => {
-          if (Array.isArray(ordersData)) {
+          if (Array.isArray(ordersData) && ordersData.length > 0) {
             const orders = ordersData.map((o: any) => ({
               ...o,
               status: o.status || 'pending',
               items: typeof o.items === 'string' ? JSON.parse(o.items) : o.items
             }));
-            if (orders.length === 0) {
+            saveOrdersToStorage(orders);
+            set({ orders, ordersError: null });
+          } else {
+            const currentOrd = get().orders;
+            if (currentOrd && currentOrd.length > 0) {
+              fetch('/api/db/orders/batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentOrd)
+              }).catch(() => {});
+            } else {
               const cached = getInitialOrders();
               if (cached.length > 0) {
                 fetch('/api/db/orders/batch', {
@@ -844,11 +873,8 @@ export const useStore = create<StoreState>((set, get) => ({
                 }).catch(() => {});
                 saveOrdersToStorage(cached);
                 set({ orders: cached, ordersError: null });
-                return;
               }
             }
-            saveOrdersToStorage(orders);
-            set({ orders, ordersError: null });
           }
         })
         .catch(() => {
