@@ -292,8 +292,8 @@ function formatBlueFocusError(error: any): { message: string; details: any } {
           soapProdutoId = parseInt(String(startProdutoId)) || 0;
         }
 
-        // BlueFocus Valim SOAP expects 'A' (Alterações) even for full loads from zero
-        const finalTipoAtualizacao = 'A';
+        // Use 'C' for Carga Completa if requested, otherwise 'A'
+        const finalTipoAtualizacao = soapTipoAtualizacao === 'C' ? 'C' : (soapTipoAtualizacao || 'A');
 
         const markerKey = `${soapCargaNumero}-${soapCargaSequencia}-${soapProdutoId}`;
         if (visitedMarkers.has(markerKey)) {
