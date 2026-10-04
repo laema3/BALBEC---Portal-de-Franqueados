@@ -111,6 +111,7 @@ const TABLES_FILE = path.join(STORAGE_DIR, '.tables_data.json');
 const APP_INSTALLS_FILE = path.join(STORAGE_DIR, '.app_installs_data.json');
 const TOTEM_BACKUPS_FILE = path.join(STORAGE_DIR, '.totem_backups_data.json');
 const MASTER_STATE_FILE = path.join(STORAGE_DIR, '.app_persistent_state.json');
+const CLEARED_FLAG_FILE = path.join(STORAGE_DIR, '.database_cleared.flag');
 
 const DEFAULT_USERS = [
   { id: 1, uid: 'master-1', email: 'admin@balbec.com.br', name: 'Administrador Master', role: 'master', password: 'admin' },
@@ -190,26 +191,32 @@ try {
 
   const diskCategories = loadJsonFile(CATEGORIES_FILE, []);
   const diskProducts = loadJsonFile(PRODUCTS_FILE, []);
+  const isCleared = fs.existsSync(CLEARED_FLAG_FILE);
 
-  memCategories = (Array.isArray(diskCategories) && diskCategories.length > 0)
-    ? diskCategories
-    : (Array.isArray(masterState?.categories) && masterState.categories.length > 0)
-      ? masterState.categories
-      : DEFAULT_CATEGORIES;
+  if (isCleared) {
+    memCategories = [];
+    memProducts = [];
+  } else {
+    memCategories = (Array.isArray(diskCategories) && diskCategories.length > 0)
+      ? diskCategories
+      : (Array.isArray(masterState?.categories) && masterState.categories.length > 0)
+        ? masterState.categories
+        : DEFAULT_CATEGORIES;
 
-  memProducts = (Array.isArray(diskProducts) && diskProducts.length > 1)
-    ? diskProducts
-    : (Array.isArray(masterState?.products) && masterState.products.length > 1)
-      ? masterState.products
-      : DEFAULT_PRODUCTS;
+    memProducts = (Array.isArray(diskProducts) && diskProducts.length > 1)
+      ? diskProducts
+      : (Array.isArray(masterState?.products) && masterState.products.length > 1)
+        ? masterState.products
+        : DEFAULT_PRODUCTS;
 
-  if (!memCategories || memCategories.length === 0) {
-    memCategories = [...DEFAULT_CATEGORIES];
-    persistCategoriesToDisk(memCategories);
-  }
-  if (!memProducts || memProducts.length <= 1) {
-    memProducts = [...DEFAULT_PRODUCTS];
-    persistProductsToDisk(memProducts);
+    if (!memCategories || memCategories.length === 0) {
+      memCategories = [...DEFAULT_CATEGORIES];
+      persistCategoriesToDisk(memCategories);
+    }
+    if (!memProducts || memProducts.length <= 1) {
+      memProducts = [...DEFAULT_PRODUCTS];
+      persistProductsToDisk(memProducts);
+    }
   }
   memTvMedia = loadJsonFile(TV_MEDIA_FILE, masterState?.tvMedia || []);
   const diskStoreInfo: any = loadJsonFile(STORE_INFO_FILE, {});
@@ -874,7 +881,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
             throw err;
           }
         }
-        if (list.length === 0) {
+        if (list.length === 0 && !fs.existsSync(CLEARED_FLAG_FILE)) {
           for (const cat of DEFAULT_CATEGORIES) {
             await db.insert(categories).values(cat).onConflictDoNothing();
           }
@@ -1094,7 +1101,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
             throw err;
           }
         }
-        if (list.length === 0) {
+        if (list.length === 0 && !fs.existsSync(CLEARED_FLAG_FILE)) {
           for (const prod of DEFAULT_PRODUCTS) {
             await db.insert(products).values(prod).onConflictDoNothing();
           }
@@ -1136,6 +1143,12 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
 
   app.post('/api/db/products/batch', async (req: Request, res: Response) => {
     try {
+      try {
+        if (fs.existsSync(CLEARED_FLAG_FILE)) {
+          fs.unlinkSync(CLEARED_FLAG_FILE);
+        }
+      } catch (e) {}
+
       const items: any[] = req.body;
       if (!Array.isArray(items) || items.length === 0) {
         return res.json({ success: true, count: 0 });
@@ -1260,6 +1273,10 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
       memCategories = [];
       persistProductsToDisk(memProducts);
       persistCategoriesToDisk(memCategories);
+
+      try {
+        fs.writeFileSync(CLEARED_FLAG_FILE, 'true', 'utf8');
+      } catch (e) {}
 
       if (isDatabaseConfigured()) {
         try {
