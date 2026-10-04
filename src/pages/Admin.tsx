@@ -824,17 +824,17 @@ export default function Admin() {
   
   // BlueFocus Config States (INTEGRAÇÃO 1 e INTEGRAÇÃO 2)
   const [blueFocusConfig1, setBlueFocusConfig1] = useState(() => ({
-    empresaId: storeInfo?.bluefocusEmpresaId || localStorage.getItem('bluefocus1_empresa_id') || localStorage.getItem('bluefocus_empresa_id') || 'BALBEC',
-    usuarioId: storeInfo?.bluefocusUsuarioId || localStorage.getItem('bluefocus1_usuario_id') || localStorage.getItem('bluefocus_usuario_id') || 'CONSULTA',
-    pdvCodigo: storeInfo?.bluefocusPdvCodigo || localStorage.getItem('bluefocus1_pdv_codigo') || localStorage.getItem('bluefocus_pdv_codigo') || '1000',
-    syncUrl: storeInfo?.bluefocusSyncUrl || localStorage.getItem('bluefocus1_sync_url') || localStorage.getItem('bluefocus_sync_url') || '',
-    tipoAtualizacao: storeInfo?.bluefocusTipoAtualizacao || localStorage.getItem('bluefocus1_tipo_atualizacao') || localStorage.getItem('bluefocus_tipo_atualizacao') || 'A',
-    tipo: storeInfo?.bluefocusTipo || localStorage.getItem('bluefocus1_tipo') || localStorage.getItem('bluefocus_tipo') || '4',
-    dataInicial: storeInfo?.bluefocusDataInicial || localStorage.getItem('bluefocus1_data_inicial') || localStorage.getItem('bluefocus_data_inicial') || '30/12/1899',
-    startCargaNumero: storeInfo?.bluefocusStartCargaNumero || localStorage.getItem('bluefocus1_start_carga_numero') || localStorage.getItem('bluefocus_start_carga_numero') || '0',
-    startCargaSequencia: storeInfo?.bluefocusStartCargaSequencia || localStorage.getItem('bluefocus1_start_carga_sequencia') || localStorage.getItem('bluefocus_start_carga_sequencia') || '0',
-    authToken: storeInfo?.bluefocusAuthToken || localStorage.getItem('bluefocus1_auth_token') || localStorage.getItem('bluefocus_auth_token') || '',
-    startProdutoId: storeInfo?.bluefocusStartProdutoId || localStorage.getItem('bluefocus1_start_produto_id') || localStorage.getItem('bluefocus_start_produto_id') || '0'
+    empresaId: localStorage.getItem('bluefocus1_empresa_id') || localStorage.getItem('bluefocus_empresa_id') || storeInfo?.bluefocusEmpresaId || 'BALBEC',
+    usuarioId: localStorage.getItem('bluefocus1_usuario_id') || localStorage.getItem('bluefocus_usuario_id') || storeInfo?.bluefocusUsuarioId || 'CONSULTA',
+    pdvCodigo: localStorage.getItem('bluefocus1_pdv_codigo') || localStorage.getItem('bluefocus_pdv_codigo') || storeInfo?.bluefocusPdvCodigo || '1000',
+    syncUrl: localStorage.getItem('bluefocus1_sync_url') || localStorage.getItem('bluefocus_sync_url') || storeInfo?.bluefocusSyncUrl || '',
+    tipoAtualizacao: localStorage.getItem('bluefocus1_tipo_atualizacao') || localStorage.getItem('bluefocus_tipo_atualizacao') || storeInfo?.bluefocusTipoAtualizacao || 'A',
+    tipo: localStorage.getItem('bluefocus1_tipo') || localStorage.getItem('bluefocus_tipo') || storeInfo?.bluefocusTipo || '4',
+    dataInicial: localStorage.getItem('bluefocus1_data_inicial') || localStorage.getItem('bluefocus_data_inicial') || storeInfo?.bluefocusDataInicial || '30/12/1899',
+    startCargaNumero: localStorage.getItem('bluefocus1_start_carga_numero') || localStorage.getItem('bluefocus_start_carga_numero') || storeInfo?.bluefocusStartCargaNumero || '0',
+    startCargaSequencia: localStorage.getItem('bluefocus1_start_carga_sequencia') || localStorage.getItem('bluefocus_start_carga_sequencia') || storeInfo?.bluefocusStartCargaSequencia || '0',
+    authToken: localStorage.getItem('bluefocus1_auth_token') || localStorage.getItem('bluefocus_auth_token') || storeInfo?.bluefocusAuthToken || '',
+    startProdutoId: localStorage.getItem('bluefocus1_start_produto_id') || localStorage.getItem('bluefocus_start_produto_id') || storeInfo?.bluefocusStartProdutoId || '0'
   }));
 
   const blueFocusConfig = blueFocusConfig1;
