@@ -1254,6 +1254,28 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
     res.json({ success: true, id });
   });
 
+  app.post('/api/db/products/clear-all', async (req: Request, res: Response) => {
+    try {
+      memProducts = [];
+      memCategories = [];
+      persistProductsToDisk(memProducts);
+      persistCategoriesToDisk(memCategories);
+
+      if (isDatabaseConfigured()) {
+        try {
+          await db.delete(products);
+          await db.delete(categories);
+        } catch (dbErr: any) {
+          console.warn('[DB Error] Falha ao limpar produtos/categorias no PostgreSQL:', dbErr?.message);
+        }
+      }
+      onUpdate?.();
+      res.json({ success: true, message: 'Todos os produtos e categorias foram zerados com sucesso.' });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || 'Erro ao zerar produtos' });
+    }
+  });
+
   // Orders
   app.get('/api/db/orders', async (req: Request, res: Response) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');

@@ -1022,6 +1022,25 @@ export default function Admin() {
     }
   };
 
+  const handleClearAllProducts = async () => {
+    if (!window.confirm('ATENÇÃO: Deseja realmente ZERAR todos os produtos e categorias do sistema para começar uma atualização limpa?')) {
+      return;
+    }
+    try {
+      const res = await fetch('/api/db/products/clear-all', { method: 'POST' });
+      if (res.ok) {
+        alert('Produtos e categorias zerados com sucesso! Agora você pode realizar a sincronização completa.');
+        fetchData?.();
+        window.location.reload();
+      } else {
+        const err = await res.json();
+        alert('Erro ao zerar base: ' + (err.error || 'Erro desconhecido'));
+      }
+    } catch (e: any) {
+      alert('Erro de conexão ao zerar base: ' + e.message);
+    }
+  };
+
   const handleSyncBlueFocus = async (configInput?: any, overrideConfig?: Partial<any>) => {
     if (isSyncing) return;
     setIsSyncing(true);
@@ -5310,6 +5329,7 @@ export default function Admin() {
       handleTestBlueFocus1={handleTestBlueFocus1}
       isTestingBlueFocus1={isTestingBlueFocus1}
       handleSaveBlueFocusDirect={handleSaveBlueFocusDirect}
+      handleClearAllProducts={handleClearAllProducts}
       isSyncing={isSyncing}
       isAutoSyncEnabled={isAutoSyncEnabled}
       setIsAutoSyncEnabled={setIsAutoSyncEnabled}

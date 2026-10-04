@@ -140,6 +140,7 @@ interface AdminSettingsCollapsibleProps {
   handleTestBlueFocus1: () => Promise<void>;
   isTestingBlueFocus1: boolean;
   handleSaveBlueFocusDirect?: () => Promise<void>;
+  handleClearAllProducts?: () => Promise<void>;
 
   isSyncing: boolean;
   isAutoSyncEnabled: boolean;
@@ -252,6 +253,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
     handleTestBlueFocus1,
     isTestingBlueFocus1,
     handleSaveBlueFocusDirect,
+    handleClearAllProducts,
     isSyncing,
     isAutoSyncEnabled,
     setIsAutoSyncEnabled,
@@ -2587,6 +2589,16 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                     INTEGRAÇÃO 1
                   </h4>
                   <div className="flex items-center gap-2">
+                    {handleClearAllProducts && (
+                      <button type="button" 
+                        onClick={handleClearAllProducts}
+                        className="text-xs bg-white text-red-700 px-2.5 py-1 rounded-lg border border-red-200 hover:bg-red-50 transition-all flex items-center gap-1 cursor-pointer font-bold"
+                        title="Apagar todos os produtos e categorias atuais para receber uma importação 100% limpa"
+                      >
+                        <Trash2 className="w-3 h-3 text-red-600" />
+                        Zerar Base
+                      </button>
+                    )}
                     <button type="button" 
                       onClick={() => {
                         if (window.confirm('Deseja resetar os marcadores da Integração 1 para zero e iniciar a sincronização completa?')) {
