@@ -2843,19 +2843,19 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                   </div>
                   <div className="p-3 bg-stone-50 rounded-xl border border-stone-200">
                     <p className="text-[10px] text-stone-500 uppercase font-bold mb-0.5">Ambiente Cloud</p>
-                    <p className="font-mono text-xs break-all text-stone-700">Render / Vercel / Cloud Run</p>
+                    <p className="font-mono text-xs break-all text-stone-700">Railway</p>
                   </div>
                 </div>
 
-                {/* Persistence Notice for Render Deployments */}
+                {/* Persistence Notice for Railway Deployments */}
                 <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-xl text-xs text-amber-900 leading-relaxed space-y-1">
                   <p className="font-bold flex items-center gap-1.5 text-amber-800">
                     <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                    Como funciona a persistência de dados no Render:
+                    Como funciona a persistência de dados no Railway:
                   </p>
                   <p className="text-amber-800/90 text-[11px]">
-                    No Render, a cada deploy ou reinicialização de contêiner, o disco local temporário é resetado. 
-                    Com a variável <code className="bg-amber-100 px-1 py-0.5 rounded font-mono font-bold">DATABASE_URL</code> configurada no Render com a conexão do seu PostgreSQL (ex: Neon ou Render Postgres), 
+                    No Railway, certifique-se de adicionar a variável <code className="bg-amber-100 px-1 py-0.5 rounded font-mono font-bold">DATABASE_URL</code> nas variáveis do seu projeto. 
+                    Com o PostgreSQL conectado, 
                     <strong>todas as suas configurações, produtos e pedidos são salvos e recarregados automaticamente do banco</strong>!
                   </p>
                 </div>

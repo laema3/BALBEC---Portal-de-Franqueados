@@ -817,7 +817,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
         success: false,
         status: 'missing_config',
         message: 'Variável de ambiente do Banco de Dados não configurada.',
-        details: 'Acesse o painel da Vercel -> Settings -> Environment Variables e adicione a variável DATABASE_URL com a URL de conexão do Neon/PostgreSQL.',
+        details: 'Acesse o painel do Railway -> Variables e adicione a variável DATABASE_URL com a URL de conexão do PostgreSQL.',
         envDetected,
         responseTimeMs: Date.now() - startTime
       });
