@@ -983,6 +983,16 @@ export default function Menu() {
     }).filter(item => item.quantity > 0));
   };
 
+  const setQuantity = (productId: string, addons: any[] | undefined, flavor: any | undefined, qty: number) => {
+    const validQty = Math.max(0, isNaN(qty) ? 1 : qty);
+    setCart(prev => prev.map(item => {
+      if (item.productId === productId && JSON.stringify(item.addons) === JSON.stringify(addons) && JSON.stringify(item.flavor) === JSON.stringify(flavor)) {
+        return { ...item, quantity: validQty };
+      }
+      return item;
+    }).filter(item => item.quantity > 0));
+  };
+
   const total = cart.reduce((sum, item) => {
     const addonsTotal = item.addons?.reduce((addonSum, addon) => addonSum + addon.price, 0) || 0;
     const flavorTotal = item.flavor?.price || 0;
@@ -2964,7 +2974,16 @@ export default function Menu() {
                       >
                         {item.quantity === 1 ? <Trash2 className="w-4 h-4 text-red-500" /> : <Minus className="w-4 h-4" />}
                       </button>
-                      <span className="font-black text-sm w-6 text-center text-stone-900">{item.quantity}</span>
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value, 10);
+                          setQuantity(item.productId, item.addons, item.flavor, isNaN(val) ? 1 : val);
+                        }}
+                        className="font-black text-sm w-12 text-center bg-white border border-stone-200 rounded-lg py-1 text-stone-900 outline-none focus:ring-2 focus:ring-orange-500"
+                      />
                       <button 
                         onClick={() => updateQuantity(item.productId, item.addons, item.flavor, 1)}
                         className="p-1 hover:bg-white rounded-lg text-stone-600 hover:text-stone-900 transition-colors cursor-pointer"
