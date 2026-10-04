@@ -9,94 +9,15 @@ import { registerAiRoutes } from './aiAssistant';
 import { cleanProductDescription } from '../constants';
 import { printOrderToNetworkPrinter } from './printerRoutes';
 import { queueOrderForAgent } from './printerAgentRoutes';
+import defaultCatalog from './defaultCatalog.json';
+import defaultStoreInfo from './defaultStoreInfo.json';
 
 // Initial default data for auto-seeding & in-memory fallback
-const DEFAULT_CATEGORIES: any[] = [];
+const DEFAULT_CATEGORIES: any[] = defaultCatalog.categories || [];
 
-const DEFAULT_PRODUCTS: any[] = [];
+const DEFAULT_PRODUCTS: any[] = defaultCatalog.products || [];
 
-const DEFAULT_STORE_INFO = {
-  id: 'default',
-  name: 'BALBEC - Portal de Franqueados',
-  themeColor: '#ea580c',
-  addButtonColor: '#ea580c',
-  iconColor: '#ea580c',
-  headerPhrase: 'Portal de Franqueados - Gestão de Franquias',
-  logoUrl: '/logo.svg',
-  address: '',
-  hours: '',
-  instagram: '',
-  whatsapp: '',
-  categoryTitleColor: '#ea580c',
-  deliveryEnabled: false,
-  inStoreEnabled: false,
-  kioskEnabled: true,
-  requireQrCodeForOrdering: false,
-  isOpen: true,
-  ntfyTopic: 'balbec_franquias',
-  ntfyEnabled: false,
-  tvTickerText: 'Portal Oficial BALBEC - Franqueados e Gestão Integrada.',
-  tvMode: 'split_menu',
-  tvSelectedCategories: '[]',
-  tvSoundEnabled: false,
-  tvShowClock: true,
-  tvShowCaptions: false,
-  isMaintenance: false,
-  maintenanceMessage: 'Estamos atualizando o portal. Voltaremos em breve!',
-  weeklySchedule: '[]',
-  autoOpenClose: false,
-  forceOpen: true,
-  closedMessage: 'Portal fechado no momento.',
-  aiAgentEnabled: false,
-  aiAgentName: 'BALBEC AI',
-  aiAgentTone: 'profissional',
-  aiAgentCustomPrompt: '',
-  aiAgentWhatsAppPhone: '',
-  aiAgentWhatsAppDefaultMessage: 'Olá! Gostaria de falar sobre o Portal de Franqueados BALBEC.',
-  aiAgentTrainingExamples: '[]',
-  aiAgentKnowledgeBase: '',
-  aiAgentForbiddenPhrases: '',
-  aiAgentCreativity: 0.5,
-  aiAgentAntiRepeat: true,
-  inStoreGpsValidation: false,
-  inStoreLatitude: -19.7478,
-  inStoreLongitude: -47.9392,
-  inStoreMaxRadiusMeters: 150,
-  inStorePinValidation: false,
-  inStorePinCode: '1234',
-  preferredPrinterName: '',
-  printerCutMode: 'partial',
-  printerCopies: 2,
-  totemPrinterCutMode: 'partial',
-  totemPrinterCopies: 2,
-  totemPrinterBottomSpaceCm: 2.5,
-  windowsPrinterCutMode: 'partial',
-  windowsPrinterCopies: 2,
-  windowsPrinterBottomSpaceCm: 8.0,
-  configuredPrinters: '[]',
-  caixaPrinterName: '',
-  autoPrintOrdersOnCaixa: false,
-  printerConnectionType: 'network',
-  networkPrinterIp: '',
-  networkPrinterPort: 9100,
-  bluefocusSyncUrl: '',
-  bluefocusEmpresaId: 'BALBEC',
-  bluefocusUsuarioId: 'CONSULTA',
-  bluefocusPdvCodigo: '1000',
-  bluefocusAuthToken: '',
-  bluefocusTipo: '4',
-  bluefocusDataInicial: '30/12/1899',
-  bluefocusStartCargaNumero: '0',
-  bluefocusStartCargaSequencia: '0',
-  bluefocusStartProdutoId: '0',
-  bluefocusTipoAtualizacao: 'A',
-  modulesConfig: '{"mesas":false,"qrcodes":false,"totem":false,"delivery":false,"tv":true,"ai_agent":false,"scheduling":false}',
-  schedulingEnabled: false,
-  schedulingStartTime: '09:00',
-  schedulingEndTime: '20:30',
-  schedulingIntervalMinutes: 30,
-  schedulingMaxOrdersPerSlot: 4
-};
+const DEFAULT_STORE_INFO = defaultStoreInfo;
 
 export function sanitizeStoreInfoPrinters(info: any) {
   if (!info) return info;
@@ -276,13 +197,31 @@ try {
       ? masterState.categories
       : DEFAULT_CATEGORIES;
 
-  memProducts = (Array.isArray(diskProducts) && diskProducts.length > 0)
+  memProducts = (Array.isArray(diskProducts) && diskProducts.length > 1)
     ? diskProducts
-    : (Array.isArray(masterState?.products) && masterState.products.length > 0)
+    : (Array.isArray(masterState?.products) && masterState.products.length > 1)
       ? masterState.products
       : DEFAULT_PRODUCTS;
+
+  if (!memCategories || memCategories.length === 0) {
+    memCategories = [...DEFAULT_CATEGORIES];
+    persistCategoriesToDisk(memCategories);
+  }
+  if (!memProducts || memProducts.length <= 1) {
+    memProducts = [...DEFAULT_PRODUCTS];
+    persistProductsToDisk(memProducts);
+  }
   memTvMedia = loadJsonFile(TV_MEDIA_FILE, masterState?.tvMedia || []);
-  memStoreInfo = { ...DEFAULT_STORE_INFO, ...(masterState?.storeInfo || {}), ...loadJsonFile(STORE_INFO_FILE, {}) };
+  const diskStoreInfo: any = loadJsonFile(STORE_INFO_FILE, {});
+  memStoreInfo = {
+    ...DEFAULT_STORE_INFO,
+    ...(masterState?.storeInfo || {}),
+    ...diskStoreInfo,
+    bluefocusSyncUrl: (diskStoreInfo.bluefocusSyncUrl && diskStoreInfo.bluefocusSyncUrl !== "") ? diskStoreInfo.bluefocusSyncUrl : ((masterState?.storeInfo?.bluefocusSyncUrl && masterState?.storeInfo?.bluefocusSyncUrl !== "") ? masterState.storeInfo.bluefocusSyncUrl : (DEFAULT_STORE_INFO.bluefocusSyncUrl || "")),
+    bluefocusEmpresaId: (diskStoreInfo.bluefocusEmpresaId && diskStoreInfo.bluefocusEmpresaId !== "") ? diskStoreInfo.bluefocusEmpresaId : ((masterState?.storeInfo?.bluefocusEmpresaId && masterState?.storeInfo?.bluefocusEmpresaId !== "") ? masterState.storeInfo.bluefocusEmpresaId : (DEFAULT_STORE_INFO.bluefocusEmpresaId || "BALBEC")),
+    bluefocusUsuarioId: (diskStoreInfo.bluefocusUsuarioId && diskStoreInfo.bluefocusUsuarioId !== "") ? diskStoreInfo.bluefocusUsuarioId : ((masterState?.storeInfo?.bluefocusUsuarioId && masterState?.storeInfo?.bluefocusUsuarioId !== "") ? masterState.storeInfo.bluefocusUsuarioId : (DEFAULT_STORE_INFO.bluefocusUsuarioId || "CONSULTA")),
+    bluefocusPdvCodigo: (diskStoreInfo.bluefocusPdvCodigo && diskStoreInfo.bluefocusPdvCodigo !== "") ? diskStoreInfo.bluefocusPdvCodigo : ((masterState?.storeInfo?.bluefocusPdvCodigo && masterState?.storeInfo?.bluefocusPdvCodigo !== "") ? masterState.storeInfo.bluefocusPdvCodigo : (DEFAULT_STORE_INFO.bluefocusPdvCodigo || "1000")),
+  };
   const initialDiskOrders = loadJsonFile(ORDERS_FILE, []);
   const initialBackupOrders = loadJsonFile(ORDERS_BACKUP_FILE, []);
   const initialMasterOrders = masterState?.orders || [];
@@ -317,7 +256,7 @@ try {
               memCategories = backupData.categories;
               writeJsonFile(CATEGORIES_FILE, memCategories);
             }
-            if (Array.isArray(backupData.products) && backupData.products.length > 0) {
+            if (Array.isArray(backupData.products) && backupData.products.length > 1) {
               memProducts = backupData.products;
               writeJsonFile(PRODUCTS_FILE, memProducts);
             }
@@ -343,6 +282,15 @@ try {
     }
   }
 
+  if (!memCategories || memCategories.length === 0) {
+    memCategories = [...DEFAULT_CATEGORIES];
+    writeJsonFile(CATEGORIES_FILE, memCategories);
+  }
+  if (!memProducts || memProducts.length <= 1) {
+    memProducts = [...DEFAULT_PRODUCTS];
+    writeJsonFile(PRODUCTS_FILE, memProducts);
+  }
+
   // Sanitização rigorosa: expurgar qualquer resquício legado de produtos/categorias/informações antigas de Pão Mania
   memProducts = memProducts.filter((p: any) => {
     const raw = JSON.stringify(p).toLowerCase();
@@ -352,9 +300,7 @@ try {
     const raw = JSON.stringify(c).toLowerCase();
     return !raw.includes('paomania') && !raw.includes('pão mania') && !raw.includes('pao mania');
   });
-  if (JSON.stringify(memStoreInfo).toLowerCase().includes('paomania') || JSON.stringify(memStoreInfo).toLowerCase().includes('pão mania')) {
-    memStoreInfo = { ...DEFAULT_STORE_INFO };
-  }
+
 
   // Se não houver backups salvos, cria o primeiro backup padrão automaticamente
   if (memTotemBackups.length === 0 && memCategories.length > 0) {
@@ -410,12 +356,24 @@ function persistCategoriesToDisk(data: any[]) {
   categoriesVersion = Date.now();
   writeJsonFile(CATEGORIES_FILE, data);
   persistAllStateToMasterFile();
+  try {
+    const catalogPath = path.join(process.cwd(), 'src', 'server', 'defaultCatalog.json');
+    const catalog = fs.existsSync(catalogPath) ? JSON.parse(fs.readFileSync(catalogPath, 'utf8')) : { categories: [], products: [] };
+    catalog.categories = data;
+    fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2));
+  } catch (e) {}
 }
 
 function persistProductsToDisk(data: any[]) {
   productsVersion = Date.now();
   writeJsonFile(PRODUCTS_FILE, data);
   persistAllStateToMasterFile();
+  try {
+    const catalogPath = path.join(process.cwd(), 'src', 'server', 'defaultCatalog.json');
+    const catalog = fs.existsSync(catalogPath) ? JSON.parse(fs.readFileSync(catalogPath, 'utf8')) : { categories: [], products: [] };
+    catalog.products = data;
+    fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2));
+  } catch (e) {}
 }
 
 function persistTvMediaToDisk(data: any[]) {
@@ -438,6 +396,16 @@ function persistStoreInfoToDisk(data: any) {
   storeInfoVersion = Date.now();
   writeJsonFile(STORE_INFO_FILE, data);
   persistAllStateToMasterFile();
+  try {
+    const storePath = path.join(process.cwd(), 'src', 'server', 'defaultStoreInfo.json');
+    const existing = fs.existsSync(storePath) ? JSON.parse(fs.readFileSync(storePath, 'utf8')) : {};
+    const merged = {
+      ...existing,
+      ...data,
+      bluefocusSyncUrl: (data.bluefocusSyncUrl && data.bluefocusSyncUrl !== "") ? data.bluefocusSyncUrl : (existing.bluefocusSyncUrl || "")
+    };
+    fs.writeFileSync(storePath, JSON.stringify(merged, null, 2));
+  } catch (e) {}
 }
 
 function persistCustomersToDisk(data: any[]) {
@@ -1140,7 +1108,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
       }
     }
 
-    const sourceProds = memProducts.length > 0 ? memProducts : DEFAULT_PRODUCTS;
+    const sourceProds = memProducts.length > 1 ? memProducts : DEFAULT_PRODUCTS;
     const sanitized = sourceProds.map((p, idx) => attachCodeIfMissing(p, idx));
     return res.json(sanitized);
   });

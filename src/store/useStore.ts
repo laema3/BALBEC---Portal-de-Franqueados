@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { cleanProductDescription } from '../constants';
 import { safeStorage } from '../utils/storage';
+import defaultCatalog from '../server/defaultCatalog.json';
 
 const CATALOG_CATEGORIES_CACHE_KEY = 'balbec_cached_categories_v1';
 const CATALOG_PRODUCTS_CACHE_KEY = 'balbec_cached_products_v1';
@@ -13,12 +14,12 @@ const getInitialCategories = (): Category[] => {
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
   } catch {}
-  return [];
+  return (defaultCatalog.categories as Category[]) || [];
 };
 
 const saveCategoriesToStorage = (list: Category[]): void => {
   try {
-    if (Array.isArray(list)) {
+    if (Array.isArray(list) && list.length > 0) {
       safeStorage.setItem(CATALOG_CATEGORIES_CACHE_KEY, JSON.stringify(list));
     }
   } catch {}
@@ -29,15 +30,15 @@ const getInitialProducts = (): Product[] => {
     const raw = safeStorage.getItem(CATALOG_PRODUCTS_CACHE_KEY) || safeStorage.getItem('paomania_cached_products_v1');
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 1) return parsed;
     }
   } catch {}
-  return [];
+  return (defaultCatalog.products as Product[]) || [];
 };
 
 const saveProductsToStorage = (list: Product[]): void => {
   try {
-    if (Array.isArray(list)) {
+    if (Array.isArray(list) && list.length > 1) {
       safeStorage.setItem(CATALOG_PRODUCTS_CACHE_KEY, JSON.stringify(list));
     }
   } catch {}
@@ -695,7 +696,7 @@ export const useStore = create<StoreState>((set, get) => ({
       const pProd = fetchWithTimeout('/api/db/products', 15000)
         .then(safeParseResponse)
         .then(rawProducts => {
-          if (Array.isArray(rawProducts) && rawProducts.length > 0) {
+          if (Array.isArray(rawProducts) && rawProducts.length > 1) {
             const products = rawProducts.map((p: any) => {
               let availableForDelivery = p.availableForDelivery !== undefined ? Boolean(p.availableForDelivery) : true;
               let availableInStore = p.availableInStore !== undefined ? Boolean(p.availableInStore) : true;
@@ -723,7 +724,7 @@ export const useStore = create<StoreState>((set, get) => ({
             set({ products, isInitialized: true });
           } else {
             const currentProd = get().products;
-            if (currentProd && currentProd.length > 0) {
+            if (currentProd && currentProd.length > 1) {
               set({ isInitialized: true });
               fetch('/api/db/products/batch', {
                 method: 'POST',

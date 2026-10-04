@@ -1,0 +1,2799 @@
+{
+  "storeInfo": {
+    "id": "default",
+    "name": "BALBEC - Portal de Franqueados",
+    "themeColor": "#ea580c",
+    "addButtonColor": "#ea580c",
+    "iconColor": "#ea580c",
+    "headerPhrase": "Portal de Franqueados",
+    "logoUrl": "",
+    "address": "Rua São Benedito",
+    "hours": "Dom: 07:00 às 13:00 • Seg a Sáb: 06:00 às 20:00",
+    "instagram": "@balbec",
+    "whatsapp": "(11) 99999-9999",
+    "categoryTitleColor": "#ea580c",
+    "deliveryEnabled": false,
+    "inStoreEnabled": false,
+    "kioskEnabled": true,
+    "requireQrCodeForOrdering": false,
+    "isOpen": true,
+    "ntfyTopic": "balbec_pedidos",
+    "ntfyEnabled": true,
+    "tvTickerText": "",
+    "tvMode": "split_menu",
+    "tvSelectedCategories": "[]",
+    "tvSoundEnabled": false,
+    "tvShowClock": true,
+    "tvShowCaptions": false,
+    "isMaintenance": false,
+    "maintenanceMessage": "Estamos atualizando nosso cardápio e sistemas para melhor atendê-lo. Voltaremos em breve!",
+    "weeklySchedule": "[{\"dayOfWeek\":0,\"dayName\":\"Domingo\",\"shortName\":\"Dom\",\"isOpen\":true,\"openTime\":\"07:00\",\"closeTime\":\"13:00\",\"hasBreak\":false,\"breakStart\":\"\",\"breakEnd\":\"\"},{\"dayOfWeek\":1,\"dayName\":\"Segunda-feira\",\"shortName\":\"Seg\",\"isOpen\":true,\"openTime\":\"06:00\",\"closeTime\":\"20:00\",\"hasBreak\":false,\"breakStart\":\"\",\"breakEnd\":\"\"},{\"dayOfWeek\":2,\"dayName\":\"Terça-feira\",\"shortName\":\"Ter\",\"isOpen\":true,\"openTime\":\"06:00\",\"closeTime\":\"20:00\",\"hasBreak\":false,\"breakStart\":\"\",\"breakEnd\":\"\"},{\"dayOfWeek\":3,\"dayName\":\"Quarta-feira\",\"shortName\":\"Qua\",\"isOpen\":true,\"openTime\":\"06:00\",\"closeTime\":\"20:00\",\"hasBreak\":false,\"breakStart\":\"\",\"breakEnd\":\"\"},{\"dayOfWeek\":4,\"dayName\":\"Quinta-feira\",\"shortName\":\"Qui\",\"isOpen\":true,\"openTime\":\"06:00\",\"closeTime\":\"20:00\",\"hasBreak\":false,\"breakStart\":\"\",\"breakEnd\":\"\"},{\"dayOfWeek\":5,\"dayName\":\"Sexta-feira\",\"shortName\":\"Sex\",\"isOpen\":true,\"openTime\":\"06:00\",\"closeTime\":\"20:00\",\"hasBreak\":false,\"breakStart\":\"\",\"breakEnd\":\"\"},{\"dayOfWeek\":6,\"dayName\":\"Sábado\",\"shortName\":\"Sáb\",\"isOpen\":true,\"openTime\":\"06:00\",\"closeTime\":\"20:00\",\"hasBreak\":false,\"breakStart\":\"\",\"breakEnd\":\"\"}]",
+    "autoOpenClose": false,
+    "forceOpen": false,
+    "closedMessage": "Estamos fechados no momento. Confira nossos horários de atendimento!",
+    "aiAgentEnabled": false,
+    "aiAgentName": "BALBEC AI",
+    "aiAgentTone": "profissional",
+    "aiAgentCustomPrompt": "Fornadas de pão francês quentinho saem pela manhã às 06:30 e à tarde às 16:30. Aceitamos encomendas com antecedência.",
+    "aiAgentWhatsAppPhone": "",
+    "aiAgentWhatsAppDefaultMessage": "Olá! Gostaria de fazer um pedido ou tirar uma dúvida.",
+    "aiAgentTrainingExamples": "[]",
+    "aiAgentKnowledgeBase": "• Fornadas principais de pão francês: 06:30 e 16:30.\n• Encomendas de bolos, tortas e salgados devem ser feitas com 24h de antecedência pelo WhatsApp.\n• Não cobramos taxa de entrega para pedidos no mesmo bairro acima de R$ 50.\n• Todos os nossos pães são de fermentação natural artesanal.",
+    "aiAgentForbiddenPhrases": "",
+    "aiAgentCreativity": 0.65,
+    "aiAgentAntiRepeat": true,
+    "inStoreGpsValidation": false,
+    "inStoreLatitude": -19.7478,
+    "inStoreLongitude": -47.9392,
+    "inStoreMaxRadiusMeters": 150,
+    "inStorePinValidation": false,
+    "inStorePinCode": "1234",
+    "preferredPrinterName": "EPSON TM-T20X (Rede 192.168.0.90)",
+    "printerCutMode": "partial",
+    "printerCopies": 2,
+    "totemPrinterCutMode": "partial",
+    "totemPrinterCopies": 2,
+    "totemPrinterBottomSpaceCm": 2.5,
+    "windowsPrinterCutMode": "partial",
+    "windowsPrinterCopies": 2,
+    "windowsPrinterBottomSpaceCm": 8,
+    "configuredPrinters": "[]",
+    "caixaPrinterName": "EPSON TM-T20X (Rede 192.168.0.90)",
+    "autoPrintOrdersOnCaixa": true,
+    "printerConnectionType": "network",
+    "networkPrinterIp": "192.168.0.90",
+    "networkPrinterPort": 9100,
+    "bluefocusSyncUrl": "",
+    "bluefocusEmpresaId": "BALBEC",
+    "bluefocusUsuarioId": "CONSULTA",
+    "bluefocusPdvCodigo": "1000",
+    "bluefocusAuthToken": "",
+    "bluefocusTipo": "4",
+    "bluefocusDataInicial": "30/12/1899",
+    "bluefocusStartCargaNumero": "0",
+    "bluefocusStartCargaSequencia": "0",
+    "bluefocusStartProdutoId": "0",
+    "bluefocusTipoAtualizacao": "A",
+    "modulesConfig": "{\"mesas\":false,\"qrcodes\":false,\"totem\":false,\"delivery\":false,\"tv\":true,\"ai_agent\":false}",
+    "schedulingEnabled": false,
+    "schedulingStartTime": "09:00",
+    "schedulingEndTime": "20:30",
+    "schedulingIntervalMinutes": 30,
+    "schedulingMaxOrdersPerSlot": 4
+  },
+  "tvMedia": [],
+  "categories": [
+    {
+      "id": "cat_2",
+      "name": "PRODUCAO PROPRIA",
+      "order": 1,
+      "externalId": "2",
+      "isVisible": true,
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "cat_9",
+      "name": "BOMBONIER",
+      "order": 2,
+      "externalId": "9",
+      "isVisible": true,
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "cat_4",
+      "name": "BEBIDAS",
+      "order": 3,
+      "externalId": "4",
+      "isVisible": true,
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "cat_6",
+      "name": "ELMA CHIPS",
+      "order": 4,
+      "externalId": "6",
+      "isVisible": true,
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "cat_7",
+      "name": "LATICINIOS",
+      "order": 5,
+      "externalId": "7",
+      "isVisible": true,
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "cat_3",
+      "name": "MERCEARIA",
+      "order": 6,
+      "externalId": "3",
+      "isVisible": true,
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "cat_12",
+      "name": "CONGELADOS",
+      "order": 7,
+      "externalId": "12",
+      "isVisible": true,
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "cat_10",
+      "name": "SORVETE",
+      "order": 8,
+      "externalId": "10",
+      "isVisible": true,
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "cat_DIVERSOS",
+      "name": "Diversos",
+      "order": 9,
+      "externalId": "DIVERSOS",
+      "isVisible": true,
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "cat_15",
+      "name": "PETIT FOUR",
+      "order": 10,
+      "externalId": "15",
+      "isVisible": true,
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    }
+  ],
+  "products": [
+    {
+      "id": "prod_1",
+      "categoryId": "cat_2",
+      "name": "PAO FRANCES",
+      "description": "PAO FRANCES",
+      "price": 19.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "1",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2634",
+      "categoryId": "cat_9",
+      "name": "CHOCOLATE 5 STAR",
+      "description": "CHOCOLATE 5 STAR",
+      "price": 5.45,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2634",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2635",
+      "categoryId": "cat_9",
+      "name": "CHOCOLATE DUO BATON 16G",
+      "description": "CHOCOLATE DUO BATON 16G",
+      "price": 2.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2635",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2651",
+      "categoryId": "cat_2",
+      "name": "EMPADAO DE FRANGO",
+      "description": "EMPADAO DE FRANGO",
+      "price": 51.2,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2651",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2662",
+      "categoryId": "cat_9",
+      "name": "BALA BUTTER TOFFEE MARACUJA",
+      "description": "BALA BUTTER TOFFEE MARACUJA",
+      "price": 0.35,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2662",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2670",
+      "categoryId": "cat_4",
+      "name": "REF H2OH LIMONETO C GAS PET 500ML",
+      "description": "REF H2OH LIMONETO C GAS PET 500ML",
+      "price": 6,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2670",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2679",
+      "categoryId": "cat_6",
+      "name": "RUFFLES ORIGINAL 40G",
+      "description": "RUFFLES ORIGINAL 40G",
+      "price": 4.56,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2679",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2682",
+      "categoryId": "cat_7",
+      "name": "LEITE PIRACANJUBA INTEGRAL 1 L",
+      "description": "LEITE PIRACANJUBA INTEGRAL 1 L",
+      "price": 8.15,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2682",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2688",
+      "categoryId": "cat_9",
+      "name": "CHOC BATON CREME",
+      "description": "CHOC BATON CREME",
+      "price": 3.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2688",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2691",
+      "categoryId": "cat_9",
+      "name": "MENTOS YOGURTE E MORANGO",
+      "description": "MENTOS YOGURTE E MORANGO",
+      "price": 4.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2691",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2696",
+      "categoryId": "cat_4",
+      "name": "REF H2OH LIMONETO C GAS PET 1,5L",
+      "description": "REF H2OH LIMONETO C GAS PET 1,5L",
+      "price": 10.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2696",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2698",
+      "categoryId": "cat_7",
+      "name": "REQUEIJAO ITAMBE LIGHT220G",
+      "description": "REQUEIJAO ITAMBE LIGHT220G",
+      "price": 16.15,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2698",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2701",
+      "categoryId": "cat_4",
+      "name": "ENER TNT ZERO AÇUCAR 269 ML",
+      "description": "ENER TNT ZERO AÇUCAR 269 ML",
+      "price": 9.3,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2701",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2715",
+      "categoryId": "cat_2",
+      "name": "CHA MATE LT",
+      "description": "CHA MATE LT",
+      "price": 10,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2715",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2720",
+      "categoryId": "cat_9",
+      "name": "CHOC KIT KAT WHITE",
+      "description": "CHOC KIT KAT WHITE",
+      "price": 5.2,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2720",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2722",
+      "categoryId": "cat_4",
+      "name": "REF COCA COLA PET 1 L",
+      "description": "REF COCA COLA PET 1 L",
+      "price": 8,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2722",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2728",
+      "categoryId": "cat_9",
+      "name": "HALLS MINI CEREJA",
+      "description": "HALLS MINI CEREJA",
+      "price": 3.7,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2728",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2729",
+      "categoryId": "cat_9",
+      "name": "BARRA DE CEREAIS NUTRY AVELA C CHOCOLATE",
+      "description": "BARRA DE CEREAIS NUTRY AVELA C CHOCOLATE",
+      "price": 3,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2729",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2730",
+      "categoryId": "cat_9",
+      "name": "BARRA DE CEREAIS NUTRY COCO C CHOC",
+      "description": "BARRA DE CEREAIS NUTRY COCO C CHOC",
+      "price": 3,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2730",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2740",
+      "categoryId": "cat_6",
+      "name": "DORITOS JALAPEO LIMAO 100G",
+      "description": "DORITOS JALAPEO LIMAO 100G",
+      "price": 6.25,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2740",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2744",
+      "categoryId": "cat_3",
+      "name": "ACUCAR REFINADO GUARANI 1KG",
+      "description": "ACUCAR REFINADO GUARANI 1KG",
+      "price": 6.7,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2744",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2751",
+      "categoryId": "cat_9",
+      "name": "FINI TUBES MORANGO ACID 12 X 17 G",
+      "description": "FINI TUBES MORANGO ACID 12 X 17 G",
+      "price": 2,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2751",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2752",
+      "categoryId": "cat_9",
+      "name": "FINI REGALIZ TUBES MORANGO 12 X 17G",
+      "description": "FINI REGALIZ TUBES MORANGO 12 X 17G",
+      "price": 2,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2752",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2754",
+      "categoryId": "cat_2",
+      "name": "FATIAS DE BOLO FARINHA - COFFE BREAK",
+      "description": "FATIAS DE BOLO FARINHA - COFFE BREAK",
+      "price": 2.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2754",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2756",
+      "categoryId": "cat_2",
+      "name": "PAO TIGRE",
+      "description": "PAO TIGRE",
+      "price": 44.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2756",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2757",
+      "categoryId": "cat_2",
+      "name": "PAO CUCA",
+      "description": "PAO CUCA",
+      "price": 59.8,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2757",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2766",
+      "categoryId": "cat_12",
+      "name": "QUIBE DE QUEIJO KG",
+      "description": "QUIBE DE QUEIJO KG",
+      "price": 65.55,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2766",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2781",
+      "categoryId": "cat_3",
+      "name": "PAO INTEGRAL 12 GRAOS",
+      "description": "PAO INTEGRAL 12 GRAOS",
+      "price": 73.99,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2781",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2782",
+      "categoryId": "cat_2",
+      "name": "SEQUILHOS DE COCO",
+      "description": "SEQUILHOS DE COCO",
+      "price": 68.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2782",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2792",
+      "categoryId": "cat_3",
+      "name": "AMIDO DE MILHO MAIZENA.",
+      "description": "AMIDO DE MILHO MAIZENA",
+      "price": 8.37,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2792",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2799",
+      "categoryId": "cat_6",
+      "name": "TODDY COOKIE EXTRA CHOCOBASE 50 G",
+      "description": "TODDY COOKIE EXTRA CHOCOBASE 50 G",
+      "price": 2.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2799",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2800",
+      "categoryId": "cat_6",
+      "name": "DORITOS QUEIJO TEMPERADO 100G",
+      "description": "DORITOS QUEIJO TEMPERADO 100G",
+      "price": 6.25,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2800",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2801",
+      "categoryId": "cat_6",
+      "name": "RUFFLES CHURRASCO 110G",
+      "description": "RUFFLES CHURRASCO 110G",
+      "price": 6.25,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2801",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2802",
+      "categoryId": "cat_6",
+      "name": "RUFFLES CEB E SALSA 167G",
+      "description": "RUFFLES CEB E SALSA 167G",
+      "price": 6.1,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2802",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2812",
+      "categoryId": "cat_2",
+      "name": "BOLO DE AMENDOIM",
+      "description": "BOLO DE AMENDOIM",
+      "price": 33.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2812",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2815",
+      "categoryId": "cat_2",
+      "name": "BRIGADEIRO PRETO KG",
+      "description": "BRIGADEIRO PRETO KG",
+      "price": 59.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2815",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2821",
+      "categoryId": "cat_10",
+      "name": "KIBON MAX FRUTILLY MORANGO",
+      "description": "KIBON MAX FRUTILLY MORANGO",
+      "price": 5.8,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2821",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2826",
+      "categoryId": "cat_9",
+      "name": "PASTILHA TIC TAC citrus",
+      "description": "PASTILHA TIC TAC citrus",
+      "price": 3.95,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2826",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2834",
+      "categoryId": "cat_6",
+      "name": "BATATA LAYS CLASSICA 96G",
+      "description": "BATATA LAYS CLASSICA 96G",
+      "price": 6.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2834",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2835",
+      "categoryId": "cat_6",
+      "name": "BATATA LAYS SOUR CREAM",
+      "description": "BATATA LAYS SOUR CREAM",
+      "price": 6,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2835",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2839",
+      "categoryId": "cat_4",
+      "name": "REF COCA COLA COM STEVIA 350 ML",
+      "description": "REF COCA COLA COM STEVIA 350 ML",
+      "price": 3.1,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2839",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2849",
+      "categoryId": "cat_6",
+      "name": "FANDANGOS QUEIJO 63 G",
+      "description": "FANDANGOS QUEIJO 63 G",
+      "price": 2.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2849",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2850",
+      "categoryId": "cat_6",
+      "name": "CHEETOS ONDA REQUEIJAO 57 G",
+      "description": "CHEETOS ONDA REQUEIJAO 57 G",
+      "price": 2.75,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2850",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2851",
+      "categoryId": "cat_6",
+      "name": "CHEETOS MIX DE QUEIJOS 49 G",
+      "description": "CHEETOS MIX DE QUEIJOS 49 G",
+      "price": 2.75,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2851",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2852",
+      "categoryId": "cat_6",
+      "name": "RUFFLES ORIGINAL 92 G",
+      "description": "RUFFLES ORIGINAL 92 G",
+      "price": 9.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2852",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2857",
+      "categoryId": "cat_9",
+      "name": "BALA CANELA",
+      "description": "BALA CANELA",
+      "price": 0.3,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2857",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2864",
+      "categoryId": "cat_6",
+      "name": "RUFFLES FEIJOADA",
+      "description": "RUFFLES FEIJOADA",
+      "price": 9.8,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2864",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2865",
+      "categoryId": "cat_6",
+      "name": "CEBOLITOS 110 G",
+      "description": "CEBOLITOS 110 G",
+      "price": 9.98,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2865",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2866",
+      "categoryId": "cat_6",
+      "name": "FANDANGOS PRESUNTO 140G",
+      "description": "FANDANGOS PRESUNTO 140G",
+      "price": 12.7,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2866",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2867",
+      "categoryId": "cat_6",
+      "name": "RUFFLES CEB E SALSA 92 G",
+      "description": "RUFFLES CEB E SALSA 92 G",
+      "price": 9.3,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2867",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2868",
+      "categoryId": "cat_6",
+      "name": "CHEETOS LUA PARMESAO 51 G",
+      "description": "CHEETOS LUA PARMESAO 51 G",
+      "price": 2.75,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2868",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2869",
+      "categoryId": "cat_6",
+      "name": "DORITOS QUEIJO NACHO 167 G",
+      "description": "DORITOS QUEIJO NACHO 167 G",
+      "price": 10.8,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2869",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2870",
+      "categoryId": "cat_6",
+      "name": "RUFFLES ORIGINAL 57 G",
+      "description": "RUFFLES ORIGINAL 57 G",
+      "price": 3.8,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2870",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2871",
+      "categoryId": "cat_6",
+      "name": "FANDANGOS PRESUNTO 59 G",
+      "description": "FANDANGOS PRESUNTO 59 G",
+      "price": 2.75,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2871",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2872",
+      "categoryId": "cat_6",
+      "name": "FANDANGOS QUEIJO 59 G",
+      "description": "FANDANGOS QUEIJO 59 G",
+      "price": 2.75,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2872",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2874",
+      "categoryId": "cat_2",
+      "name": "BOLO PRESTIGIO",
+      "description": "BOLO PRESTIGIO",
+      "price": 49.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2874",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2875",
+      "categoryId": "cat_6",
+      "name": "DE MONTAO 60 G",
+      "description": "DE MONTAO 60 G",
+      "price": 3.75,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2875",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2876",
+      "categoryId": "cat_6",
+      "name": "DORITOS QUEIJO NACHO 92G",
+      "description": "DORITOS QUEIJO NACHO 92G",
+      "price": 9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2876",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2879",
+      "categoryId": "cat_6",
+      "name": "BATATA LAYS SOUR CREAM 80g",
+      "description": "BATATA LAYS SOUR CREAM 80g",
+      "price": 9.7,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2879",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2880",
+      "categoryId": "cat_9",
+      "name": "MENTOS STICK TUTTI FRUIT",
+      "description": "MENTOS STICK TUTTI FRUIT",
+      "price": 4.8,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2880",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2881",
+      "categoryId": "cat_2",
+      "name": "BRUSQUETA",
+      "description": "BRUSQUETA",
+      "price": 31.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2881",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2889",
+      "categoryId": "cat_9",
+      "name": "CHOCOLATE  BRANCO LAKA 20G",
+      "description": "CHOCOLATE  BRANCO LAKA 20G",
+      "price": 4.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2889",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2895",
+      "categoryId": "cat_2",
+      "name": "GRISSINI",
+      "description": "GRISSINI",
+      "price": 44.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2895",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2913",
+      "categoryId": "cat_2",
+      "name": "MOUSSE DE MORANGO",
+      "description": "MOUSSE DE MORANGO",
+      "price": 8.6,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2913",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2914",
+      "categoryId": "cat_6",
+      "name": "RUFFLES CHURRASCO 57 G",
+      "description": "RUFFLES CHURRASCO 57 G",
+      "price": 3.8,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2914",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2918",
+      "categoryId": "cat_3",
+      "name": "ISQUEIRO BIC MINI 12",
+      "description": "ISQUEIRO BIC MINI 12",
+      "price": 3.75,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2918",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2923",
+      "categoryId": "cat_9",
+      "name": "BALA AZEDINHA MORANGO",
+      "description": "BALA AZEDINHA MORANGO",
+      "price": 0.15,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2923",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2924",
+      "categoryId": "cat_9",
+      "name": "BALA DADINHO 600 GR",
+      "description": "BALA DADINHO 600 GR",
+      "price": 0.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2924",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2927",
+      "categoryId": "cat_2",
+      "name": "BISCOITO AGUA E SAL COM OREGANO",
+      "description": "BISCOITO AGUA E SAL COM OREGANO",
+      "price": 35.75,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2927",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2942",
+      "categoryId": "cat_9",
+      "name": "CHOCOLATE PRESTIGIO DARK 33G",
+      "description": "CHOCOLATE PRESTIGIO DARK 33G",
+      "price": 3.95,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2942",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2963",
+      "categoryId": "cat_9",
+      "name": "BALA BUTTER TOFFEE GREGO FRT VER600 G",
+      "description": "BALA BUTTER TOFFEE GREGO FRT VER600 G",
+      "price": 0.3,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2963",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2964",
+      "categoryId": "cat_9",
+      "name": "BALA BUTTER TOFFEE CREME AVELA",
+      "description": "BALA BUTTER TOFFEE CREME AVELA",
+      "price": 0.3,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2964",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2969",
+      "categoryId": "cat_6",
+      "name": "RUFFLES CALABRESA 90 G",
+      "description": "RUFFLES CALABRESA 90 G",
+      "price": 6.4,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2969",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2970",
+      "categoryId": "cat_6",
+      "name": "DORITOS SABOR PIMENTA ROLETA 2.0 100G",
+      "description": "DORITOS SABOR PIMENTA ROLETA 2.0 100G",
+      "price": 6.25,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2970",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2972",
+      "categoryId": "cat_2",
+      "name": "TORRADA TEMPERADA",
+      "description": "TORRADA TEMPERADA",
+      "price": 24.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2972",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2973",
+      "categoryId": "cat_2",
+      "name": "SALADA DE FRUTAS 150 ML",
+      "description": "SALADA DE FRUTAS 150 ML",
+      "price": 5.6,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2973",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2986",
+      "categoryId": "cat_9",
+      "name": "CHOC BATON CREME MORANGO 16 G",
+      "description": "CHOC BATON CREME MORANGO 16 G",
+      "price": 2.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2986",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_2995",
+      "categoryId": "cat_DIVERSOS",
+      "name": "CERVEJA ESTRELLA GALICIA GARRAFA 600 ML",
+      "description": "CERVEJA ESTRELLA GALICIA GARRAFA 600 ML",
+      "price": 9.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "2995",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3007",
+      "categoryId": "cat_2",
+      "name": "CENTO PAO DE BATATA",
+      "description": "CENTO PAO DE BATATA",
+      "price": 85.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3007",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3008",
+      "categoryId": "cat_2",
+      "name": "MINI HAMBUGUER INTEGRAL - PUR",
+      "description": "MINI HAMBUGUER INTEGRAL - PUR",
+      "price": 54.8,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3008",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3021",
+      "categoryId": "cat_9",
+      "name": "FINI BALA DE GELAT MINNIE 90G",
+      "description": "FINI BALA DE GELAT MINNIE 90G",
+      "price": 10.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3021",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3029",
+      "categoryId": "cat_6",
+      "name": "CHEETOS PIPOCA DOCE 45 G",
+      "description": "CHEETOS PIPOCA DOCE 45 G",
+      "price": 3.25,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3029",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3030",
+      "categoryId": "cat_6",
+      "name": "ELMA CHIPS BATATA PALHA 80G",
+      "description": "ELMA CHIPS BATATA PALHA 80G",
+      "price": 4.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3030",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3045",
+      "categoryId": "cat_9",
+      "name": "BALA BUTTER TOFFEE CHOCO AMARGO",
+      "description": "BALA BUTTER TOFFEE CHOCO AMARGO",
+      "price": 0.3,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3045",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3048",
+      "categoryId": "cat_9",
+      "name": "CHOC KIT KAT DARK",
+      "description": "CHOC KIT KAT DARK",
+      "price": 4.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3048",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3051",
+      "categoryId": "cat_4",
+      "name": "REF COCA COLA CAFE ESPRESSO 220 ML",
+      "description": "REF COCA COLA CAFE ESPRESSO 220 ML",
+      "price": 2.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3051",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3054",
+      "categoryId": "cat_2",
+      "name": "PUDIM DE LEITE CONDENSADO MEDIO",
+      "description": "PUDIM DE LEITE CONDENSADO MEDIO",
+      "price": 39.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3054",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3056",
+      "categoryId": "cat_9",
+      "name": "BIS XTRA OREO 45G",
+      "description": "BIS XTRA OREO 45G",
+      "price": 5.49,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3056",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3068",
+      "categoryId": "cat_6",
+      "name": "RUFFLES ORIGINAL 167G",
+      "description": "RUFFLES ORIGINAL 167G",
+      "price": 13.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3068",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3069",
+      "categoryId": "cat_2",
+      "name": "RABANADA",
+      "description": "RABANADA",
+      "price": 69.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3069",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3070",
+      "categoryId": "cat_2",
+      "name": "PASTEL GRANDE 2 SABORES UN",
+      "description": "PASTEL GRANDE 2 SABORES UN",
+      "price": 11.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3070",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3071",
+      "categoryId": "cat_2",
+      "name": "MINI SONHO",
+      "description": "MINI SONHO",
+      "price": 54.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3071",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3082",
+      "categoryId": "cat_2",
+      "name": "BISCOITO DOCE FRITO",
+      "description": "BISCOITO DOCE FRITO",
+      "price": 34.54,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3082",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3083",
+      "categoryId": "cat_2",
+      "name": "BOLO DE AMEIXA",
+      "description": "BOLO DE AMEIXA",
+      "price": 39.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3083",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3085",
+      "categoryId": "cat_12",
+      "name": "BROA DE QUEIJO ENTRADA",
+      "description": "BROA DE QUEIJO ENTRADA",
+      "price": 40.66,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3085",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3088",
+      "categoryId": "cat_2",
+      "name": "BOLO MANIA",
+      "description": "BOLO MANIA",
+      "price": 69.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3088",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3089",
+      "categoryId": "cat_2",
+      "name": "PAOZINHO DE ABOBORA",
+      "description": "PAOZINHO DE ABOBORA",
+      "price": 46.95,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3089",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3090",
+      "categoryId": "cat_2",
+      "name": "PAO LINGUA DE SOGRA",
+      "description": "PAO LINGUA DE SOGRA",
+      "price": 49.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3090",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3091",
+      "categoryId": "cat_2",
+      "name": "PAO DE CENOURA",
+      "description": "PAO DE CENOURA",
+      "price": 52.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3091",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3092",
+      "categoryId": "cat_2",
+      "name": "BOLO DE PAMONHA",
+      "description": "BOLO DE PAMONHA",
+      "price": 37.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3092",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3103",
+      "categoryId": "cat_9",
+      "name": "PACOQUITA 20G",
+      "description": "PACOQUITA 20G",
+      "price": 1.3,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3103",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3104",
+      "categoryId": "cat_7",
+      "name": "LEITE PORTO REAL ZERO LACTOSE TIPO A",
+      "description": "LEITE PORTO REAL ZERO LACTOSE TIPO A",
+      "price": 15.87,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3104",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3112",
+      "categoryId": "cat_2",
+      "name": "COOKIES",
+      "description": "COOKIES",
+      "price": 73.59,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3112",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3116",
+      "categoryId": "cat_6",
+      "name": "RUFFLES LIMAO 86G",
+      "description": "RUFFLES LIMAO 86G",
+      "price": 6.25,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3116",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3120",
+      "categoryId": "cat_7",
+      "name": "REQUEIJAO COOPATOS ZERO LACTOSE 200 G",
+      "description": "REQUEIJAO COOPATOS ZERO LACTOSE 200 G",
+      "price": 11.99,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3120",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3133",
+      "categoryId": "cat_9",
+      "name": "PAÇOCA MORENINHA DO RIO ZERO AÇUCAR QUAD",
+      "description": "PAÇOCA MORENINHA DO RIO ZERO AÇUCAR QUAD",
+      "price": 2.2,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3133",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3134",
+      "categoryId": "cat_3",
+      "name": "FILTRO PAPEL CAFE DO PRODUTOR 102",
+      "description": "FILTRO PAPEL CAFE DO PRODUTOR 102",
+      "price": 5.27,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3134",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3137",
+      "categoryId": "cat_2",
+      "name": "MACARRAO NA CHAPA BABY",
+      "description": "MACARRAO NA CHAPA BABY",
+      "price": 16,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3137",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3143",
+      "categoryId": "cat_7",
+      "name": "BEB LACTEA NESTLE VITAMINA DE FRUTAS 900",
+      "description": "BEB LACTEA NESTLE VITAMINA DE FRUTAS 900G",
+      "price": 18.6,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3143",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3144",
+      "categoryId": "cat_7",
+      "name": "BEB LACTEA NESTLE VITAMINA DE FRUTAS 170",
+      "description": "BEB LACTEA NESTLE VITAMINA DE FRUTAS 170G",
+      "price": 4.25,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3144",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3145",
+      "categoryId": "cat_2",
+      "name": "COLOMBA PASCAL COM COBERTUR DE CHOCOLATE",
+      "description": "COLOMBA PASCAL COM COBERTUR DE CHOCOLATE",
+      "price": 29.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3145",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3162",
+      "categoryId": "cat_2",
+      "name": "CESTA DE CAFE DA MANHA M",
+      "description": "CESTA DE CAFE DA MANHA M",
+      "price": 159.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3162",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3167",
+      "categoryId": "cat_4",
+      "name": "ENER MONSTER BRANCO ZERO ACUCAR 473 ML",
+      "description": "ENER MONSTER BRANCO ZERO ACUCAR 473 ML",
+      "price": 11.3,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3167",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3169",
+      "categoryId": "cat_2",
+      "name": "EMPANADO DE SALSICHA",
+      "description": "EMPANADO DE SALSICHA",
+      "price": 3.9,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3169",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3175",
+      "categoryId": "cat_15",
+      "name": "PETIT FOUR PALITO DE CHOCOLATE BRANCO",
+      "description": "PETIT FOUR PALITO DE CHOCOLATE BRANCO",
+      "price": 89.75,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3175",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3176",
+      "categoryId": "cat_6",
+      "name": "DORITOS ROCK IN RIO QUEIJO TIPO PEPPER J",
+      "description": "DORITOS ROCK IN RIO QUEIJO TIPO PEPPER JACK 55G",
+      "price": 3.7,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3176",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3177",
+      "categoryId": "cat_6",
+      "name": "DORITOS ROCK IN RIO PIMENTA MALAG E QUEI",
+      "description": "DORITOS ROCK IN RIO PIMENTA MALAG E QUEIJ CHED 55G",
+      "price": 3.7,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3177",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3178",
+      "categoryId": "cat_6",
+      "name": "DORITOS ROCK IN RIOPIM BIQUINHO E QUEIJ",
+      "description": "DORITOS ROCK IN RIOPIM BIQUINHO E QUEIJ PARMES 55G",
+      "price": 3.7,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3178",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3181",
+      "categoryId": "cat_2",
+      "name": "FATIAS DE BOLO FUBÁ - COFFE BREAK",
+      "description": "FATIAS DE BOLO FUBÁ - COFFE BREAK",
+      "price": 2.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3181",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    },
+    {
+      "id": "prod_3182",
+      "categoryId": "cat_3",
+      "name": "PAO INTEGRAL CASTANHA E QUINOA 500G WICK",
+      "description": "PAO INTEGRAL CASTANHA E QUINOA 500G WICKBOLD",
+      "price": 10.5,
+      "imageUrl": "",
+      "isActive": true,
+      "externalId": "3182",
+      "availableForDelivery": true,
+      "availableInStore": true,
+      "availableForKiosk": true
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "uid": "master-1",
+      "email": "admin@balbec.com.br",
+      "name": "Administrador Master",
+      "role": "master",
+      "password": "admin"
+    },
+    {
+      "id": 2,
+      "uid": "master-2",
+      "email": "admin",
+      "name": "Administrador Master",
+      "role": "master",
+      "password": "admin"
+    },
+    {
+      "id": 3,
+      "uid": "master-3",
+      "email": "camillasites@gmail.com",
+      "name": "Camilla (Master)",
+      "role": "master",
+      "password": "admin"
+    },
+    {
+      "id": 4,
+      "uid": "master-4",
+      "email": "contato@balbec.com.br",
+      "name": "Contato (Admin)",
+      "role": "admin",
+      "password": "admin"
+    },
+    {
+      "id": 5,
+      "uid": "master-5",
+      "email": "operador@balbec.com.br",
+      "name": "Operador Padrão",
+      "role": "padrao",
+      "password": "123"
+    },
+    {
+      "id": 6,
+      "uid": "caixa-1",
+      "email": "caixa@balbec.com.br",
+      "name": "Operadora do Caixa",
+      "role": "padrao",
+      "password": "123"
+    }
+  ],
+  "tables": [
+    {
+      "id": "table-1",
+      "number": 1,
+      "name": "Mesa 01",
+      "section": "Salão Principal",
+      "capacity": 4,
+      "status": "available",
+      "isActive": true,
+      "createdAt": 1791039137641
+    },
+    {
+      "id": "table-2",
+      "number": 2,
+      "name": "Mesa 02",
+      "section": "Salão Principal",
+      "capacity": 4,
+      "status": "available",
+      "isActive": true,
+      "createdAt": 1791039137641
+    },
+    {
+      "id": "table-3",
+      "number": 3,
+      "name": "Mesa 03",
+      "section": "Salão Principal",
+      "capacity": 4,
+      "status": "available",
+      "isActive": true,
+      "createdAt": 1791039137641
+    },
+    {
+      "id": "table-4",
+      "number": 4,
+      "name": "Mesa 04",
+      "section": "Salão Principal",
+      "capacity": 2,
+      "status": "available",
+      "isActive": true,
+      "createdAt": 1791039137641
+    },
+    {
+      "id": "table-5",
+      "number": 5,
+      "name": "Mesa 05",
+      "section": "Salão Principal",
+      "capacity": 6,
+      "status": "available",
+      "isActive": true,
+      "createdAt": 1791039137641
+    },
+    {
+      "id": "table-6",
+      "number": 6,
+      "name": "Mesa 06",
+      "section": "Varanda Externa",
+      "capacity": 4,
+      "status": "available",
+      "isActive": true,
+      "createdAt": 1791039137641
+    },
+    {
+      "id": "table-7",
+      "number": 7,
+      "name": "Mesa 07",
+      "section": "Varanda Externa",
+      "capacity": 4,
+      "status": "available",
+      "isActive": true,
+      "createdAt": 1791039137641
+    },
+    {
+      "id": "table-8",
+      "number": 8,
+      "name": "Mesa 08",
+      "section": "Varanda Externa",
+      "capacity": 4,
+      "status": "available",
+      "isActive": true,
+      "createdAt": 1791039137641
+    }
+  ],
+  "customers": [],
+  "orders": [],
+  "totemBackups": [
+    {
+      "id": "totem_bkp_baseline_1791039495871",
+      "name": "Backup Inicial Padrão Totem",
+      "createdAt": "2026-10-03T14:58:15.871Z",
+      "activeCategoriesCount": 10,
+      "activeProductsCount": 120,
+      "categories": [
+        {
+          "id": "cat_2",
+          "name": "PRODUCAO PROPRIA",
+          "externalId": "2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "cat_9",
+          "name": "BOMBONIER",
+          "externalId": "9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "cat_4",
+          "name": "BEBIDAS",
+          "externalId": "4",
+          "availableForKiosk": true
+        },
+        {
+          "id": "cat_6",
+          "name": "ELMA CHIPS",
+          "externalId": "6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "cat_7",
+          "name": "LATICINIOS",
+          "externalId": "7",
+          "availableForKiosk": true
+        },
+        {
+          "id": "cat_3",
+          "name": "MERCEARIA",
+          "externalId": "3",
+          "availableForKiosk": true
+        },
+        {
+          "id": "cat_12",
+          "name": "CONGELADOS",
+          "externalId": "12",
+          "availableForKiosk": true
+        },
+        {
+          "id": "cat_10",
+          "name": "SORVETE",
+          "externalId": "10",
+          "availableForKiosk": true
+        },
+        {
+          "id": "cat_DIVERSOS",
+          "name": "Diversos",
+          "externalId": "DIVERSOS",
+          "availableForKiosk": true
+        },
+        {
+          "id": "cat_15",
+          "name": "PETIT FOUR",
+          "externalId": "15",
+          "availableForKiosk": true
+        }
+      ],
+      "products": [
+        {
+          "id": "prod_1",
+          "name": "PAO FRANCES",
+          "externalId": "1",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2634",
+          "name": "CHOCOLATE 5 STAR",
+          "externalId": "2634",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2635",
+          "name": "CHOCOLATE DUO BATON 16G",
+          "externalId": "2635",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2651",
+          "name": "EMPADAO DE FRANGO",
+          "externalId": "2651",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2662",
+          "name": "BALA BUTTER TOFFEE MARACUJA",
+          "externalId": "2662",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2670",
+          "name": "REF H2OH LIMONETO C GAS PET 500ML",
+          "externalId": "2670",
+          "categoryId": "cat_4",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2679",
+          "name": "RUFFLES ORIGINAL 40G",
+          "externalId": "2679",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2682",
+          "name": "LEITE PIRACANJUBA INTEGRAL 1 L",
+          "externalId": "2682",
+          "categoryId": "cat_7",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2688",
+          "name": "CHOC BATON CREME",
+          "externalId": "2688",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2691",
+          "name": "MENTOS YOGURTE E MORANGO",
+          "externalId": "2691",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2696",
+          "name": "REF H2OH LIMONETO C GAS PET 1,5L",
+          "externalId": "2696",
+          "categoryId": "cat_4",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2698",
+          "name": "REQUEIJAO ITAMBE LIGHT220G",
+          "externalId": "2698",
+          "categoryId": "cat_7",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2701",
+          "name": "ENER TNT ZERO AÇUCAR 269 ML",
+          "externalId": "2701",
+          "categoryId": "cat_4",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2715",
+          "name": "CHA MATE LT",
+          "externalId": "2715",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2720",
+          "name": "CHOC KIT KAT WHITE",
+          "externalId": "2720",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2722",
+          "name": "REF COCA COLA PET 1 L",
+          "externalId": "2722",
+          "categoryId": "cat_4",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2728",
+          "name": "HALLS MINI CEREJA",
+          "externalId": "2728",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2729",
+          "name": "BARRA DE CEREAIS NUTRY AVELA C CHOCOLATE",
+          "externalId": "2729",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2730",
+          "name": "BARRA DE CEREAIS NUTRY COCO C CHOC",
+          "externalId": "2730",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2740",
+          "name": "DORITOS JALAPEO LIMAO 100G",
+          "externalId": "2740",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2744",
+          "name": "ACUCAR REFINADO GUARANI 1KG",
+          "externalId": "2744",
+          "categoryId": "cat_3",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2751",
+          "name": "FINI TUBES MORANGO ACID 12 X 17 G",
+          "externalId": "2751",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2752",
+          "name": "FINI REGALIZ TUBES MORANGO 12 X 17G",
+          "externalId": "2752",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2754",
+          "name": "FATIAS DE BOLO FARINHA - COFFE BREAK",
+          "externalId": "2754",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2756",
+          "name": "PAO TIGRE",
+          "externalId": "2756",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2757",
+          "name": "PAO CUCA",
+          "externalId": "2757",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2766",
+          "name": "QUIBE DE QUEIJO KG",
+          "externalId": "2766",
+          "categoryId": "cat_12",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2781",
+          "name": "PAO INTEGRAL 12 GRAOS",
+          "externalId": "2781",
+          "categoryId": "cat_3",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2782",
+          "name": "SEQUILHOS DE COCO",
+          "externalId": "2782",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2792",
+          "name": "AMIDO DE MILHO MAIZENA.",
+          "externalId": "2792",
+          "categoryId": "cat_3",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2799",
+          "name": "TODDY COOKIE EXTRA CHOCOBASE 50 G",
+          "externalId": "2799",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2800",
+          "name": "DORITOS QUEIJO TEMPERADO 100G",
+          "externalId": "2800",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2801",
+          "name": "RUFFLES CHURRASCO 110G",
+          "externalId": "2801",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2802",
+          "name": "RUFFLES CEB E SALSA 167G",
+          "externalId": "2802",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2812",
+          "name": "BOLO DE AMENDOIM",
+          "externalId": "2812",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2815",
+          "name": "BRIGADEIRO PRETO KG",
+          "externalId": "2815",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2821",
+          "name": "KIBON MAX FRUTILLY MORANGO",
+          "externalId": "2821",
+          "categoryId": "cat_10",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2826",
+          "name": "PASTILHA TIC TAC citrus",
+          "externalId": "2826",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2834",
+          "name": "BATATA LAYS CLASSICA 96G",
+          "externalId": "2834",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2835",
+          "name": "BATATA LAYS SOUR CREAM",
+          "externalId": "2835",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2839",
+          "name": "REF COCA COLA COM STEVIA 350 ML",
+          "externalId": "2839",
+          "categoryId": "cat_4",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2849",
+          "name": "FANDANGOS QUEIJO 63 G",
+          "externalId": "2849",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2850",
+          "name": "CHEETOS ONDA REQUEIJAO 57 G",
+          "externalId": "2850",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2851",
+          "name": "CHEETOS MIX DE QUEIJOS 49 G",
+          "externalId": "2851",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2852",
+          "name": "RUFFLES ORIGINAL 92 G",
+          "externalId": "2852",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2857",
+          "name": "BALA CANELA",
+          "externalId": "2857",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2864",
+          "name": "RUFFLES FEIJOADA",
+          "externalId": "2864",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2865",
+          "name": "CEBOLITOS 110 G",
+          "externalId": "2865",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2866",
+          "name": "FANDANGOS PRESUNTO 140G",
+          "externalId": "2866",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2867",
+          "name": "RUFFLES CEB E SALSA 92 G",
+          "externalId": "2867",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2868",
+          "name": "CHEETOS LUA PARMESAO 51 G",
+          "externalId": "2868",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2869",
+          "name": "DORITOS QUEIJO NACHO 167 G",
+          "externalId": "2869",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2870",
+          "name": "RUFFLES ORIGINAL 57 G",
+          "externalId": "2870",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2871",
+          "name": "FANDANGOS PRESUNTO 59 G",
+          "externalId": "2871",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2872",
+          "name": "FANDANGOS QUEIJO 59 G",
+          "externalId": "2872",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2874",
+          "name": "BOLO PRESTIGIO",
+          "externalId": "2874",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2875",
+          "name": "DE MONTAO 60 G",
+          "externalId": "2875",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2876",
+          "name": "DORITOS QUEIJO NACHO 92G",
+          "externalId": "2876",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2879",
+          "name": "BATATA LAYS SOUR CREAM 80g",
+          "externalId": "2879",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2880",
+          "name": "MENTOS STICK TUTTI FRUIT",
+          "externalId": "2880",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2881",
+          "name": "BRUSQUETA",
+          "externalId": "2881",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2889",
+          "name": "CHOCOLATE  BRANCO LAKA 20G",
+          "externalId": "2889",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2895",
+          "name": "GRISSINI",
+          "externalId": "2895",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2913",
+          "name": "MOUSSE DE MORANGO",
+          "externalId": "2913",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2914",
+          "name": "RUFFLES CHURRASCO 57 G",
+          "externalId": "2914",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2918",
+          "name": "ISQUEIRO BIC MINI 12",
+          "externalId": "2918",
+          "categoryId": "cat_3",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2923",
+          "name": "BALA AZEDINHA MORANGO",
+          "externalId": "2923",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2924",
+          "name": "BALA DADINHO 600 GR",
+          "externalId": "2924",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2927",
+          "name": "BISCOITO AGUA E SAL COM OREGANO",
+          "externalId": "2927",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2942",
+          "name": "CHOCOLATE PRESTIGIO DARK 33G",
+          "externalId": "2942",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2963",
+          "name": "BALA BUTTER TOFFEE GREGO FRT VER600 G",
+          "externalId": "2963",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2964",
+          "name": "BALA BUTTER TOFFEE CREME AVELA",
+          "externalId": "2964",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2969",
+          "name": "RUFFLES CALABRESA 90 G",
+          "externalId": "2969",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2970",
+          "name": "DORITOS SABOR PIMENTA ROLETA 2.0 100G",
+          "externalId": "2970",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2972",
+          "name": "TORRADA TEMPERADA",
+          "externalId": "2972",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2973",
+          "name": "SALADA DE FRUTAS 150 ML",
+          "externalId": "2973",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2986",
+          "name": "CHOC BATON CREME MORANGO 16 G",
+          "externalId": "2986",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_2995",
+          "name": "CERVEJA ESTRELLA GALICIA GARRAFA 600 ML",
+          "externalId": "2995",
+          "categoryId": "cat_DIVERSOS",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3007",
+          "name": "CENTO PAO DE BATATA",
+          "externalId": "3007",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3008",
+          "name": "MINI HAMBUGUER INTEGRAL - PUR",
+          "externalId": "3008",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3021",
+          "name": "FINI BALA DE GELAT MINNIE 90G",
+          "externalId": "3021",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3029",
+          "name": "CHEETOS PIPOCA DOCE 45 G",
+          "externalId": "3029",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3030",
+          "name": "ELMA CHIPS BATATA PALHA 80G",
+          "externalId": "3030",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3045",
+          "name": "BALA BUTTER TOFFEE CHOCO AMARGO",
+          "externalId": "3045",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3048",
+          "name": "CHOC KIT KAT DARK",
+          "externalId": "3048",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3051",
+          "name": "REF COCA COLA CAFE ESPRESSO 220 ML",
+          "externalId": "3051",
+          "categoryId": "cat_4",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3054",
+          "name": "PUDIM DE LEITE CONDENSADO MEDIO",
+          "externalId": "3054",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3056",
+          "name": "BIS XTRA OREO 45G",
+          "externalId": "3056",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3068",
+          "name": "RUFFLES ORIGINAL 167G",
+          "externalId": "3068",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3069",
+          "name": "RABANADA",
+          "externalId": "3069",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3070",
+          "name": "PASTEL GRANDE 2 SABORES UN",
+          "externalId": "3070",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3071",
+          "name": "MINI SONHO",
+          "externalId": "3071",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3082",
+          "name": "BISCOITO DOCE FRITO",
+          "externalId": "3082",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3083",
+          "name": "BOLO DE AMEIXA",
+          "externalId": "3083",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3085",
+          "name": "BROA DE QUEIJO ENTRADA",
+          "externalId": "3085",
+          "categoryId": "cat_12",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3088",
+          "name": "BOLO MANIA",
+          "externalId": "3088",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3089",
+          "name": "PAOZINHO DE ABOBORA",
+          "externalId": "3089",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3090",
+          "name": "PAO LINGUA DE SOGRA",
+          "externalId": "3090",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3091",
+          "name": "PAO DE CENOURA",
+          "externalId": "3091",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3092",
+          "name": "BOLO DE PAMONHA",
+          "externalId": "3092",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3103",
+          "name": "PACOQUITA 20G",
+          "externalId": "3103",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3104",
+          "name": "LEITE PORTO REAL ZERO LACTOSE TIPO A",
+          "externalId": "3104",
+          "categoryId": "cat_7",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3112",
+          "name": "COOKIES",
+          "externalId": "3112",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3116",
+          "name": "RUFFLES LIMAO 86G",
+          "externalId": "3116",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3120",
+          "name": "REQUEIJAO COOPATOS ZERO LACTOSE 200 G",
+          "externalId": "3120",
+          "categoryId": "cat_7",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3133",
+          "name": "PAÇOCA MORENINHA DO RIO ZERO AÇUCAR QUAD",
+          "externalId": "3133",
+          "categoryId": "cat_9",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3134",
+          "name": "FILTRO PAPEL CAFE DO PRODUTOR 102",
+          "externalId": "3134",
+          "categoryId": "cat_3",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3137",
+          "name": "MACARRAO NA CHAPA BABY",
+          "externalId": "3137",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3143",
+          "name": "BEB LACTEA NESTLE VITAMINA DE FRUTAS 900",
+          "externalId": "3143",
+          "categoryId": "cat_7",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3144",
+          "name": "BEB LACTEA NESTLE VITAMINA DE FRUTAS 170",
+          "externalId": "3144",
+          "categoryId": "cat_7",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3145",
+          "name": "COLOMBA PASCAL COM COBERTUR DE CHOCOLATE",
+          "externalId": "3145",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3162",
+          "name": "CESTA DE CAFE DA MANHA M",
+          "externalId": "3162",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3167",
+          "name": "ENER MONSTER BRANCO ZERO ACUCAR 473 ML",
+          "externalId": "3167",
+          "categoryId": "cat_4",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3169",
+          "name": "EMPANADO DE SALSICHA",
+          "externalId": "3169",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3175",
+          "name": "PETIT FOUR PALITO DE CHOCOLATE BRANCO",
+          "externalId": "3175",
+          "categoryId": "cat_15",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3176",
+          "name": "DORITOS ROCK IN RIO QUEIJO TIPO PEPPER J",
+          "externalId": "3176",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3177",
+          "name": "DORITOS ROCK IN RIO PIMENTA MALAG E QUEI",
+          "externalId": "3177",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3178",
+          "name": "DORITOS ROCK IN RIOPIM BIQUINHO E QUEIJ",
+          "externalId": "3178",
+          "categoryId": "cat_6",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3181",
+          "name": "FATIAS DE BOLO FUBÁ - COFFE BREAK",
+          "externalId": "3181",
+          "categoryId": "cat_2",
+          "availableForKiosk": true
+        },
+        {
+          "id": "prod_3182",
+          "name": "PAO INTEGRAL CASTANHA E QUINOA 500G WICK",
+          "externalId": "3182",
+          "categoryId": "cat_3",
+          "availableForKiosk": true
+        }
+      ]
+    }
+  ],
+  "exportedAt": "2026-10-03T14:58:30.881Z",
+  "isAutomatedHourly": true,
+  "version": "2.0.0"
+}
