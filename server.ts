@@ -233,9 +233,9 @@ function formatBlueFocusError(error: any): { message: string; details: any } {
       }
 
       let allMappedProducts: any[] = [];
-      let currentCargaNumero = parseInt(String(startCargaNumero));
-      let currentCargaSequencia = parseInt(String(startCargaSequencia));
-      let lastProdutoId = parseInt(String(startProdutoId)); // The manual says to use this for pagination
+      let currentCargaNumero = tipoAtualizacao === 'C' ? 0 : parseInt(String(startCargaNumero));
+      let currentCargaSequencia = tipoAtualizacao === 'C' ? 0 : parseInt(String(startCargaSequencia));
+      let lastProdutoId = tipoAtualizacao === 'C' ? 0 : parseInt(String(startProdutoId)); // The manual says to use this for pagination
       let hasMore = true;
       let iterations = 0;
       let lastXml = "";
@@ -381,7 +381,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
               // Update lastProdutoId for next loop paging as per documentation
               const currentId = parseInt(pId);
               if (!isNaN(currentId)) {
-                lastProdutoId = currentId;
+                lastProdutoId = Math.max(lastProdutoId, currentId);
               }
 
               const pName = String(getVal(item, "ProdutoDescricaoResumida") || getVal(item, "ProdutoDescricao") || "Sem Nome");
