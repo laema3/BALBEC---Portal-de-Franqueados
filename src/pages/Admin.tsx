@@ -837,25 +837,6 @@ export default function Admin() {
     startProdutoId: storeInfo?.bluefocusStartProdutoId || localStorage.getItem('bluefocus1_start_produto_id') || localStorage.getItem('bluefocus_start_produto_id') || '0'
   }));
 
-  useEffect(() => {
-    if (storeInfo) {
-      setBlueFocusConfig1(prev => ({
-        ...prev,
-        empresaId: storeInfo.bluefocusEmpresaId || prev.empresaId || localStorage.getItem('bluefocus1_empresa_id') || localStorage.getItem('bluefocus_empresa_id') || 'BALBEC',
-        usuarioId: storeInfo.bluefocusUsuarioId || prev.usuarioId || localStorage.getItem('bluefocus1_usuario_id') || localStorage.getItem('bluefocus_usuario_id') || 'CONSULTA',
-        pdvCodigo: storeInfo.bluefocusPdvCodigo || prev.pdvCodigo || localStorage.getItem('bluefocus1_pdv_codigo') || localStorage.getItem('bluefocus_pdv_codigo') || '1000',
-        syncUrl: storeInfo.bluefocusSyncUrl || prev.syncUrl || localStorage.getItem('bluefocus1_sync_url') || localStorage.getItem('bluefocus_sync_url') || '',
-        tipoAtualizacao: storeInfo.bluefocusTipoAtualizacao || prev.tipoAtualizacao || localStorage.getItem('bluefocus1_tipo_atualizacao') || 'A',
-        tipo: storeInfo.bluefocusTipo || prev.tipo || localStorage.getItem('bluefocus1_tipo') || '4',
-        dataInicial: storeInfo.bluefocusDataInicial || prev.dataInicial || localStorage.getItem('bluefocus1_data_inicial') || '30/12/1899',
-        startCargaNumero: storeInfo.bluefocusStartCargaNumero || prev.startCargaNumero || localStorage.getItem('bluefocus1_start_carga_numero') || '0',
-        startCargaSequencia: storeInfo.bluefocusStartCargaSequencia || prev.startCargaSequencia || localStorage.getItem('bluefocus1_start_carga_sequencia') || '0',
-        authToken: storeInfo.bluefocusAuthToken || prev.authToken || localStorage.getItem('bluefocus1_auth_token') || localStorage.getItem('bluefocus_auth_token') || '',
-        startProdutoId: storeInfo.bluefocusStartProdutoId || prev.startProdutoId || localStorage.getItem('bluefocus1_start_produto_id') || '0',
-      }));
-    }
-  }, [storeInfo]);
-
   const blueFocusConfig = blueFocusConfig1;
   const setBlueFocusConfig = setBlueFocusConfig1;
 
