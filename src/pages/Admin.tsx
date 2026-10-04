@@ -4309,25 +4309,7 @@ export default function Admin() {
                   <div className="flex flex-col">
                     <span className="text-stone-900">{category.name}</span>
                     <div className="flex flex-wrap gap-1 mt-1.5 items-center">
-                      <button
-                        type="button"
-                        title={category.availableForDelivery !== false ? "Clique para desativar esta categoria no Delivery" : "Clique para ativar esta categoria no Delivery"}
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          const newValue = category.availableForDelivery === false;
-                          await updateCategory(category.id, { 
-                            availableForDelivery: newValue,
-                            ...(newValue ? { isVisible: true } : {})
-                          });
-                        }}
-                        className={`text-[10px] px-2 py-0.5 rounded-md border transition-all cursor-pointer font-bold flex items-center gap-1 active:scale-95 ${
-                          category.availableForDelivery !== false
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300 shadow-xs hover:bg-emerald-200'
-                            : 'bg-stone-100 text-stone-400 border-stone-200 line-through opacity-50 hover:opacity-100 hover:bg-emerald-50 hover:text-emerald-700 hover:no-underline'
-                        }`}
-                      >
-                        🛵 Delivery
-                      </button>
+
 
                       <button
                         type="button"
@@ -4893,22 +4875,7 @@ export default function Admin() {
                             {product.isAddon && <span className="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded uppercase font-bold">Opcional</span>}
                             {product.isFlavor && <span className="text-[9px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded uppercase font-bold">Sabor</span>}
                             
-                            <button
-                              type="button"
-                              title={product.availableForDelivery !== false ? "Clique para desativar no Delivery" : "Clique para ativar no Delivery"}
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                const newValue = product.availableForDelivery === false;
-                                await updateProduct(product.id, { availableForDelivery: newValue });
-                              }}
-                              className={`text-[10px] px-2 py-0.5 rounded-md border transition-all cursor-pointer font-bold flex items-center gap-1 active:scale-95 ${
-                                product.availableForDelivery !== false
-                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300 shadow-xs hover:bg-emerald-200'
-                                  : 'bg-stone-100 text-stone-400 border-stone-200 line-through opacity-50 hover:opacity-100 hover:bg-emerald-50 hover:text-emerald-700 hover:no-underline'
-                              }`}
-                            >
-                              🛵 Delivery
-                            </button>
+
 
                             <button
                               type="button"
@@ -7865,15 +7832,7 @@ export default function Admin() {
                 <div className="pt-2 border-t border-stone-100">
                   <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Canais de Venda Disponíveis</label>
                   <div className="space-y-2 text-sm text-stone-700">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        name="availableForDelivery" 
-                        defaultChecked={editingItem ? editingItem.availableForDelivery !== false : true} 
-                        className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
-                      />
-                      <span>🛵 Delivery</span>
-                    </label>
+
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input 
                         type="checkbox" 
@@ -8083,16 +8042,7 @@ export default function Admin() {
                 <div className="p-3 bg-orange-50/60 border border-orange-200/80 rounded-xl space-y-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">Disponibilidade por Canal de Venda</label>
                   <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-3 pt-1">
-                    <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        name="availableForDelivery"
-                        id="availableForDelivery"
-                        defaultChecked={editingItem ? editingItem.availableForDelivery !== false : true}
-                        className="w-4 h-4 text-orange-600 focus:ring-orange-500 rounded"
-                      />
-                      <span>🛵 Delivery (Entrega)</span>
-                    </label>
+
                     <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer">
                       <input
                         type="checkbox"
