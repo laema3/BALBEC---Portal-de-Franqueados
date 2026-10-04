@@ -3706,7 +3706,6 @@ export default function Admin() {
             <span className="text-xs text-stone-500 font-bold shrink-0">Canal:</span>
             {[
               { id: 'all', label: 'Todos os Canais' },
-              { id: 'delivery', label: '🛵 Delivery' },
               { id: 'instore', label: '🍽️ Consumo Mesa' },
               { id: 'kiosk', label: '📱 Totem' },
             ].map(channel => (

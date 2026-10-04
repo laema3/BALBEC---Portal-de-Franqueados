@@ -1602,38 +1602,7 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                       </div>
                     </label>
 
-                    {/* Delivery */}
-                    <label className="flex items-center justify-between p-3 bg-stone-50 hover:bg-stone-100/80 rounded-xl border border-stone-200 cursor-pointer transition-colors">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-stone-800">Entrega (Delivery)</span>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            !deliveryEnabledState
-                              ? 'bg-stone-200 text-stone-600'
-                              : currentStatus.isOpenNow
-                                ? 'bg-orange-100 text-orange-800'
-                                : 'bg-amber-100 text-amber-800'
-                          }`}>
-                            {!deliveryEnabledState 
-                              ? 'Pausado' 
-                              : currentStatus.isOpenNow
-                                ? 'Aberto para Pedidos'
-                                : 'Fechado (Loja Fechada)'}
-                          </span>
-                        </div>
-                        <span className="text-[11px] text-stone-500">Controle para você abrir ou pausar pedidos de entrega a qualquer momento.</span>
-                      </div>
-                      <div className="relative">
-                        <input 
-                          type="checkbox" 
-                          name="deliveryEnabled" 
-                          checked={deliveryEnabledState}
-                          onChange={(e) => setDeliveryEnabledState(e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
-                      </div>
-                    </label>
+
 
                     {/* Totem */}
                     <label className="flex items-center justify-between p-3 bg-stone-50 hover:bg-stone-100/80 rounded-xl border border-stone-200 cursor-pointer transition-colors">
