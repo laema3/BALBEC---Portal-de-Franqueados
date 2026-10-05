@@ -1369,9 +1369,15 @@ export default function Admin() {
           productsCreated++;
         }
 
-        // Always prefer new BlueFocus image URL if present and valid system image
-        const resolvedImageUrl = (bp.imageUrl && !bp.imageUrl.includes('unsplash')) ? bp.imageUrl :
-          (existingProduct?.imageUrl && !existingProduct.imageUrl.includes('unsplash') ? existingProduct.imageUrl : '');
+        // Preserve custom website images, preventing BlueFocus auto-generated static mercadoria URLs from overwriting them
+        const isDefaultMercadoria = bp.imageUrl && bp.imageUrl.includes('/static/mercadoria/');
+        const hasCustomExisting = existingProduct?.imageUrl && existingProduct.imageUrl.trim() !== '' && !existingProduct.imageUrl.includes('unsplash') && !existingProduct.imageUrl.includes('/static/mercadoria/');
+        
+        const resolvedImageUrl = hasCustomExisting 
+          ? existingProduct.imageUrl 
+          : (!isDefaultMercadoria && bp.imageUrl && !bp.imageUrl.includes('unsplash')) 
+          ? bp.imageUrl 
+          : (existingProduct?.imageUrl || bp.imageUrl || '');
 
         productsToSave.push({
           id: prodId,

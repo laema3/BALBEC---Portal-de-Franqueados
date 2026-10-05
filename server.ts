@@ -139,12 +139,21 @@ app.get("/api/image-proxy", async (req, res) => {
     return res.status(400).send("URL parameter is required");
   }
   try {
+    const authKey = process.env.BLUE_FOCUS_AUTH_KEY || process.env.BLUEFOCUS_AUTH_KEY || process.env.BLUEFOCUS_AUTH_TOKEN;
+    const storeInfo = getMemStoreInfo ? getMemStoreInfo() : {};
+    const authToken = storeInfo?.bluefocusAuthToken || authKey;
+
+    const proxyHeaders: any = {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    };
+    if (imageUrl.includes('bluefocus') && authToken) {
+      proxyHeaders["autentica"] = authToken.trim();
+    }
+
     const response = await axios.get(imageUrl, {
       responseType: "stream",
       timeout: 10000,
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-      }
+      headers: proxyHeaders
     });
     if (response.headers["content-type"]) {
       res.setHeader("Content-Type", response.headers["content-type"]);
