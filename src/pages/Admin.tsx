@@ -1527,8 +1527,20 @@ export default function Admin() {
       current: 0,
       total: 0,
       ignored: 0,
-      status: 'Sincronizando clientes do BlueFocus...'
+      status: 'Conectando ao BlueFocus para importar clientes (Pessoas)...'
     });
+
+    const progressTimer = setInterval(() => {
+      setSyncProgress(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          current: Math.min(200, prev.current + 15),
+          total: Math.min(200, prev.total + 15),
+          status: 'Processando lotes de clientes do ERP...'
+        };
+      });
+    }, 400);
 
     try {
       const res = await fetch('/api/bluefocus/sync-customers', {
@@ -1536,6 +1548,7 @@ export default function Admin() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(blueFocusConfig)
       });
+      clearInterval(progressTimer);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erro ao sincronizar clientes');
 
@@ -1548,6 +1561,7 @@ export default function Admin() {
         onConfirm: () => setConfirmModal(null)
       });
     } catch (err: any) {
+      clearInterval(progressTimer);
       setSyncProgress(null);
       setConfirmModal({
         isOpen: true,

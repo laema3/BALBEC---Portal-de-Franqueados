@@ -733,7 +733,7 @@ ${itemsXml}
       const parser = new XMLParser({
         ignoreAttributes: false,
         attributeNamePrefix: "@_",
-        isArray: (name) => ["ClienteItem", "clienteitem", "Cliente", "cliente", "PessoaItem", "pessoaitem", "Pessoa", "pessoa"].includes(name)
+        isArray: (name) => ["ClienteItem", "clienteitem", "Cliente", "cliente", "PessoaItem", "pessoaitem", "Pessoa", "pessoa", "Pessoas", "Clientes"].includes(name)
       });
 
       const getVal = (obj: any, key: string) => {
@@ -799,8 +799,9 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           return res.status(400).json({ error: msgErro });
         }
 
-        let customersArr = getVal(saiaExp, "ClienteItem") || getVal(saiaExp, "Cliente") || getVal(saiaExp, "PessoaItem") || getVal(saiaExp, "Pessoa");
+        let customersArr = getVal(saiaExp, "ClienteItem") || getVal(saiaExp, "Cliente") || getVal(saiaExp, "PessoaItem") || getVal(saiaExp, "Pessoa") || getVal(saiaExp, "Pessoas") || getVal(saiaExp, "Clientes");
         if (!customersArr) {
+          console.log("[Sync Customers] Nenhum cliente encontrado no XML. Chaves disponíveis em saiaExp:", saiaExp ? Object.keys(saiaExp) : "null");
           hasMore = false;
           break;
         }
