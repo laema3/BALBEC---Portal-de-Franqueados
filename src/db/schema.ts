@@ -193,6 +193,8 @@ export const customers = pgTable('customers', {
   phone: text('phone').notNull(),
   email: text('email').default(''),
   address: text('address').default(''),
+  cpf: text('cpf').default(''),
+  cnpj: text('cnpj').default(''),
   source: text('source').default('cadastro_cardapio'), // 'cadastro_cardapio' | 'pedido_delivery' | 'pedido_loja' | 'pedido_totem' | 'assistente_ia' | 'popup_novidades' | 'manual'
   totalOrders: integer('total_orders').default(0),
   totalSpent: doublePrecision('total_spent').default(0),

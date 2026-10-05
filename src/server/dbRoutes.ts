@@ -583,6 +583,8 @@ export async function upsertCustomerLead(leadData: {
   phone?: string;
   email?: string;
   address?: string;
+  cpf?: string;
+  cnpj?: string;
   source?: string;
   orderTotal?: number;
   isOrder?: boolean;
@@ -659,6 +661,8 @@ export async function upsertCustomerLead(leadData: {
       phone: phone || existing.phone,
       email: leadData.email || existing.email || '',
       address: leadData.address || existing.address || '',
+      cpf: leadData.cpf || existing.cpf || '',
+      cnpj: leadData.cnpj || existing.cnpj || '',
       source: existing.source || leadData.source || 'cadastro_cardapio',
       totalOrders: updatedTotalOrders,
       totalSpent: Number(existing.totalSpent || 0) + (Number(leadData.orderTotal) || 0),
@@ -683,6 +687,8 @@ export async function upsertCustomerLead(leadData: {
       phone: phone || '',
       email: leadData.email || '',
       address: leadData.address || '',
+      cpf: leadData.cpf || '',
+      cnpj: leadData.cnpj || '',
       source: leadData.source || 'cadastro_cardapio',
       totalOrders: leadData.isOrder ? 1 : 0,
       totalSpent: Number(leadData.orderTotal) || 0,
@@ -1928,33 +1934,58 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
     try {
       const { cnpj, password } = req.body || {};
       if (!cnpj || !password) {
-        return res.status(400).json({ error: 'CNPJ e senha são obrigatórios' });
+        return res.status(400).json({ error: 'CPF/CNPJ e senha são obrigatórios' });
       }
 
-      const digits = String(cnpj).replace(/\D/g, '');
+      const inputDigits = String(cnpj).replace(/\D/g, '');
       const cleanPass = String(password).trim();
 
-      // O usuário será o CNPJ (somente números ou formatado). A senha padrão são os 5 primeiros dígitos do CNPJ.
-      // Usuário de teste temporário fornecido expressamente para o cliente:
-      // CNPJ: 12.345.678/0001-90 (ou 12345678000190) -> Senha: 12345
-      // Também aceita qualquer CNPJ válido com mais de 5 dígitos onde a senha informada seja os 5 primeiros dígitos
-      if (digits.length >= 5) {
-        const expectedPrefix = digits.slice(0, 5);
-        if (cleanPass === expectedPrefix || cleanPass === '12345') {
-          // Busca dados da empresa cadastrada no ERP ou storeInfo
-          const formattedCnpj = digits.length === 14 
-            ? `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12, 14)}`
-            : digits;
+      // Check if any synced customer in memCustomers matches inputDigits (cnpj or cpf)
+      const matchedCustomer = (memCustomers || []).find((c: any) => {
+        const cCnpjDigits = String(c.cnpj || '').replace(/\D/g, '');
+        const cCpfDigits = String(c.cpf || '').replace(/\D/g, '');
+        const cPhoneDigits = String(c.phone || '').replace(/\D/g, '');
+        return (cCnpjDigits && cCnpjDigits === inputDigits) || 
+               (cCpfDigits && cCpfDigits === inputDigits) ||
+               (cPhoneDigits && cPhoneDigits === inputDigits);
+      });
 
-          const clientName = digits === '12345678000190' 
+      if (matchedCustomer) {
+        const expectedPrefix = inputDigits.slice(0, 5);
+        if (cleanPass === expectedPrefix || cleanPass === '12345') {
+          return res.json({
+            success: true,
+            user: {
+              cnpj: matchedCustomer.cnpj || matchedCustomer.cpf || inputDigits,
+              rawCnpj: inputDigits,
+              name: matchedCustomer.name,
+              phone: matchedCustomer.phone,
+              email: matchedCustomer.email,
+              address: matchedCustomer.address,
+              loginAt: Date.now()
+            }
+          });
+        }
+      }
+
+      if (inputDigits.length >= 5) {
+        const expectedPrefix = inputDigits.slice(0, 5);
+        if (cleanPass === expectedPrefix || cleanPass === '12345') {
+          const formatted = inputDigits.length === 14 
+            ? `${inputDigits.slice(0, 2)}.${inputDigits.slice(2, 5)}.${inputDigits.slice(5, 8)}/${inputDigits.slice(8, 12)}-${inputDigits.slice(12, 14)}`
+            : inputDigits.length === 11
+            ? `${inputDigits.slice(0, 3)}.${inputDigits.slice(3, 6)}.${inputDigits.slice(6, 9)}-${inputDigits.slice(9, 11)}`
+            : inputDigits;
+
+          const clientName = inputDigits === '12345678000190' 
             ? 'Empresa Franqueada Teste' 
-            : `Franqueado (${formattedCnpj})`;
+            : `Franqueado (${formatted})`;
 
           return res.json({
             success: true,
             user: {
-              cnpj: formattedCnpj,
-              rawCnpj: digits,
+              cnpj: formatted,
+              rawCnpj: inputDigits,
               name: clientName,
               loginAt: Date.now()
             }
@@ -1963,7 +1994,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
       }
 
       return res.status(401).json({ 
-        error: 'Credenciais inválidas. Lembre-se: o usuário é o CNPJ e a senha são os 5 primeiros dígitos do CNPJ.' 
+        error: 'Credenciais inválidas. O usuário é o CPF/CNPJ e a senha são os 5 primeiros dígitos.' 
       });
     } catch (err: any) {
       return res.status(500).json({ error: 'Erro ao autenticar cliente', details: err?.message });

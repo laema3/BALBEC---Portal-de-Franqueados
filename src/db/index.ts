@@ -346,6 +346,8 @@ export async function ensureTablesExist() {
         phone TEXT NOT NULL,
         email TEXT DEFAULT '',
         address TEXT DEFAULT '',
+        cpf TEXT DEFAULT '',
+        cnpj TEXT DEFAULT '',
         source TEXT DEFAULT 'cadastro_cardapio',
         total_orders INTEGER DEFAULT 0,
         total_spent DOUBLE PRECISION DEFAULT 0,
@@ -359,6 +361,8 @@ export async function ensureTablesExist() {
     // Ensure columns exist on already-created tables in PostgreSQL
     await runQuery(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS email TEXT DEFAULT '';`);
     await runQuery(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS address TEXT DEFAULT '';`);
+    await runQuery(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS cpf TEXT DEFAULT '';`);
+    await runQuery(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS cnpj TEXT DEFAULT '';`);
     await runQuery(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'cadastro_cardapio';`);
     await runQuery(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS total_orders INTEGER DEFAULT 0;`);
     await runQuery(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS total_spent DOUBLE PRECISION DEFAULT 0;`);

@@ -821,6 +821,8 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           const cLogradouro = String(getVal(item, "Endereco") || getVal(item, "ClienteEndereco") || getVal(item, "Logradouro") || "");
           const cComplemento = String(getVal(item, "Complemento") || "");
           const cCidade = String(getVal(item, "Cidade") || getVal(item, "Municipio") || "");
+          const cCnpj = String(getVal(item, "CNPJ") || getVal(item, "Cnpj") || getVal(item, "CnpjCpf") || "");
+          const cCpf = String(getVal(item, "CPF") || getVal(item, "Cpf") || getVal(item, "CpfCnpj") || "");
 
           let cAddress = cLogradouro;
           if (cComplemento) cAddress += `, ${cComplemento}`;
@@ -831,12 +833,14 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             if (!isNaN(numId)) currentPessoaId = numId;
           }
 
-          if (cName || cPhone) {
+          if (cName || cPhone || cCnpj || cCpf) {
             await upsertCustomerLead({
               name: cName || 'Cliente BlueFocus',
               phone: cPhone,
               email: cEmail,
               address: cAddress,
+              cpf: cCpf,
+              cnpj: cCnpj,
               source: 'bluefocus',
               tags: ['Cliente', 'BlueFocus']
             });
