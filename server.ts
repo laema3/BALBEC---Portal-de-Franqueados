@@ -813,10 +813,18 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
         for (const item of items) {
           const cId = String(getVal(item, "ClienteId") || getVal(item, "PessoaId") || getVal(item, "Codigo") || "");
-          const cName = String(getVal(item, "ClienteNome") || getVal(item, "PessoaNome") || getVal(item, "Nome") || getVal(item, "RazaoSocial") || "");
-          const cPhone = String(getVal(item, "ClienteTelefone") || getVal(item, "Telefone") || getVal(item, "Celular") || getVal(item, "Fone") || "");
-          const cEmail = String(getVal(item, "ClienteEmail") || getVal(item, "Email") || "");
-          const cAddress = String(getVal(item, "ClienteEndereco") || getVal(item, "Endereco") || getVal(item, "Logradouro") || "");
+          const cRazao = String(getVal(item, "RazaoSocial") || "");
+          const cFantasia = String(getVal(item, "NomeFantasia") || "");
+          const cName = cRazao || cFantasia || String(getVal(item, "ClienteNome") || getVal(item, "PessoaNome") || getVal(item, "Nome") || "");
+          const cPhone = String(getVal(item, "Celular") || getVal(item, "Telefone") || getVal(item, "ClienteTelefone") || getVal(item, "Fone") || "");
+          const cEmail = String(getVal(item, "Email") || getVal(item, "ClienteEmail") || "");
+          const cLogradouro = String(getVal(item, "Endereco") || getVal(item, "ClienteEndereco") || getVal(item, "Logradouro") || "");
+          const cComplemento = String(getVal(item, "Complemento") || "");
+          const cCidade = String(getVal(item, "Cidade") || getVal(item, "Municipio") || "");
+
+          let cAddress = cLogradouro;
+          if (cComplemento) cAddress += `, ${cComplemento}`;
+          if (cCidade) cAddress += ` - ${cCidade}`;
 
           if (cId) {
             const numId = parseInt(cId);
