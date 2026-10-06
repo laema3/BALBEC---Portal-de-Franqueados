@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: paomania
+    name: balbec-portal
     runtime: node
     plan: starter
     buildCommand: npm install && npm run build

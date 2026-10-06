@@ -461,6 +461,13 @@ const getInitialStoreInfo = (): StoreInfo => {
       }
     }
 
+    if (info.name && (info.name.toLowerCase().includes('mania') || info.name.toLowerCase().includes('pao'))) {
+      info.name = 'BALBEC - Portal de Franqueados';
+    }
+    if (info.headerPhrase && info.headerPhrase.toLowerCase().includes('mania')) {
+      info.headerPhrase = 'Portal de Franqueados';
+    }
+
     // Garantir que a impressora padrão oficial seja a EPSON com IP 192.168.0.90 e que a Elgin i9 seja ignorada
     if (!info.networkPrinterIp || info.networkPrinterIp === '192.168.1.200') {
       info.networkPrinterIp = '192.168.0.90';

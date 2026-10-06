@@ -21,7 +21,7 @@ function StoreMeta() {
   
   useEffect(() => {
     try {
-      const purgeKey = 'balbec_portal_purged_v4';
+      const purgeKey = 'balbec_portal_purged_v5';
       if (!localStorage.getItem(purgeKey)) {
         localStorage.removeItem('paomania_cached_categories_v1');
         localStorage.removeItem('paomania_cached_products_v1');
@@ -40,6 +40,22 @@ function StoreMeta() {
         localStorage.removeItem('paomania_network_printer_port');
         localStorage.removeItem('paomania_caixa_printer');
         localStorage.removeItem('paomania_admin_session');
+
+        // Sanitize any residual legacy name in balbec_store_info
+        const localStore = localStorage.getItem('balbec_store_info');
+        if (localStore && (localStore.toLowerCase().includes('mania') || localStore.toLowerCase().includes('pao'))) {
+          try {
+            const parsed = JSON.parse(localStore);
+            if (parsed.name && (parsed.name.toLowerCase().includes('mania') || parsed.name.toLowerCase().includes('pao'))) {
+              parsed.name = 'BALBEC - Portal de Franqueados';
+            }
+            if (parsed.headerPhrase && parsed.headerPhrase.toLowerCase().includes('mania')) {
+              parsed.headerPhrase = 'Portal de Franqueados';
+            }
+            localStorage.setItem('balbec_store_info', JSON.stringify(parsed));
+          } catch {}
+        }
+
         localStorage.setItem(purgeKey, 'true');
       }
     } catch {}
@@ -57,20 +73,22 @@ function StoreMeta() {
 
     const isTv = pathname.startsWith('/tv') || search.includes('tv');
 
+    const effectiveStoreName = (storeInfo?.name && !storeInfo.name.toLowerCase().includes('mania'))
+      ? storeInfo.name
+      : 'BALBEC - Portal de Franqueados';
+
     if (isTotem) {
       document.documentElement.classList.add('totem-mode');
       document.body.classList.add('totem-mode');
-      document.title = `Totem Autoatendimento | ${storeInfo?.name || 'BALBEC - Portal de Franqueados'}`;
+      document.title = `Totem Autoatendimento | ${effectiveStoreName}`;
     } else if (isTv) {
       document.documentElement.classList.remove('totem-mode');
       document.body.classList.remove('totem-mode');
-      document.title = `Smart TV & Painel de Vídeos | ${storeInfo?.name || 'BALBEC - Portal de Franqueados'}`;
+      document.title = `Smart TV & Painel de Vídeos | ${effectiveStoreName}`;
     } else {
       document.documentElement.classList.remove('totem-mode');
       document.body.classList.remove('totem-mode');
-      if (storeInfo?.name) {
-        document.title = storeInfo.name;
-      }
+      document.title = effectiveStoreName;
     }
 
     // Dynamic PWA manifest link

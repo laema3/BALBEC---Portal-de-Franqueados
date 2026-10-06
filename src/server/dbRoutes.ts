@@ -484,8 +484,21 @@ export async function hydrateFromPostgres(): Promise<void> {
             merged[key] = val;
           }
         }
+        if (merged.name && (merged.name.toLowerCase().includes('mania') || merged.name.toLowerCase().includes('pao'))) {
+          merged.name = 'BALBEC - Portal de Franqueados';
+        }
+        if (merged.headerPhrase && merged.headerPhrase.toLowerCase().includes('mania')) {
+          merged.headerPhrase = 'Portal de Franqueados';
+        }
         memStoreInfo = sanitizeStoreInfoPrinters(merged);
         persistStoreInfoToDisk(memStoreInfo);
+
+        // Se o banco no PostgreSQL tiver o nome legado, atualiza para o oficial
+        if (dbRow.name && (dbRow.name.toLowerCase().includes('mania') || dbRow.name.toLowerCase().includes('pao'))) {
+          try {
+            await db.update(storeInfo).set({ name: 'BALBEC - Portal de Franqueados', headerPhrase: 'Portal de Franqueados' }).where(eq(storeInfo.id, 'default'));
+          } catch {}
+        }
         console.log(`[DB Hydrate] StoreInfo carregada com sucesso do PostgreSQL: "${memStoreInfo.name}" (Aberta: ${memStoreInfo.isOpen}, Agente IA: ${memStoreInfo.aiAgentEnabled})`);
       } else {
         // Se a linha 'default' ainda não existe no Postgres, salva o estado atual
