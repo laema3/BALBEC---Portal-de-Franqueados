@@ -315,7 +315,7 @@ export const CustomersTab: React.FC = () => {
       const res = await fetch('/api/bluefocus/sync-customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
+        body: JSON.stringify({ ...config, tipoAtualizacao: 'C', dataInicial: '30/12/1899' })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erro ao sincronizar clientes');

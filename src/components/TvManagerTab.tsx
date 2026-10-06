@@ -462,8 +462,6 @@ export default function TvManagerTab() {
 
           <a
             href="/tv"
-            target="_blank"
-            rel="noopener noreferrer"
             className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-stone-950 rounded-xl font-extrabold text-sm transition-transform active:scale-95 shadow-lg shadow-amber-500/20"
           >
             <ExternalLink className="w-4 h-4" />
@@ -1573,8 +1571,6 @@ export default function TvManagerTab() {
               <div className="flex items-center gap-2">
                 <a
                   href="/tv"
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-colors shadow-sm"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />

@@ -998,6 +998,18 @@ export default function TvDisplay() {
       className={`relative w-screen h-screen bg-black overflow-hidden font-sans select-none ${!showControls ? 'cursor-none' : ''}`}
       onDoubleClick={toggleFullscreen}
     >
+      {/* Floating return button to Admin panel */}
+      {showControls && (
+        <a
+          href="/admin"
+          className="fixed top-3 left-3 z-50 px-3.5 py-2 bg-stone-900/90 hover:bg-stone-800 text-stone-200 hover:text-white rounded-xl text-xs font-bold backdrop-blur-md border border-white/20 transition-all opacity-60 hover:opacity-100 flex items-center gap-2 shadow-2xl group cursor-pointer"
+          title="Voltar ao Painel Administrativo"
+        >
+          <span className="text-amber-400 font-bold">←</span>
+          <span>Painel Admin</span>
+        </a>
+      )}
+
       {/* Dynamic Background subtle glow - Content stops right above the bottom ticker */}
       <div className="absolute inset-x-0 top-0 bottom-14 bg-stone-950 flex">
         {/* Main Content Area */}

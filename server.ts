@@ -765,6 +765,50 @@ ${itemsXml}
       let hasMore = true;
       let iterations = 0;
       let totalSynced = 0;
+      let lastXml = "";
+      let lastSaiaExp: any = null;
+
+      const soapTipoAtualizacao = req.body?.tipoAtualizacao || 'C';
+
+      // Helper to deeply extract customer array from any BlueFocus XML structure
+      const findCustomerList = (root: any): any[] => {
+        if (!root || typeof root !== 'object') return [];
+        if (Array.isArray(root)) return root;
+
+        // 1. Direct array property matching keywords
+        for (const k of Object.keys(root)) {
+          const lower = k.toLowerCase();
+          const val = root[k];
+          if (Array.isArray(val) && (lower.includes('pessoa') || lower.includes('cliente') || lower.includes('item'))) {
+            return val;
+          }
+        }
+
+        // 2. Property containing nested wrapper object (e.g. root.Pessoas.PessoaItem)
+        for (const k of Object.keys(root)) {
+          const lower = k.toLowerCase();
+          const val = root[k];
+          if (lower.includes('pessoa') || lower.includes('cliente') || lower.includes('cad')) {
+            if (Array.isArray(val)) return val;
+            if (val && typeof val === 'object') {
+              for (const subK of Object.keys(val)) {
+                const subVal = val[subK];
+                if (Array.isArray(subVal)) return subVal;
+                if (subVal && typeof subVal === 'object') return [subVal];
+              }
+              return [val];
+            }
+          }
+        }
+
+        // 3. Fallback: inspect any array inside root
+        for (const k of Object.keys(root)) {
+          const val = root[k];
+          if (Array.isArray(val) && val.length > 0) return val;
+        }
+
+        return [];
+      };
 
       while (hasMore && iterations < 50) {
         iterations++;
@@ -779,24 +823,26 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <EmpresaId>${empresaId}</EmpresaId>
 <UsuarioId>${usuarioId}</UsuarioId>
 <PDVCodigo>${pdvCodigo}</PDVCodigo>
-<TipoAtualizacao>A</TipoAtualizacao>
+<TipoAtualizacao>${soapTipoAtualizacao}</TipoAtualizacao>
 <Tipo>1</Tipo>
 <PessoaId>${currentPessoaId}</PessoaId>
 <CargaPDVNumero>${currentCargaNumero}</CargaPDVNumero>
 <CargaPDVSequencia>${currentCargaSequencia}</CargaPDVSequencia>
 <ProdutoId>0</ProdutoId>
-<DataHoraInicio>${dataInicial}</DataHoraInicio>
+<DataHoraInicio>${dataInicial || '30/12/1899'}</DataHoraInicio>
 </Sdtwebserviceentradaexpcadastro>
 </IntegracaoFcxExportaCadSAT.Execute>
 </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>`;
 
         const response = await axios.post(syncUrl, soapEnvelope, { headers, timeout: 30000 });
+        lastXml = response.data || "";
         const jsonObj = parser.parse(response.data);
         const envelope = getVal(jsonObj, "Envelope");
         const body = getVal(envelope, "Body");
         const executeResponse = getVal(body, "IntegracaoFcxExportaCadSAT.ExecuteResponse") || getVal(body, "ExecuteResponse");
         const saiaExp = getVal(executeResponse, "Sdtwebservicesaidaexpcadastrosat") || getVal(executeResponse, "Sdtwebserviceout") || executeResponse;
+        lastSaiaExp = saiaExp;
 
         if (!saiaExp) {
           hasMore = false;
@@ -805,47 +851,81 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
         const msgErro = getVal(saiaExp, "MsgErro");
         if (msgErro && msgErro !== "" && msgErro !== "OK") {
-          return res.status(400).json({ error: msgErro });
+          return res.status(400).json({ error: msgErro, debugXml: lastXml.substring(0, 2000) });
         }
 
-        let customersArr = getVal(saiaExp, "ClienteItem") || getVal(saiaExp, "Cliente") || getVal(saiaExp, "PessoaItem") || getVal(saiaExp, "Pessoa") || getVal(saiaExp, "Pessoas") || getVal(saiaExp, "Clientes");
-        if (!customersArr) {
-          console.log("[Sync Customers] Nenhum cliente encontrado no XML. Chaves disponíveis em saiaExp:", saiaExp ? Object.keys(saiaExp) : "null");
-          hasMore = false;
-          break;
-        }
+        const items = findCustomerList(saiaExp);
+        console.log(`[Sync Customers] Iteração ${iterations}: encontrados ${items.length} itens.`);
 
-        const items = Array.isArray(customersArr) ? customersArr : [customersArr];
         if (items.length === 0) {
+          console.log("[Sync Customers] Nenhum item extraído. Chaves disponíveis:", saiaExp ? Object.keys(saiaExp) : "null");
           hasMore = false;
           break;
         }
 
         for (const item of items) {
-          const cId = String(getVal(item, "ClienteId") || getVal(item, "PessoaId") || getVal(item, "Codigo") || "");
-          const cRazao = String(getVal(item, "RazaoSocial") || "");
-          const cFantasia = String(getVal(item, "NomeFantasia") || "");
-          const cName = cRazao || cFantasia || String(getVal(item, "ClienteNome") || getVal(item, "PessoaNome") || getVal(item, "Nome") || "");
-          const cPhone = String(getVal(item, "Celular") || getVal(item, "Telefone") || getVal(item, "ClienteTelefone") || getVal(item, "Fone") || "");
-          const cEmail = String(getVal(item, "Email") || getVal(item, "ClienteEmail") || "");
-          const cLogradouro = String(getVal(item, "Endereco") || getVal(item, "ClienteEndereco") || getVal(item, "Logradouro") || "");
-          const cComplemento = String(getVal(item, "Complemento") || "");
-          const cCidade = String(getVal(item, "Cidade") || getVal(item, "Municipio") || "");
-          const cCnpj = String(getVal(item, "CNPJ") || getVal(item, "Cnpj") || getVal(item, "CnpjCpf") || "");
-          const cCpf = String(getVal(item, "CPF") || getVal(item, "Cpf") || getVal(item, "CpfCnpj") || "");
+          const cId = String(
+            getVal(item, "PessoaId") || 
+            getVal(item, "ClienteId") || 
+            getVal(item, "PessoaCodigo") || 
+            getVal(item, "Codigo") || 
+            getVal(item, "Id") || ""
+          );
+
+          const cRazao = String(getVal(item, "PessoaRazaoSocial") || getVal(item, "RazaoSocial") || "");
+          const cFantasia = String(getVal(item, "PessoaNomeFantasia") || getVal(item, "NomeFantasia") || "");
+          const cNome = String(getVal(item, "PessoaNome") || getVal(item, "ClienteNome") || getVal(item, "Nome") || "");
+          const cName = (cRazao || cFantasia || cNome || "").trim();
+
+          const cCnpj = String(
+            getVal(item, "PessoaCpfCnpj") || 
+            getVal(item, "CpfCnpj") || 
+            getVal(item, "PessoaCnpj") || 
+            getVal(item, "CNPJ") || 
+            getVal(item, "Cnpj") || 
+            getVal(item, "PessoaCgc") || 
+            getVal(item, "CGC") || ""
+          );
+
+          const cCpf = String(
+            getVal(item, "PessoaCpf") || 
+            getVal(item, "CPF") || 
+            getVal(item, "Cpf") || ""
+          );
+
+          const cPhone = String(
+            getVal(item, "PessoaCelular") || 
+            getVal(item, "Celular") || 
+            getVal(item, "PessoaTelefone") || 
+            getVal(item, "Telefone") || 
+            getVal(item, "ClienteTelefone") || 
+            getVal(item, "Fone") || 
+            getVal(item, "PessoaFone") || ""
+          );
+
+          const cEmail = String(getVal(item, "PessoaEmail") || getVal(item, "Email") || getVal(item, "ClienteEmail") || "");
+
+          const cLogradouro = String(getVal(item, "PessoaEndereco") || getVal(item, "Endereco") || getVal(item, "ClienteEndereco") || getVal(item, "Logradouro") || "");
+          const cNumero = String(getVal(item, "PessoaNumero") || getVal(item, "Numero") || "");
+          const cComplemento = String(getVal(item, "PessoaComplemento") || getVal(item, "Complemento") || "");
+          const cBairro = String(getVal(item, "PessoaBairro") || getVal(item, "Bairro") || "");
+          const cCidade = String(getVal(item, "PessoaCidade") || getVal(item, "Cidade") || getVal(item, "Municipio") || "");
+          const cUf = String(getVal(item, "PessoaUF") || getVal(item, "UF") || getVal(item, "Estado") || "");
 
           let cAddress = cLogradouro;
+          if (cNumero) cAddress += `, ${cNumero}`;
           if (cComplemento) cAddress += `, ${cComplemento}`;
-          if (cCidade) cAddress += ` - ${cCidade}`;
+          if (cBairro) cAddress += ` - ${cBairro}`;
+          if (cCidade) cAddress += ` (${cCidade}${cUf ? `/${cUf}` : ''})`;
 
           if (cId) {
             const numId = parseInt(cId);
-            if (!isNaN(numId)) currentPessoaId = numId;
+            if (!isNaN(numId)) currentPessoaId = Math.max(currentPessoaId, numId);
           }
 
           if (cName || cPhone || cCnpj || cCpf) {
             await upsertCustomerLead({
-              name: cName || 'Cliente BlueFocus',
+              name: cName || (cCnpj || cCpf ? `Cliente ${cCnpj || cCpf}` : 'Cliente BlueFocus'),
               phone: cPhone,
               email: cEmail,
               address: cAddress,
@@ -870,7 +950,12 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         }
       }
 
-      res.json({ success: true, count: totalSynced });
+      res.json({ 
+        success: true, 
+        count: totalSynced,
+        debugKeys: lastSaiaExp ? Object.keys(lastSaiaExp) : [],
+        debugXml: totalSynced === 0 ? lastXml.substring(0, 3000) : undefined
+      });
     } catch (err: any) {
       console.error("[BlueFocus Customer Sync Error]:", err?.response?.data || err?.message || err);
       res.status(500).json({ error: err?.message || "Erro ao sincronizar clientes do BlueFocus" });

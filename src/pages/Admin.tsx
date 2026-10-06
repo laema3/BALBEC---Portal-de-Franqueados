@@ -1552,7 +1552,7 @@ export default function Admin() {
       const res = await fetch('/api/bluefocus/sync-customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(blueFocusConfig)
+        body: JSON.stringify({ ...blueFocusConfig, tipoAtualizacao: 'C', dataInicial: '30/12/1899' })
       });
       clearInterval(progressTimer);
       const data = await res.json();
@@ -1560,12 +1560,22 @@ export default function Admin() {
 
       await fetchData();
       setSyncProgress(null);
-      setConfirmModal({
-        isOpen: true,
-        title: 'Sincronização de Clientes Concluída',
-        message: `Sucesso! Foram sincronizados ${data.count || 0} clientes do BlueFocus.`,
-        onConfirm: () => setConfirmModal(null)
-      });
+      if (data.count === 0) {
+        setConfirmModal({
+          isOpen: true,
+          title: 'Sincronização de Clientes',
+          message: 'Nenhum cliente foi retornado pelo ERP nesta requisição.\n\nVerifique se o cadastro de Pessoas está liberado para exportação no seu BlueFocus ou se as credenciais correspondem à empresa com os clientes cadastrados.',
+          debugXml: data.debugXml,
+          onConfirm: () => setConfirmModal(null)
+        });
+      } else {
+        setConfirmModal({
+          isOpen: true,
+          title: 'Sincronização de Clientes Concluída',
+          message: `Sucesso! Foram sincronizados ${data.count} clientes do BlueFocus com CPF/CNPJ.`,
+          onConfirm: () => setConfirmModal(null)
+        });
+      }
     } catch (err: any) {
       clearInterval(progressTimer);
       setSyncProgress(null);
