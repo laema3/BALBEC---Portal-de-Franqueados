@@ -53,44 +53,35 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
     };
     connectSSE();
 
-    // Polling contínuo de alta velocidade para Pedidos no Caixa / Balcão:
+    // Polling inteligente e econômico para Pedidos no Caixa / Balcão (apenas quando a tela estiver visível)
     const pathname = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '';
     const isAdminOrStaff = pathname.includes('/admin') || pathname.includes('/tv');
 
     let ordersInterval: ReturnType<typeof setInterval> | null = null;
-    let backgroundWorker: Worker | null = null;
 
     const pollWithAutoRecovery = async () => {
+      // Economia de recursos: não executa chamadas quando a aba estiver em segundo plano ou tela desligada
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
+      }
       try {
         await fetchOrdersOnly();
         consecutiveFailuresRef.current = 0;
       } catch {
         consecutiveFailuresRef.current++;
-        if (consecutiveFailuresRef.current >= 12) { // ~20-25s de falha contínua no celular
-          console.warn('[AutoRecovery] Conexão paralisada no smartphone. Reiniciando serviço...');
+        if (consecutiveFailuresRef.current >= 6) {
+          console.warn('[AutoRecovery] Conexão paralisada no smartphone. Reconectando...');
           consecutiveFailuresRef.current = 0;
-          // Auto-recarrega a página para recuperar a conexão de rede perdida
           if (typeof window !== 'undefined' && document.visibilityState === 'visible') {
-            window.location.reload();
+            connectSSE();
           }
         }
       }
     };
 
     if (isAdminOrStaff) {
-      ordersInterval = setInterval(pollWithAutoRecovery, 2000);
-
-      try {
-        const blob = new Blob([
-          `setInterval(function() { postMessage('order_poll_tick'); }, 1800);`
-        ], { type: 'application/javascript' });
-        backgroundWorker = new Worker(URL.createObjectURL(blob));
-        backgroundWorker.onmessage = () => {
-          pollWithAutoRecovery();
-        };
-      } catch (e) {
-        console.warn('Web Worker background timer fallback:', e);
-      }
+      // Intervalo otimizado de 12 segundos (o SSE entrega pedidos instantaneamente em tempo real)
+      ordersInterval = setInterval(pollWithAutoRecovery, 12000);
     }
 
     const fullCatalogInterval = setInterval(() => {
@@ -134,7 +125,6 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
       if (sseTimeout) clearTimeout(sseTimeout);
       if (offlineTimerRef.current) clearTimeout(offlineTimerRef.current);
       if (ordersInterval) clearInterval(ordersInterval);
-      backgroundWorker?.terminate();
       clearInterval(fullCatalogInterval);
       window.removeEventListener('focus', handleSyncTrigger);
       document.removeEventListener('visibilitychange', handleSyncTrigger);

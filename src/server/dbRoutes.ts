@@ -759,10 +759,12 @@ export function broadcastSSE(data: any) {
   }
 }
 
-// Keep-alive heartbeat every 15 seconds
+// Keep-alive heartbeat only when clients are connected (economiza CPU quando o sistema está ocioso)
 setInterval(() => {
-  broadcastSSE({ type: 'ping', time: Date.now() });
-}, 15000);
+  if (sseClients.size > 0) {
+    broadcastSSE({ type: 'ping', time: Date.now() });
+  }
+}, 25000);
 
 export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
   // SSE Real-Time Sync Endpoint
