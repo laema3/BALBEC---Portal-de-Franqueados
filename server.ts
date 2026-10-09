@@ -4,7 +4,7 @@ import axios from "axios";
 import { XMLParser, XMLBuilder } from "fast-xml-parser";
 import dotenv from "dotenv";
 import compression from "compression";
-import { setupDatabaseRoutes, hydrateFromPostgres, getMemStoreInfo, upsertCustomerLead } from "./src/server/dbRoutes";
+import { setupDatabaseRoutes, hydrateFromPostgres, getMemStoreInfo, upsertCustomerLead, batchUpsertCustomerLeads, getStoredCustomImage, recordCustomImage } from "./src/server/dbRoutes";
 import { setupPrinterRoutes } from "./src/server/printerRoutes";
 import { setupPrinterAgentRoutes } from "./src/server/printerAgentRoutes";
 import { ensureTablesExist } from "./src/db/index";
@@ -314,11 +314,14 @@ function formatBlueFocusError(error: any): { message: string; details: any } {
         
         iterations++;
         
-        console.log(`[BlueFocus] Iniciando requisição: Tipo=${soapTipo}, Atualizacao=${finalTipoAtualizacao}, Carga=${soapCargaNumero}/${soapCargaSequencia}, Iteração=${iterations}`);
+        // Auto-handle company code fallback: if BALBEC fails, try PAOMANIA (original ERP company)
+        let activeEmpresaId = empresaId;
+
+        console.log(`[BlueFocus] Iniciando requisição: Empresa=${activeEmpresaId}, Tipo=${soapTipo}, Atualizacao=${finalTipoAtualizacao}, Carga=${soapCargaNumero}/${soapCargaSequencia}, Iteração=${iterations}`);
 
         const soapDataInicio = dataInicial || "30/12/1899";
 
-        const soapEnvelope = `<?xml version="1.0"?>
+        const makeEnvelope = (emp: string) => `<?xml version="1.0"?>
 <SOAP-ENV:Envelope 
 xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" 
 xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
@@ -326,7 +329,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <SOAP-ENV:Body>
 <IntegracaoFcxExportaCadSAT.Execute xmlns="Valim">
 <Sdtwebserviceentradaexpcadastro>
-<EmpresaId>${empresaId}</EmpresaId>
+<EmpresaId>${emp}</EmpresaId>
 <UsuarioId>${usuarioId}</UsuarioId>
 <PDVCodigo>${pdvCodigo}</PDVCodigo>
 <TipoAtualizacao>${finalTipoAtualizacao}</TipoAtualizacao>
@@ -344,17 +347,32 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         try {
           const currentTimeout = process.env.VERCEL ? 7000 : (tipo === '1' ? 45000 : 15000);
           
-          const response = await axios.post(syncUrl, soapEnvelope, { 
+          let response = await axios.post(syncUrl, makeEnvelope(activeEmpresaId), { 
             headers, 
             timeout: currentTimeout 
           });
           lastXml = response.data;
           
-          const jsonObj = parser.parse(response.data);
-          const envelope = getVal(jsonObj, "Envelope");
-          const body = getVal(envelope, "Body");
-          const executeResponse = getVal(body, "IntegracaoFcxExportaCadSAT.ExecuteResponse") || getVal(body, "ExecuteResponse");
-          const saiaExp = getVal(executeResponse, "Sdtwebservicesaidaexpcadastrosat") || getVal(executeResponse, "Sdtwebserviceout") || executeResponse;
+          let jsonObj = parser.parse(response.data);
+          let envelope = getVal(jsonObj, "Envelope");
+          let body = getVal(envelope, "Body");
+          let executeResponse = getVal(body, "IntegracaoFcxExportaCadSAT.ExecuteResponse") || getVal(body, "ExecuteResponse");
+          let saiaExp = getVal(executeResponse, "Sdtwebservicesaidaexpcadastrosat") || getVal(executeResponse, "Sdtwebserviceout") || executeResponse;
+
+          let msgErro = getVal(saiaExp, "MsgErro");
+          // If BALBEC is not registered in this ERP, automatically fallback to PAOMANIA
+          if (msgErro && String(msgErro).toLowerCase().includes("empresa não cadastrada") && activeEmpresaId !== "PAOMANIA") {
+            console.log(`[BlueFocus] Empresa '${activeEmpresaId}' não cadastrada. Tentando automaticamente 'PAOMANIA'...`);
+            activeEmpresaId = "PAOMANIA";
+            response = await axios.post(syncUrl, makeEnvelope(activeEmpresaId), { headers, timeout: currentTimeout });
+            lastXml = response.data;
+            jsonObj = parser.parse(response.data);
+            envelope = getVal(jsonObj, "Envelope");
+            body = getVal(envelope, "Body");
+            executeResponse = getVal(body, "IntegracaoFcxExportaCadSAT.ExecuteResponse") || getVal(body, "ExecuteResponse");
+            saiaExp = getVal(executeResponse, "Sdtwebservicesaidaexpcadastrosat") || getVal(executeResponse, "Sdtwebserviceout") || executeResponse;
+            msgErro = getVal(saiaExp, "MsgErro");
+          }
 
           if (!saiaExp) {
             console.log("[Sync] Resposta vazia ou estrutura desconhecida. Debug XML:", lastXml.substring(0, 1000));
@@ -362,7 +380,6 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             break;
           }
 
-          const msgErro = getVal(saiaExp, "MsgErro");
           if (msgErro && msgErro !== "" && msgErro !== "OK") {
             return res.status(400).json({ error: msgErro, debugXml: lastXml.substring(0, 2000) });
           }
@@ -439,8 +456,9 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
               const standardMercadoriaUrl = (baseUrl && pId) ? `${baseUrl}/static/mercadoria/${pId}.jpg` : "";
               const rawImgUrl = getVal(item, "ProdutoUrlImagem") || getVal(item, "UrlImagem") || getVal(item, "ProdutoImagemUrl") || getVal(item, "ImagemUrl") || getVal(item, "ProdutoImagem") || getVal(item, "Imagem") || getVal(item, "ProdutoFoto") || getVal(item, "Foto") || getVal(item, "UrlFoto") || getVal(item, "FotoUrl") || getVal(item, "ProdutoFotoUrl") || getVal(item, "ProdutoCaminhoImagem") || getVal(item, "CaminhoImagem") || getVal(item, "ProdutoLinkImagem") || getVal(item, "LinkImagem") || "";
 
-              let finalImgUrl = rawImgUrl;
-              if (finalImgUrl && !finalImgUrl.startsWith("http://") && !finalImgUrl.startsWith("https://") && baseUrl) {
+              const storedCustomImg = getStoredCustomImage(undefined, pId, pName);
+              let finalImgUrl = storedCustomImg || rawImgUrl;
+              if (finalImgUrl && !finalImgUrl.startsWith("http://") && !finalImgUrl.startsWith("https://") && !finalImgUrl.startsWith("data:") && baseUrl) {
                 const cleanPath = finalImgUrl.startsWith("/") ? finalImgUrl : `/${finalImgUrl}`;
                 finalImgUrl = `${baseUrl}${cleanPath}`;
               }
@@ -810,9 +828,11 @@ ${itemsXml}
         return [];
       };
 
+      let activeEmpresaId = empresaId;
+
       while (hasMore && iterations < 50) {
         iterations++;
-        const soapEnvelope = `<?xml version="1.0"?>
+        const makeCustomerEnvelope = (emp: string) => `<?xml version="1.0"?>
 <SOAP-ENV:Envelope 
 xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" 
 xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
@@ -820,11 +840,11 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <SOAP-ENV:Body>
 <IntegracaoFcxExportaCadSAT.Execute xmlns="Valim">
 <Sdtwebserviceentradaexpcadastro>
-<EmpresaId>${empresaId}</EmpresaId>
+<EmpresaId>${emp}</EmpresaId>
 <UsuarioId>${usuarioId}</UsuarioId>
 <PDVCodigo>${pdvCodigo}</PDVCodigo>
 <TipoAtualizacao>${soapTipoAtualizacao}</TipoAtualizacao>
-<Tipo>1</Tipo>
+<Tipo>2</Tipo>
 <PessoaId>${currentPessoaId}</PessoaId>
 <CargaPDVNumero>${currentCargaNumero}</CargaPDVNumero>
 <CargaPDVSequencia>${currentCargaSequencia}</CargaPDVSequencia>
@@ -835,33 +855,49 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>`;
 
-        const response = await axios.post(syncUrl, soapEnvelope, { headers, timeout: 30000 });
+        let response = await axios.post(syncUrl, makeCustomerEnvelope(activeEmpresaId), { headers, timeout: 35000 });
         lastXml = response.data || "";
-        const jsonObj = parser.parse(response.data);
-        const envelope = getVal(jsonObj, "Envelope");
-        const body = getVal(envelope, "Body");
-        const executeResponse = getVal(body, "IntegracaoFcxExportaCadSAT.ExecuteResponse") || getVal(body, "ExecuteResponse");
-        const saiaExp = getVal(executeResponse, "Sdtwebservicesaidaexpcadastrosat") || getVal(executeResponse, "Sdtwebserviceout") || executeResponse;
+        let jsonObj = parser.parse(response.data);
+        let envelope = getVal(jsonObj, "Envelope");
+        let body = getVal(envelope, "Body");
+        let executeResponse = getVal(body, "IntegracaoFcxExportaCadSAT.ExecuteResponse") || getVal(body, "ExecuteResponse");
+        let saiaExp = getVal(executeResponse, "Sdtwebservicesaidaexpcadastrosat") || getVal(executeResponse, "Sdtwebserviceout") || executeResponse;
         lastSaiaExp = saiaExp;
+
+        let msgErro = getVal(saiaExp, "MsgErro");
+        if (msgErro && String(msgErro).toLowerCase().includes("empresa não cadastrada") && activeEmpresaId !== "PAOMANIA") {
+          console.log(`[Sync Customers] Empresa '${activeEmpresaId}' não cadastrada. Tentando automaticamente 'PAOMANIA'...`);
+          activeEmpresaId = "PAOMANIA";
+          response = await axios.post(syncUrl, makeCustomerEnvelope(activeEmpresaId), { headers, timeout: 35000 });
+          lastXml = response.data || "";
+          jsonObj = parser.parse(response.data);
+          envelope = getVal(jsonObj, "Envelope");
+          body = getVal(envelope, "Body");
+          executeResponse = getVal(body, "IntegracaoFcxExportaCadSAT.ExecuteResponse") || getVal(body, "ExecuteResponse");
+          saiaExp = getVal(executeResponse, "Sdtwebservicesaidaexpcadastrosat") || getVal(executeResponse, "Sdtwebserviceout") || executeResponse;
+          lastSaiaExp = saiaExp;
+          msgErro = getVal(saiaExp, "MsgErro");
+        }
 
         if (!saiaExp) {
           hasMore = false;
           break;
         }
 
-        const msgErro = getVal(saiaExp, "MsgErro");
         if (msgErro && msgErro !== "" && msgErro !== "OK") {
           return res.status(400).json({ error: msgErro, debugXml: lastXml.substring(0, 2000) });
         }
 
         const items = findCustomerList(saiaExp);
-        console.log(`[Sync Customers] Iteração ${iterations}: encontrados ${items.length} itens.`);
+        console.log(`[Sync Customers] Iteração ${iterations}: encontrados ${items.length} clientes/pessoas no XML.`);
 
         if (items.length === 0) {
           console.log("[Sync Customers] Nenhum item extraído. Chaves disponíveis:", saiaExp ? Object.keys(saiaExp) : "null");
           hasMore = false;
           break;
         }
+
+        const leadsToUpsert: any[] = [];
 
         for (const item of items) {
           const cId = String(
@@ -873,11 +909,12 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           );
 
           const cRazao = String(getVal(item, "PessoaRazaoSocial") || getVal(item, "RazaoSocial") || "");
-          const cFantasia = String(getVal(item, "PessoaNomeFantasia") || getVal(item, "NomeFantasia") || "");
+          const cFantasia = String(getVal(item, "PessoaFantasia") || getVal(item, "PessoaNomeFantasia") || getVal(item, "NomeFantasia") || "");
           const cNome = String(getVal(item, "PessoaNome") || getVal(item, "ClienteNome") || getVal(item, "Nome") || "");
           const cName = (cRazao || cFantasia || cNome || "").trim();
 
           const cCnpj = String(
+            getVal(item, "PessoaCNPJ") || 
             getVal(item, "PessoaCpfCnpj") || 
             getVal(item, "CpfCnpj") || 
             getVal(item, "PessoaCnpj") || 
@@ -885,13 +922,14 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             getVal(item, "Cnpj") || 
             getVal(item, "PessoaCgc") || 
             getVal(item, "CGC") || ""
-          );
+          ).trim();
 
           const cCpf = String(
+            getVal(item, "PessoaCPF") || 
             getVal(item, "PessoaCpf") || 
             getVal(item, "CPF") || 
             getVal(item, "Cpf") || ""
-          );
+          ).trim();
 
           const cPhone = String(
             getVal(item, "PessoaCelular") || 
@@ -901,19 +939,19 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             getVal(item, "ClienteTelefone") || 
             getVal(item, "Fone") || 
             getVal(item, "PessoaFone") || ""
-          );
+          ).trim();
 
-          const cEmail = String(getVal(item, "PessoaEmail") || getVal(item, "Email") || getVal(item, "ClienteEmail") || "");
+          const cEmail = String(getVal(item, "PessoaEmail") || getVal(item, "Email") || getVal(item, "ClienteEmail") || "").trim();
 
-          const cLogradouro = String(getVal(item, "PessoaEndereco") || getVal(item, "Endereco") || getVal(item, "ClienteEndereco") || getVal(item, "Logradouro") || "");
-          const cNumero = String(getVal(item, "PessoaNumero") || getVal(item, "Numero") || "");
-          const cComplemento = String(getVal(item, "PessoaComplemento") || getVal(item, "Complemento") || "");
-          const cBairro = String(getVal(item, "PessoaBairro") || getVal(item, "Bairro") || "");
-          const cCidade = String(getVal(item, "PessoaCidade") || getVal(item, "Cidade") || getVal(item, "Municipio") || "");
-          const cUf = String(getVal(item, "PessoaUF") || getVal(item, "UF") || getVal(item, "Estado") || "");
+          const cLogradouro = String(getVal(item, "PessoaEndereco") || getVal(item, "Endereco") || getVal(item, "ClienteEndereco") || getVal(item, "Logradouro") || "").trim();
+          const cNumero = String(getVal(item, "PessoaNumeroEnd") || getVal(item, "PessoaNumero") || getVal(item, "Numero") || "").trim();
+          const cComplemento = String(getVal(item, "PessoaComplemento") || getVal(item, "Complemento") || "").trim();
+          const cBairro = String(getVal(item, "PessoaBairro") || getVal(item, "Bairro") || "").trim();
+          const cCidade = String(getVal(item, "PessoaCidadeNome") || getVal(item, "PessoaCidade") || getVal(item, "Cidade") || getVal(item, "Municipio") || "").trim();
+          const cUf = String(getVal(item, "PessoaCidadeUf") || getVal(item, "PessoaUF") || getVal(item, "UF") || getVal(item, "Estado") || "").trim();
 
           let cAddress = cLogradouro;
-          if (cNumero) cAddress += `, ${cNumero}`;
+          if (cNumero && cNumero !== "0") cAddress += `, ${cNumero}`;
           if (cComplemento) cAddress += `, ${cComplemento}`;
           if (cBairro) cAddress += ` - ${cBairro}`;
           if (cCidade) cAddress += ` (${cCidade}${cUf ? `/${cUf}` : ''})`;
@@ -924,7 +962,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           }
 
           if (cName || cPhone || cCnpj || cCpf) {
-            await upsertCustomerLead({
+            leadsToUpsert.push({
               name: cName || (cCnpj || cCpf ? `Cliente ${cCnpj || cCpf}` : 'Cliente BlueFocus'),
               phone: cPhone,
               email: cEmail,
@@ -934,8 +972,13 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
               source: 'bluefocus',
               tags: ['Cliente', 'BlueFocus']
             });
-            totalSynced++;
           }
+        }
+
+        if (leadsToUpsert.length > 0) {
+          const syncedInBatch = await batchUpsertCustomerLeads(leadsToUpsert);
+          totalSynced += syncedInBatch;
+          console.log(`[Sync Customers] Lote processado: ${syncedInBatch} clientes salvos.`);
         }
 
         const snFim = String(getVal(saiaExp, "SnFim") || getVal(saiaExp, "Fim") || "S");

@@ -17,17 +17,25 @@ export const ProductImage: React.FC<ProductImageProps> = ({
   const storeLogo = useStore(state => state.storeInfo.logoUrl);
   const logoUrl = storeLogo || '/logo.svg';
   
-  // Check if src is valid and not a placeholder
-  const isValidSrc = src && src.trim() !== '' && !src.includes('unsplash.com');
+  // Check if src is valid and not an empty placeholder
+  const isValidSrc = Boolean(src && typeof src === 'string' && src.trim() !== '' && !src.includes('unsplash.com'));
   
-  // Transform insecure HTTP URLs into secure backend proxy URLs
-  let finalSrc = src;
-  if (isValidSrc && src && src.startsWith('http://')) {
-    finalSrc = `/api/image-proxy?url=${encodeURIComponent(src)}`;
+  // Transform insecure HTTP URLs or BlueFocus URLs into secure backend proxy URLs
+  let finalSrc = src || '';
+  if (isValidSrc && src) {
+    if (src.startsWith('data:') || src.startsWith('/')) {
+      finalSrc = src;
+    } else if (src.startsWith('http://') || src.includes('static/mercadoria') || src.includes('ddns.net') || src.includes(':8082')) {
+      finalSrc = `/api/image-proxy?url=${encodeURIComponent(src)}`;
+    }
   }
   
   const [error, setError] = React.useState(false);
   const [logoError, setLogoError] = React.useState(false);
+
+  React.useEffect(() => {
+    setError(false);
+  }, [src]);
 
   const handleError = () => {
     setError(true);

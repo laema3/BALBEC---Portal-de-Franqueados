@@ -1337,16 +1337,33 @@ export default function Admin() {
       const resProd = await fetch('/api/db/products');
       let currentProducts: any[] = resProd.ok ? await resProd.json() : products;
 
-      // Create a map for faster lookup (by externalId and normalized name)
+      // Fetch permanent custom images registry from server and local storage
+      let customImagesRegistry: { byExternalId?: Record<string, string>, byName?: Record<string, string>, byId?: Record<string, string> } = {};
+      try {
+        const customRes = await fetch('/api/db/custom-images');
+        if (customRes.ok) customImagesRegistry = await customRes.json();
+      } catch (_) {}
+
+      let localCustomImages: Record<string, string> = {};
+      try {
+        localCustomImages = JSON.parse(localStorage.getItem('balbec_custom_product_images') || '{}');
+      } catch (_) {}
+
+      // Create a map for faster lookup (by externalId, id, and normalized name)
       const currentProductsMap = new Map();
       currentProducts.forEach(p => {
         if (p.externalId) currentProductsMap.set(String(p.externalId), p);
+        if (p.id) currentProductsMap.set(String(p.id), p);
         currentProductsMap.set(p.name.trim().toLowerCase(), p);
+        const norm = normalizeText(p.name);
+        if (norm) currentProductsMap.set(norm, p);
       });
 
       const productsToSave: any[] = [];
       for (const bp of blueFocusProducts) {
+        const normBpName = normalizeText(bp.name);
         const existingProduct = currentProductsMap.get(String(bp.externalId)) || 
+                              currentProductsMap.get(normBpName) ||
                               currentProductsMap.get(bp.name.trim().toLowerCase());
 
         // Find matching category by externalId or normalized name
@@ -1369,15 +1386,37 @@ export default function Admin() {
           productsCreated++;
         }
 
-        // Preserve custom website images, preventing BlueFocus auto-generated static mercadoria URLs from overwriting them
-        const isDefaultMercadoria = bp.imageUrl && bp.imageUrl.includes('/static/mercadoria/');
-        const hasCustomExisting = existingProduct?.imageUrl && existingProduct.imageUrl.trim() !== '' && !existingProduct.imageUrl.includes('unsplash') && !existingProduct.imageUrl.includes('/static/mercadoria/');
-        
-        const resolvedImageUrl = hasCustomExisting 
-          ? existingProduct.imageUrl 
-          : (!isDefaultMercadoria && bp.imageUrl && !bp.imageUrl.includes('unsplash')) 
-          ? bp.imageUrl 
-          : (existingProduct?.imageUrl || bp.imageUrl || '');
+        // 1. Check if existing product currently on the site has a custom image
+        const hasCustomExisting = Boolean(
+          existingProduct?.imageUrl && 
+          existingProduct.imageUrl.trim() !== '' && 
+          !existingProduct.imageUrl.includes('/static/mercadoria/')
+        );
+
+        // 2. Check if permanent registry or localStorage has a custom image for this product
+        const registryImage = 
+          (bp.externalId && customImagesRegistry.byExternalId?.[String(bp.externalId)]) ||
+          (normBpName && customImagesRegistry.byName?.[normBpName]) ||
+          (existingProduct?.id && customImagesRegistry.byId?.[existingProduct.id]) ||
+          (bp.externalId && localCustomImages[String(bp.externalId)]) ||
+          (normBpName && localCustomImages[normBpName]);
+
+        let resolvedImageUrl = '';
+        if (hasCustomExisting) {
+          resolvedImageUrl = existingProduct.imageUrl;
+        } else if (registryImage) {
+          resolvedImageUrl = registryImage;
+        } else if (bp.imageUrl) {
+          resolvedImageUrl = bp.imageUrl;
+        } else if (existingProduct?.imageUrl) {
+          resolvedImageUrl = existingProduct.imageUrl;
+        }
+
+        // Cache any custom image in local memory for future syncs
+        if (resolvedImageUrl && !resolvedImageUrl.includes('/static/mercadoria/')) {
+          if (bp.externalId) localCustomImages[String(bp.externalId)] = resolvedImageUrl;
+          if (normBpName) localCustomImages[normBpName] = resolvedImageUrl;
+        }
 
         productsToSave.push({
           id: prodId,
@@ -1409,6 +1448,16 @@ export default function Admin() {
           body: JSON.stringify(chunk)
         });
       }
+
+      // Persist collected custom images permanently
+      try {
+        localStorage.setItem('balbec_custom_product_images', JSON.stringify(localCustomImages));
+        fetch('/api/db/custom-images', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ byExternalId: localCustomImages, byName: localCustomImages })
+        }).catch(() => {});
+      } catch (_) {}
 
       // Refresh store state from Cloud SQL PostgreSQL
       await fetchData();
@@ -2073,6 +2122,25 @@ export default function Admin() {
           user: currentUser?.name || 'Administrador'
         });
       }
+
+      if (data.imageUrl && !data.imageUrl.includes('/static/mercadoria/')) {
+        try {
+          const local = JSON.parse(localStorage.getItem('balbec_custom_product_images') || '{}');
+          if (data.externalId) local[String(data.externalId)] = data.imageUrl;
+          local[normalizeText(data.name)] = data.imageUrl;
+          localStorage.setItem('balbec_custom_product_images', JSON.stringify(local));
+
+          fetch('/api/db/custom-images', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              byExternalId: data.externalId ? { [String(data.externalId)]: data.imageUrl } : {},
+              byName: { [normalizeText(data.name)]: data.imageUrl }
+            })
+          }).catch(() => {});
+        } catch (_) {}
+      }
+
       closeModal();
     } catch (error) {
       console.error('Error saving product:', error);

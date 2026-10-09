@@ -112,6 +112,7 @@ const APP_INSTALLS_FILE = path.join(STORAGE_DIR, '.app_installs_data.json');
 const TOTEM_BACKUPS_FILE = path.join(STORAGE_DIR, '.totem_backups_data.json');
 const MASTER_STATE_FILE = path.join(STORAGE_DIR, '.app_persistent_state.json');
 const CLEARED_FLAG_FILE = path.join(STORAGE_DIR, '.database_cleared.flag');
+const CUSTOM_IMAGES_FILE = path.join(STORAGE_DIR, '.custom_product_images.json');
 
 const DEFAULT_USERS = [
   { id: 1, uid: 'master-1', email: 'admin@balbec.com.br', name: 'Administrador Master', role: 'master', password: 'admin' },
@@ -144,6 +145,18 @@ let memTvMedia: any[] = [];
 let memAppInstalls: any[] = [];
 let memTables: any[] = [...DEFAULT_TABLES];
 let memTotemBackups: any[] = [];
+
+interface CustomImageRegistry {
+  byExternalId: Record<string, string>;
+  byName: Record<string, string>;
+  byId: Record<string, string>;
+}
+
+let memCustomImages: CustomImageRegistry = {
+  byExternalId: {},
+  byName: {},
+  byId: {}
+};
 
 // Helper functions for safe disk persistence
 function loadJsonFile<T>(filePath: string, fallback: T): T {
@@ -242,6 +255,23 @@ try {
   memTables = loadJsonFile(TABLES_FILE, masterState?.tables || DEFAULT_TABLES);
   memAppInstalls = loadJsonFile(APP_INSTALLS_FILE, []);
   memTotemBackups = loadJsonFile(TOTEM_BACKUPS_FILE, masterState?.totemBackups || []);
+  memCustomImages = loadJsonFile<CustomImageRegistry>(CUSTOM_IMAGES_FILE, {
+    byExternalId: {},
+    byName: {},
+    byId: {}
+  });
+
+  // Re-populate custom images registry from existing products if any
+  if (Array.isArray(memProducts)) {
+    for (const p of memProducts) {
+      if (p && p.imageUrl && p.imageUrl.trim() !== '' && !p.imageUrl.includes('/static/mercadoria/')) {
+        if (p.id) memCustomImages.byId[p.id] = p.imageUrl;
+        if (p.externalId) memCustomImages.byExternalId[String(p.externalId)] = p.imageUrl;
+        const norm = (p.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]/g, ' ').toLowerCase().trim();
+        if (norm) memCustomImages.byName[norm] = p.imageUrl;
+      }
+    }
+  }
 
   // Auto-recovery from latest backup in 'backups/' directory if local storage was wiped on deploy
   if ((!memCategories || memCategories.length === 0 || !memProducts || memProducts.length === 0)) {
@@ -591,6 +621,58 @@ export function cleanPhoneDigits(phone?: string | null): string {
   return String(phone).replace(/\D/g, '');
 }
 
+export function normalizeCustomerName(str?: string | null): string {
+  if (!str) return '';
+  return String(str)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9]/g, ' ')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+export function recordCustomImage(id?: string, externalId?: string, name?: string, imageUrl?: string) {
+  if (!imageUrl || typeof imageUrl !== 'string') return;
+  const clean = imageUrl.trim();
+  if (!clean || clean.includes('/static/mercadoria/')) return;
+  let changed = false;
+  if (id && memCustomImages.byId[id] !== clean) {
+    memCustomImages.byId[id] = clean;
+    changed = true;
+  }
+  if (externalId && memCustomImages.byExternalId[String(externalId)] !== clean) {
+    memCustomImages.byExternalId[String(externalId)] = clean;
+    changed = true;
+  }
+  if (name) {
+    const norm = normalizeCustomerName(name);
+    if (norm && memCustomImages.byName[norm] !== clean) {
+      memCustomImages.byName[norm] = clean;
+      changed = true;
+    }
+  }
+  if (changed) {
+    writeJsonFile(CUSTOM_IMAGES_FILE, memCustomImages);
+  }
+}
+
+export function getStoredCustomImage(id?: string, externalId?: string, name?: string): string | null {
+  if (externalId && memCustomImages.byExternalId[String(externalId)]) {
+    return memCustomImages.byExternalId[String(externalId)];
+  }
+  if (name) {
+    const norm = normalizeCustomerName(name);
+    if (norm && memCustomImages.byName[norm]) {
+      return memCustomImages.byName[norm];
+    }
+  }
+  if (id && memCustomImages.byId[id]) {
+    return memCustomImages.byId[id];
+  }
+  return null;
+}
+
 export async function upsertCustomerLead(leadData: {
   name?: string;
   phone?: string;
@@ -732,6 +814,133 @@ export async function upsertCustomerLead(leadData: {
   }
 
   return customerRecord;
+}
+
+export async function batchUpsertCustomerLeads(leads: any[]): Promise<number> {
+  if (!Array.isArray(leads) || leads.length === 0) return 0;
+  const now = Date.now();
+  let updatedCount = 0;
+
+  // Build lookup index for memCustomers
+  const phoneMap = new Map<string, number>();
+  const cpfMap = new Map<string, number>();
+  const cnpjMap = new Map<string, number>();
+  const nameMap = new Map<string, number>();
+
+  memCustomers.forEach((c, idx) => {
+    const pDigits = cleanPhoneDigits(c.phone || '');
+    if (pDigits && pDigits.length >= 8) phoneMap.set(pDigits, idx);
+    const cpfDigits = String(c.cpf || '').replace(/\D/g, '');
+    if (cpfDigits) cpfMap.set(cpfDigits, idx);
+    const cnpjDigits = String(c.cnpj || '').replace(/\D/g, '');
+    if (cnpjDigits) cnpjMap.set(cnpjDigits, idx);
+    const normName = normalizeCustomerName(c.name || '');
+    if (normName && normName !== 'cliente') nameMap.set(normName, idx);
+  });
+
+  const recordsToInsert: any[] = [];
+
+  for (const lead of leads) {
+    const rawName = (lead.name || '').trim();
+    const phone = (lead.phone || '').trim();
+    const digits = cleanPhoneDigits(phone);
+    const cpfDigits = String(lead.cpf || '').replace(/\D/g, '');
+    const cnpjDigits = String(lead.cnpj || '').replace(/\D/g, '');
+    const normName = normalizeCustomerName(rawName);
+
+    if (!rawName && !digits && !cpfDigits && !cnpjDigits) continue;
+    if (rawName.toLowerCase() === 'cliente totem') continue;
+
+    let existingIdx = -1;
+    if (cpfDigits && cpfMap.has(cpfDigits)) {
+      existingIdx = cpfMap.get(cpfDigits)!;
+    } else if (cnpjDigits && cnpjMap.has(cnpjDigits)) {
+      existingIdx = cnpjMap.get(cnpjDigits)!;
+    } else if (digits && digits.length >= 8 && phoneMap.has(digits)) {
+      existingIdx = phoneMap.get(digits)!;
+    } else if (normName && nameMap.has(normName)) {
+      existingIdx = nameMap.get(normName)!;
+    }
+
+    const cleanName = rawName || (cnpjDigits ? `Cliente CNPJ ${cnpjDigits}` : cpfDigits ? `Cliente CPF ${cpfDigits}` : `Cliente (${digits.slice(-4)})`);
+
+    if (existingIdx >= 0) {
+      const existing = memCustomers[existingIdx];
+      let tags: string[] = [];
+      try {
+        tags = Array.isArray(existing.tags) ? existing.tags : JSON.parse(existing.tags || '[]');
+      } catch { tags = []; }
+      if (Array.isArray(lead.tags)) {
+        lead.tags.forEach((t: string) => { if (t && !tags.includes(t)) tags.push(t); });
+      }
+
+      const updated = {
+        ...existing,
+        name: (cleanName && cleanName.toLowerCase() !== 'cliente') ? cleanName : existing.name,
+        phone: phone || existing.phone,
+        email: lead.email || existing.email || '',
+        address: lead.address || existing.address || '',
+        cpf: lead.cpf || existing.cpf || '',
+        cnpj: lead.cnpj || existing.cnpj || '',
+        source: existing.source || lead.source || 'bluefocus',
+        tags: JSON.stringify(tags)
+      };
+      memCustomers[existingIdx] = updated;
+      recordsToInsert.push(updated);
+      updatedCount++;
+    } else {
+      const initialTags = Array.isArray(lead.tags) ? [...lead.tags] : ['Cliente', 'BlueFocus'];
+      const newCust = {
+        id: `cust_${now}_${Math.random().toString(36).substring(2, 7)}`,
+        name: cleanName,
+        phone: phone || '',
+        email: lead.email || '',
+        address: lead.address || '',
+        cpf: lead.cpf || '',
+        cnpj: lead.cnpj || '',
+        source: lead.source || 'bluefocus',
+        totalOrders: 0,
+        totalSpent: 0,
+        lastOrderAt: null,
+        createdAt: now,
+        tags: JSON.stringify(initialTags),
+        notes: lead.notes || ''
+      };
+      memCustomers.push(newCust);
+      const newIdx = memCustomers.length - 1;
+      if (cpfDigits) cpfMap.set(cpfDigits, newIdx);
+      if (cnpjDigits) cnpjMap.set(cnpjDigits, newIdx);
+      if (digits && digits.length >= 8) phoneMap.set(digits, newIdx);
+      if (normName) nameMap.set(normName, newIdx);
+      recordsToInsert.push(newCust);
+      updatedCount++;
+    }
+  }
+
+  persistCustomersToDisk(memCustomers);
+
+  if (isDatabaseConfigured()) {
+    try {
+      const chunkSize = 50;
+      for (let i = 0; i < recordsToInsert.length; i += chunkSize) {
+        const chunk = recordsToInsert.slice(i, i + chunkSize);
+        await Promise.all(chunk.map(c => {
+          const payload = {
+            ...c,
+            tags: typeof c.tags === 'string' ? c.tags : JSON.stringify(c.tags || [])
+          };
+          return db.insert(customers).values(payload).onConflictDoUpdate({
+            target: customers.id,
+            set: payload
+          }).catch(() => {});
+        }));
+      }
+    } catch (dbErr: any) {
+      console.warn('[DB Error] Falha ao persistir clientes no PostgreSQL:', dbErr?.message);
+    }
+  }
+
+  return updatedCount;
 }
 
 let latestTvCall: {
@@ -1145,6 +1354,9 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
     const data = req.body;
     const cleanDesc = cleanProductDescription(data.description, false);
     const newProd = { ...data, description: cleanDesc, id: data.id || `prod_${Date.now()}` };
+    if (data.imageUrl) {
+      recordCustomImage(newProd.id, data.externalId, data.name, data.imageUrl);
+    }
     memProducts = [...memProducts.filter(p => p.id !== newProd.id), newProd];
     persistProductsToDisk(memProducts);
 
@@ -1179,6 +1391,13 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
         ...item,
         description: cleanProductDescription(item.description, false)
       }));
+
+      // Record any custom images in registry
+      sanitizedItems.forEach(item => {
+        if (item.imageUrl) {
+          recordCustomImage(item.id, item.externalId, item.name, item.imageUrl);
+        }
+      });
 
       // Update in-memory cache
       const itemMap = new Map(memProducts.map(p => [p.id, p]));
@@ -1228,6 +1447,9 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
     const data = req.body;
     if (data.description !== undefined) {
       data.description = cleanProductDescription(data.description, false);
+    }
+    if (data.imageUrl) {
+      recordCustomImage(id, data.externalId, data.name, data.imageUrl);
     }
     memProducts = memProducts.map(p => p.id === id ? { ...p, ...data } : p);
     persistProductsToDisk(memProducts);
@@ -1311,6 +1533,31 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
       res.json({ success: true, message: 'Todos os produtos e categorias foram zerados com sucesso.' });
     } catch (error: any) {
       res.status(500).json({ error: error.message || 'Erro ao zerar produtos' });
+    }
+  });
+
+  // Custom Images Registry endpoints (preserves custom uploaded images permanently)
+  app.get('/api/db/custom-images', (req: Request, res: Response) => {
+    res.setHeader('Cache-Control', 'no-cache');
+    res.json(memCustomImages);
+  });
+
+  app.post('/api/db/custom-images', (req: Request, res: Response) => {
+    try {
+      const incoming = req.body || {};
+      if (incoming.byExternalId && typeof incoming.byExternalId === 'object') {
+        Object.assign(memCustomImages.byExternalId, incoming.byExternalId);
+      }
+      if (incoming.byName && typeof incoming.byName === 'object') {
+        Object.assign(memCustomImages.byName, incoming.byName);
+      }
+      if (incoming.byId && typeof incoming.byId === 'object') {
+        Object.assign(memCustomImages.byId, incoming.byId);
+      }
+      writeJsonFile(CUSTOM_IMAGES_FILE, memCustomImages);
+      res.json({ success: true, totalSaved: Object.keys(memCustomImages.byExternalId).length });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
     }
   });
 
