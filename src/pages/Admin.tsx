@@ -1023,15 +1023,21 @@ export default function Admin() {
   };
 
   const handleClearAllProducts = async () => {
-    if (!window.confirm('ATENÇÃO: Deseja realmente ZERAR todos os produtos e categorias do sistema para começar uma atualização limpa?')) {
+    if (!window.confirm('ATENÇÃO: Deseja realmente ZERAR todos os produtos e categorias do sistema (PostgreSQL / Railway e Servidor) para começar uma importação limpa?')) {
       return;
     }
     try {
       const res = await fetch('/api/db/products/clear-all', { method: 'POST' });
       if (res.ok) {
-        alert('Produtos e categorias zerados com sucesso! Agora você pode realizar a sincronização completa.');
-        fetchData?.();
-        window.location.reload();
+        localStorage.removeItem('balbec_cached_categories_v1');
+        localStorage.removeItem('balbec_cached_products_v1');
+        localStorage.removeItem('paomania_cached_categories_v1');
+        localStorage.removeItem('paomania_cached_products_v1');
+        localStorage.setItem('balbec_cached_categories_v1', '[]');
+        localStorage.setItem('balbec_cached_products_v1', '[]');
+        useStore.setState({ categories: [], products: [] });
+        await fetchData?.();
+        alert('Banco de dados (produtos e categorias) zerado com 100% de sucesso no PostgreSQL e no servidor! Agora você pode realizar a sincronização completa.');
       } else {
         const err = await res.json();
         alert('Erro ao zerar base: ' + (err.error || 'Erro desconhecido'));
@@ -1636,6 +1642,34 @@ export default function Admin() {
       });
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleSyncBlueFocusFull = async () => {
+    if (isSyncing) return;
+    if (!window.confirm('Deseja iniciar a Sincronização Completa de TODOS os Produtos (com Fotos) e Clientes do BlueFocus?')) {
+      return;
+    }
+    const freshConfig = {
+      ...blueFocusConfig,
+      tipo: '4',
+      tipoAtualizacao: 'C',
+      startCargaNumero: '0',
+      startCargaSequencia: '0',
+      startProdutoId: '0'
+    };
+    setBlueFocusConfig(freshConfig);
+    localStorage.setItem('bluefocus_tipo', '4');
+    localStorage.setItem('bluefocus_tipo_atualizacao', 'C');
+    localStorage.setItem('bluefocus_start_carga_numero', '0');
+    localStorage.setItem('bluefocus_start_carga_sequencia', '0');
+    localStorage.setItem('bluefocus_start_produto_id', '0');
+
+    try {
+      await handleSyncBlueFocus(freshConfig);
+      await handleSyncBlueFocusCustomers();
+    } catch (e: any) {
+      console.error('[Sync Full] Erro durante sincronização completa:', e);
     }
   };
 
@@ -4566,14 +4600,23 @@ export default function Admin() {
                 <button type="button" 
                   onClick={() => handleSyncBlueFocus({ tipoAtualizacao: 'A' })}
                   disabled={isSyncing}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
+                  className="bg-blue-600 text-white px-3.5 py-2 rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
                 >
                   <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
                   {isSyncing ? 'Sincronizando...' : 'Sincronizar Alterações'}
                 </button>
                 <button type="button" 
+                  onClick={handleSyncBlueFocusFull}
+                  disabled={isSyncing}
+                  className="bg-emerald-600 text-white px-3.5 py-2 rounded-lg font-bold hover:bg-emerald-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer text-sm shadow-xs"
+                  title="Executa Carga Total de Produtos (com Fotos) e em seguida importa todos os Clientes"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                  {isSyncing ? 'Sincronizando...' : 'Sincronização Completa (Tudo)'}
+                </button>
+                <button type="button" 
                   onClick={() => {
-                    if (confirm('Deseja zerar os marcadores de carga e realizar a sincronização completa de TODOS os produtos?')) {
+                    if (confirm('Deseja zerar os marcadores de carga e realizar a sincronização de Carga Total de TODOS os produtos?')) {
                       const freshConfig = {
                         ...blueFocusConfig,
                         tipo: '4',
@@ -4592,18 +4635,18 @@ export default function Admin() {
                     }
                   }}
                   disabled={isSyncing}
-                  className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
+                  className="bg-teal-600 text-white px-3.5 py-2 rounded-lg font-medium hover:bg-teal-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
                 >
-                  <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                  {isSyncing ? 'Sincronizando...' : 'Zerar & Sincronizar Tudo (Carga Total)'}
+                  <Package className="w-4 h-4" />
+                  {isSyncing ? 'Sincronizando...' : 'Carga Total Produtos'}
                 </button>
                 <button type="button" 
                   onClick={handleSyncBlueFocusCustomers}
                   disabled={isSyncing}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
+                  className="bg-purple-600 text-white px-3.5 py-2 rounded-lg font-medium hover:bg-purple-700 flex items-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
                 >
                   <Users className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                  {isSyncing ? 'Sincronizando...' : 'Sincronizar Clientes BlueFocus'}
+                  {isSyncing ? 'Sincronizando...' : 'Sincronizar Clientes (890+)'}
                 </button>
               </>
             )}
@@ -5394,6 +5437,8 @@ export default function Admin() {
       isTestingBlueFocus1={isTestingBlueFocus1}
       handleSaveBlueFocusDirect={handleSaveBlueFocusDirect}
       handleClearAllProducts={handleClearAllProducts}
+      handleSyncBlueFocusCustomers={handleSyncBlueFocusCustomers}
+      handleSyncBlueFocusFull={handleSyncBlueFocusFull}
       isSyncing={isSyncing}
       isAutoSyncEnabled={isAutoSyncEnabled}
       setIsAutoSyncEnabled={setIsAutoSyncEnabled}

@@ -42,7 +42,9 @@ import {
   AlertCircle,
   LayoutGrid,
   QrCode,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Package,
+  Users
 } from 'lucide-react';
 import { useStore, StoreInfo, AiTrainingExample, DEFAULT_AI_TRAINING_EXAMPLES } from '../store/useStore';
 import { DaySchedule, formatWeeklyScheduleSummary, getStoreCurrentStatus } from '../utils/scheduleHelper';
@@ -141,6 +143,8 @@ interface AdminSettingsCollapsibleProps {
   isTestingBlueFocus1: boolean;
   handleSaveBlueFocusDirect?: () => Promise<void>;
   handleClearAllProducts?: () => Promise<void>;
+  handleSyncBlueFocusCustomers?: () => Promise<void>;
+  handleSyncBlueFocusFull?: () => Promise<void>;
 
   isSyncing: boolean;
   isAutoSyncEnabled: boolean;
@@ -254,6 +258,8 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
     isTestingBlueFocus1,
     handleSaveBlueFocusDirect,
     handleClearAllProducts,
+    handleSyncBlueFocusCustomers,
+    handleSyncBlueFocusFull,
     isSyncing,
     isAutoSyncEnabled,
     setIsAutoSyncEnabled,
@@ -2791,6 +2797,74 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                     </button>
                   </div>
                 )}
+
+                <div className="pt-3 border-t border-stone-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                      <RefreshCw className="w-3.5 h-3.5 text-blue-600" />
+                      Ações de Carga e Sincronização ERP
+                    </span>
+                    <span className="text-[10px] text-stone-500 font-medium">
+                      Executa integração em tempo real com o BlueFocus
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    {handleSyncBlueFocusFull && (
+                      <button 
+                        type="button"
+                        onClick={handleSyncBlueFocusFull}
+                        disabled={isSyncing}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                        title="Zera marcadores, baixa todos os produtos com fotos e em seguida importa todos os clientes"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                        Sincronização Completa (Tudo)
+                      </button>
+                    )}
+
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm('Deseja iniciar a importação de Carga Total de TODOS os produtos com fotos?')) {
+                          const resetConfig = { 
+                            ...blueFocusConfig1, 
+                            tipo: '4',
+                            tipoAtualizacao: 'C',
+                            startCargaNumero: '0', 
+                            startCargaSequencia: '0',
+                            startProdutoId: '0' 
+                          };
+                          setBlueFocusConfig1(resetConfig);
+                          localStorage.setItem('bluefocus1_tipo', '4');
+                          localStorage.setItem('bluefocus1_tipo_atualizacao', 'C');
+                          localStorage.setItem('bluefocus1_start_carga_numero', '0');
+                          localStorage.setItem('bluefocus1_start_carga_sequencia', '0');
+                          localStorage.setItem('bluefocus1_start_produto_id', '0');
+                          handleSyncBlueFocus1(resetConfig);
+                        }
+                      }}
+                      disabled={isSyncing}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      <Package className="w-3.5 h-3.5" />
+                      Carga Total Produtos
+                    </button>
+
+                    {handleSyncBlueFocusCustomers && (
+                      <button 
+                        type="button"
+                        onClick={handleSyncBlueFocusCustomers}
+                        disabled={isSyncing}
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold p-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                        title="Sincroniza todos os clientes/pessoas cadastrados no BlueFocus (890+ clientes)"
+                      >
+                        <Users className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                        Sincronizar Clientes (890+)
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
 
 
@@ -2857,6 +2931,35 @@ export function AdminSettingsCollapsible(props: AdminSettingsCollapsibleProps) {
                     No Railway, certifique-se de adicionar a variável <code className="bg-amber-100 px-1 py-0.5 rounded font-mono font-bold">DATABASE_URL</code> nas variáveis do seu projeto. 
                     Com o PostgreSQL conectado, 
                     <strong>todas as suas configurações, produtos e pedidos são salvos e recarregados automaticamente do banco</strong>!
+                  </p>
+                </div>
+
+                {/* Direct Zero Database / Railway SQL Command Card */}
+                <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2.5 text-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
+                    <span className="font-bold text-stone-800 flex items-center gap-1.5">
+                      <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                      Zerar Produtos e Categorias (PostgreSQL / Railway):
+                    </span>
+                    {handleClearAllProducts && (
+                      <button
+                        type="button"
+                        onClick={handleClearAllProducts}
+                        className="text-xs bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Zerar Base pelo Painel
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-stone-600 text-[11px] leading-relaxed">
+                    Se desejar zerar diretamente pelo Railway (na aba <strong>Data</strong> ou <strong>Query</strong> do seu banco PostgreSQL), execute o comando SQL abaixo:
+                  </p>
+                  <div className="bg-stone-900 text-amber-400 p-2.5 rounded-lg font-mono text-xs select-all flex items-center justify-between">
+                    <code>TRUNCATE TABLE products, categories CASCADE;</code>
+                  </div>
+                  <p className="text-stone-500 text-[11px]">
+                    ✨ <strong>Importante:</strong> Ao zerar, os produtos e categorias permanecem exatamente zerados (sem recarregar dados antigos ou de exemplo), ficando 100% prontos para você clicar em <strong>Sincronização Completa</strong> do BlueFocus.
                   </p>
                 </div>
                 

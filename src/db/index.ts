@@ -41,7 +41,7 @@ export const createPool = () => {
       global._postgresPool = new Pool({
         connectionString: dbUrl,
         max: 5,
-        connectionTimeoutMillis: 3500, // Fail fast (3.5s) to avoid Vercel 10s timeout
+        connectionTimeoutMillis: 10000, // 10s connection timeout for reliable cloud DB initialization
         idleTimeoutMillis: 10000,
         keepAlive: true,
         ssl: sslConfig
@@ -127,7 +127,7 @@ export async function ensureTablesExist() {
   // Fast check: Ensure DB is reachable before attempting DDL migrations
   try {
     const pingPromise = pool.query('SELECT 1 as ping');
-    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('PostgreSQL indisponível ou tempo limite atingido (3.5s)')), 3500));
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('PostgreSQL indisponível ou tempo limite atingido (8s)')), 8000));
     await Promise.race([pingPromise, timeoutPromise]);
   } catch (pingErr: any) {
     console.warn('[DB] PostgreSQL não respondeu ao teste inicial, migrações DDL em lote ignoradas:', pingErr?.message || pingErr);
@@ -446,8 +446,41 @@ export async function ensureTablesExist() {
     await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS scheduling_max_orders_per_slot INTEGER DEFAULT 4;`);
     await runQuery(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS scheduled_time TEXT;`);
     await runQuery(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS scheduled_date TEXT;`);
+    await runQuery(`ALTER TABLE store_info ADD COLUMN IF NOT EXISTS is_catalog_cleared BOOLEAN DEFAULT FALSE;`);
 
   } catch (err: any) {
     // Non-fatal init catch
   }
+}
+
+export function sanitizeOrderForDb(order: any) {
+  let parsedItems = order.items;
+  if (typeof parsedItems === 'string') {
+    try {
+      parsedItems = JSON.parse(parsedItems);
+    } catch {
+      parsedItems = [];
+    }
+  }
+  if (!Array.isArray(parsedItems)) {
+    parsedItems = [];
+  }
+
+  return {
+    id: String(order.id),
+    items: parsedItems,
+    total: Number(order.total) || 0,
+    status: String(order.status || 'pending'),
+    createdAt: Number(order.createdAt) || Date.now(),
+    type: String(order.type || 'kiosk'),
+    paymentMethod: String(order.paymentMethod || ''),
+    customerName: String(order.customerName || ''),
+    customerPhone: order.customerPhone ? String(order.customerPhone) : null,
+    deliveryType: order.deliveryType ? String(order.deliveryType) : null,
+    deliveryAddress: order.deliveryAddress ? String(order.deliveryAddress) : null,
+    tableNumber: order.tableNumber ? String(order.tableNumber) : null,
+    tableId: order.tableId ? String(order.tableId) : null,
+    scheduledTime: order.scheduledTime ? String(order.scheduledTime) : null,
+    scheduledDate: order.scheduledDate ? String(order.scheduledDate) : null,
+  };
 }

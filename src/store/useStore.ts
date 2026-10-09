@@ -9,17 +9,17 @@ const CATALOG_PRODUCTS_CACHE_KEY = 'balbec_cached_products_v1';
 const getInitialCategories = (): Category[] => {
   try {
     const raw = safeStorage.getItem(CATALOG_CATEGORIES_CACHE_KEY) || safeStorage.getItem('paomania_cached_categories_v1');
-    if (raw) {
+    if (raw !== null && raw !== undefined) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) return parsed;
     }
   } catch {}
-  return (defaultCatalog.categories as Category[]) || [];
+  return [];
 };
 
 const saveCategoriesToStorage = (list: Category[]): void => {
   try {
-    if (Array.isArray(list) && list.length > 0) {
+    if (Array.isArray(list)) {
       safeStorage.setItem(CATALOG_CATEGORIES_CACHE_KEY, JSON.stringify(list));
     }
   } catch {}
@@ -28,17 +28,17 @@ const saveCategoriesToStorage = (list: Category[]): void => {
 const getInitialProducts = (): Product[] => {
   try {
     const raw = safeStorage.getItem(CATALOG_PRODUCTS_CACHE_KEY) || safeStorage.getItem('paomania_cached_products_v1');
-    if (raw) {
+    if (raw !== null && raw !== undefined) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 1) return parsed;
+      if (Array.isArray(parsed)) return parsed;
     }
   } catch {}
-  return (defaultCatalog.products as Product[]) || [];
+  return [];
 };
 
 const saveProductsToStorage = (list: Product[]): void => {
   try {
-    if (Array.isArray(list) && list.length > 1) {
+    if (Array.isArray(list)) {
       safeStorage.setItem(CATALOG_PRODUCTS_CACHE_KEY, JSON.stringify(list));
     }
   } catch {}
@@ -668,42 +668,20 @@ export const useStore = create<StoreState>((set, get) => ({
       const pCat = fetchWithTimeout('/api/db/categories', 10000)
         .then(safeParseResponse)
         .then(categories => {
-          if (Array.isArray(categories) && categories.length > 0) {
+          if (Array.isArray(categories)) {
             saveCategoriesToStorage(categories);
             set({ categories });
-          } else {
-            const currentCat = get().categories;
-            if (currentCat && currentCat.length > 0) {
-              fetch('/api/db/categories/batch', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(currentCat)
-              }).catch(() => {});
-            } else {
-              const cached = getInitialCategories();
-              if (cached.length > 0) {
-                set({ categories: cached });
-                fetch('/api/db/categories/batch', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(cached)
-                }).catch(() => {});
-              }
-            }
           }
         })
-        .catch(() => {
-          const cached = getInitialCategories();
-          if (cached.length > 0) {
-            set({ categories: cached });
-          }
+        .catch((e) => {
+          console.warn('[useStore] Falha ao carregar categorias:', e);
         });
 
       // 2. Fetch Products (Main catalog, updates as soon as ready without waiting for heavy orders/users)
       const pProd = fetchWithTimeout('/api/db/products', 15000)
         .then(safeParseResponse)
         .then(rawProducts => {
-          if (Array.isArray(rawProducts) && rawProducts.length > 1) {
+          if (Array.isArray(rawProducts)) {
             const products = rawProducts.map((p: any) => {
               let availableForDelivery = p.availableForDelivery !== undefined ? Boolean(p.availableForDelivery) : true;
               let availableInStore = p.availableInStore !== undefined ? Boolean(p.availableInStore) : true;
@@ -730,36 +708,12 @@ export const useStore = create<StoreState>((set, get) => ({
             saveProductsToStorage(products);
             set({ products, isInitialized: true });
           } else {
-            const currentProd = get().products;
-            if (currentProd && currentProd.length > 1) {
-              set({ isInitialized: true });
-              fetch('/api/db/products/batch', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(currentProd)
-              }).catch(() => {});
-            } else {
-              const cached = getInitialProducts();
-              if (cached.length > 0) {
-                set({ products: cached, isInitialized: true });
-                fetch('/api/db/products/batch', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(cached)
-                }).catch(() => {});
-              } else {
-                set({ isInitialized: true });
-              }
-            }
-          }
-        })
-        .catch(() => {
-          const cached = getInitialProducts();
-          if (cached.length > 0) {
-            set({ products: cached, isInitialized: true });
-          } else {
             set({ isInitialized: true });
           }
+        })
+        .catch((e) => {
+          console.warn('[useStore] Falha ao carregar produtos:', e);
+          set({ isInitialized: true });
         });
 
       // 3. Fetch Store Info

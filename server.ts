@@ -242,9 +242,9 @@ function formatBlueFocusError(error: any): { message: string; details: any } {
       }
 
       let allMappedProducts: any[] = [];
-      let currentCargaNumero = tipoAtualizacao === 'C' ? 0 : parseInt(String(startCargaNumero));
-      let currentCargaSequencia = tipoAtualizacao === 'C' ? 0 : parseInt(String(startCargaSequencia));
-      let lastProdutoId = tipoAtualizacao === 'C' ? 0 : parseInt(String(startProdutoId)); // The manual says to use this for pagination
+      let currentCargaNumero = parseInt(String(startCargaNumero)) || 0;
+      let currentCargaSequencia = parseInt(String(startCargaSequencia)) || 0;
+      let lastProdutoId = parseInt(String(startProdutoId)) || 0;
       let hasMore = true;
       let iterations = 0;
       let lastXml = "";
@@ -282,31 +282,24 @@ function formatBlueFocusError(error: any): { message: string; details: any } {
         return undefined;
       };
 
-      const soapTipoAtualizacao = String(tipoAtualizacao);
-      const isFullSync = soapTipoAtualizacao === 'C' || (currentCargaNumero === 0 && currentCargaSequencia === 0);
+      const soapTipoAtualizacao = String(tipoAtualizacao || 'A');
       // Always request Tipo 4 (Produtos) for product sync, overriding legacy '1' (Cadastros Gerais)
       const soapTipo = (tipo === '1' || !tipo) ? '4' : String(tipo);
 
-      // In Vercel serverless environment, enforce smaller batch sizes (max 4 per request) to prevent 10s timeout
-      const maxIterationsPerCall = process.env.VERCEL ? Math.min(Number(batchSize) || 4, 4) : Math.min(Number(batchSize) || 20, 20);
+      // In server/serverless environment, 2 iterations per call keeps response snappy (<15s) with up to 1000-2000 items
+      const maxIterationsPerCall = process.env.VERCEL ? Math.min(Number(batchSize) || 2, 2) : Math.min(Number(batchSize) || 4, 4);
 
       while (iterations < maxIterationsPerCall && hasMore) {
         let soapCargaNumero = currentCargaNumero;
         let soapCargaSequencia = currentCargaSequencia;
         let soapProdutoId = lastProdutoId;
 
-        if (isFullSync && iterations === 1) {
-          soapCargaNumero = parseInt(String(startCargaNumero)) || 0;
-          soapCargaSequencia = parseInt(String(startCargaSequencia)) || 0;
-          soapProdutoId = parseInt(String(startProdutoId)) || 0;
-        }
-
         // Use 'C' for Carga Completa if requested, otherwise 'A'
         const finalTipoAtualizacao = soapTipoAtualizacao === 'C' ? 'C' : (soapTipoAtualizacao || 'A');
 
         const markerKey = `${soapCargaNumero}-${soapCargaSequencia}-${soapProdutoId}`;
         if (visitedMarkers.has(markerKey)) {
-          console.log(`Marker ${markerKey} already visited. Stopping.`);
+          console.log(`[BlueFocus] Marcador ${markerKey} já visitado nesta chamada. Concluído.`);
           hasMore = false;
           break;
         }
@@ -510,31 +503,18 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             }
           }
 
-          // For Full Sync (Tipo 1), if snFim is not found, assume 'S' (finished)
-          // For Change Sync (Tipo 4), if snFim is not found, assume 'N' to continue searching
-          snFim = getVal(saiaExp, "SNFim") || (tipo === '1' ? 'S' : 'N');
+          // Get SNFim from response
+          snFim = String(getVal(saiaExp, "SNFim") || (productsArray.length === 0 ? 'S' : 'N')).toUpperCase().trim();
           
-          if (snFim === 'S') {
+          if (snFim === 'S' || productsArray.length === 0) {
             hasMore = false;
           } else {
-            // Try to get markers from the response root first
-            const rootNextNumero = getVal(saiaExp, "CargaPDVNumero");
-            const rootNextSequencia = getVal(saiaExp, "CargaPDVSequencia");
-            
-            if (rootNextNumero !== undefined && rootNextSequencia !== undefined) {
-              const nNum = parseInt(String(rootNextNumero));
-              const nSeq = parseInt(String(rootNextSequencia));
-              
-              if (nNum === currentCargaNumero && nSeq === currentCargaSequencia) {
-                currentCargaSequencia++;
-              } else {
-                currentCargaNumero = nNum;
-                currentCargaSequencia = nSeq;
-              }
-            } else if (productsArray.length > 0) {
+            // Advance markers based on the last product returned in this batch
+            if (productsArray.length > 0) {
               const lastProduct = productsArray[productsArray.length - 1];
-              const pNextNumero = parseInt(String(getVal(lastProduct, "CargaPDVNumero") || currentCargaNumero));
-              const pNextSequencia = parseInt(String(getVal(lastProduct, "CargaPDVSequencia") || currentCargaSequencia));
+              const pNextNumero = parseInt(String(getVal(lastProduct, "CargaPDVNumero") || getVal(saiaExp, "CargaPDVNumero") || currentCargaNumero));
+              const pNextSequencia = parseInt(String(getVal(lastProduct, "CargaPDVSequencia") || getVal(saiaExp, "CargaPDVSequencia") || currentCargaSequencia));
+              const pNextId = parseInt(String(getVal(lastProduct, "ProdutoId") || lastProdutoId));
               
               if (pNextNumero === currentCargaNumero && pNextSequencia === currentCargaSequencia) {
                 currentCargaSequencia++;
@@ -542,10 +522,10 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                 currentCargaNumero = pNextNumero;
                 currentCargaSequencia = pNextSequencia;
               }
+              if (!isNaN(pNextId) && pNextId > 0) {
+                lastProdutoId = pNextId;
+              }
             } else {
-              // No products and no markers in root? 
-              // If SNFim is N, we try to advance sequencia to avoid getting stuck, 
-              // but only for a few iterations.
               currentCargaSequencia++;
               if (iterations > 10) { 
                 hasMore = false;
@@ -567,7 +547,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         products: allMappedProducts,
         nextCargaNumero: currentCargaNumero,
         nextCargaSequencia: currentCargaSequencia,
-        snFim: isFullSync ? 'S' : snFim, // Force 'S' for Full Sync to prevent infinite loops in frontend
+        snFim: snFim, // Real SNFim from ERP ('N' indicates more pages available)
         iterations: iterations,
         ignoredCount: ignoredCount,
         ignoredBreakdown: ignoredBreakdown,

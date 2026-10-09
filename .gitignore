@@ -8,5 +8,6 @@ coverage/
 .*_data.json
 .app_persistent_state.json
 backups/paomania*
+backups/*.json
 .env*
 !.env.example

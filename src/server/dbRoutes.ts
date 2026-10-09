@@ -1,5 +1,5 @@
 import { Express, Request, Response } from 'express';
-import { db, pool, ensureTablesExist, isDatabaseConfigured, getDatabaseUrl, testDatabaseConnection } from '../db/index';
+import { db, pool, ensureTablesExist, isDatabaseConfigured, getDatabaseUrl, testDatabaseConnection, sanitizeOrderForDb } from '../db/index';
 import { categories, products, orders, storeInfo, users, tvMedia, appInstalls, customers, restaurantTables } from '../db/schema';
 import { eq, desc, asc } from 'drizzle-orm';
 import fs from 'fs';
@@ -92,12 +92,35 @@ export function sanitizeStoreInfoPrinters(info: any) {
   return info;
 }
 
-const STORAGE_DIR = path.join(process.cwd(), '.data', 'balbec_persistent_store');
-try {
-  if (!fs.existsSync(STORAGE_DIR)) {
-    fs.mkdirSync(STORAGE_DIR, { recursive: true });
+export function resolvePersistentStorageDir(): string {
+  const custom = process.env.RAILWAY_VOLUME_MOUNT_PATH || 
+                 process.env.PERSISTENT_DATA_PATH || 
+                 process.env.VOLUME_PATH ||
+                 process.env.DATA_DIR;
+  if (custom && custom.trim() !== '') {
+    const dir = path.resolve(custom.trim());
+    try {
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      return dir;
+    } catch (e) {}
   }
-} catch (e) {}
+  // Suporte a volume montado em /data (padrão de volumes Railway/Docker)
+  try {
+    if (fs.existsSync('/data')) {
+      const appData = path.join('/data', 'balbec_store');
+      if (!fs.existsSync(appData)) fs.mkdirSync(appData, { recursive: true });
+      return appData;
+    }
+  } catch (e) {}
+
+  const fallback = path.join(process.cwd(), '.data', 'balbec_persistent_store');
+  try {
+    if (!fs.existsSync(fallback)) fs.mkdirSync(fallback, { recursive: true });
+  } catch (e) {}
+  return fallback;
+}
+
+const STORAGE_DIR = resolvePersistentStorageDir();
 
 const STORE_INFO_FILE = path.join(STORAGE_DIR, '.store_info_data.json');
 const TV_MEDIA_FILE = path.join(STORAGE_DIR, '.tv_media_data.json');
@@ -214,22 +237,13 @@ try {
       ? diskCategories
       : (Array.isArray(masterState?.categories) && masterState.categories.length > 0)
         ? masterState.categories
-        : DEFAULT_CATEGORIES;
+        : [];
 
-    memProducts = (Array.isArray(diskProducts) && diskProducts.length > 1)
+    memProducts = (Array.isArray(diskProducts) && diskProducts.length > 0)
       ? diskProducts
-      : (Array.isArray(masterState?.products) && masterState.products.length > 1)
+      : (Array.isArray(masterState?.products) && masterState.products.length > 0)
         ? masterState.products
-        : DEFAULT_PRODUCTS;
-
-    if (!memCategories || memCategories.length === 0) {
-      memCategories = [...DEFAULT_CATEGORIES];
-      persistCategoriesToDisk(memCategories);
-    }
-    if (!memProducts || memProducts.length <= 1) {
-      memProducts = [...DEFAULT_PRODUCTS];
-      persistProductsToDisk(memProducts);
-    }
+        : [];
   }
   memTvMedia = loadJsonFile(TV_MEDIA_FILE, masterState?.tvMedia || []);
   const diskStoreInfo: any = loadJsonFile(STORE_INFO_FILE, {});
@@ -273,59 +287,11 @@ try {
     }
   }
 
-  // Auto-recovery from latest backup in 'backups/' directory if local storage was wiped on deploy
-  if ((!memCategories || memCategories.length === 0 || !memProducts || memProducts.length === 0)) {
-    const AUTO_BACKUP_DIR = path.join(process.cwd(), 'backups');
-    try {
-      if (fs.existsSync(AUTO_BACKUP_DIR)) {
-        const backupFiles = fs.readdirSync(AUTO_BACKUP_DIR)
-          .filter(f => f.startsWith('balbec-backup-') && f.endsWith('.json'))
-          .sort()
-          .reverse();
-        
-        if (backupFiles.length > 0) {
-          const latestBackupPath = path.join(AUTO_BACKUP_DIR, backupFiles[0]);
-          const rawBackup = fs.readFileSync(latestBackupPath, 'utf8');
-          const backupData = JSON.parse(rawBackup);
-          
-          if (backupData) {
-            if (Array.isArray(backupData.categories) && backupData.categories.length > 0) {
-              memCategories = backupData.categories;
-              writeJsonFile(CATEGORIES_FILE, memCategories);
-            }
-            if (Array.isArray(backupData.products) && backupData.products.length > 1) {
-              memProducts = backupData.products;
-              writeJsonFile(PRODUCTS_FILE, memProducts);
-            }
-            if (backupData.storeInfo && typeof backupData.storeInfo === 'object') {
-              memStoreInfo = { ...DEFAULT_STORE_INFO, ...backupData.storeInfo };
-              writeJsonFile(STORE_INFO_FILE, memStoreInfo);
-            }
-            if (Array.isArray(backupData.orders) && backupData.orders.length > 0) {
-              memOrders = backupData.orders;
-              writeJsonFile(ORDERS_FILE, memOrders);
-            }
-            if (Array.isArray(backupData.customers) && backupData.customers.length > 0) {
-              memCustomers = backupData.customers;
-              writeJsonFile(CUSTOMERS_FILE, memCustomers);
-            }
-            persistAllStateToMasterFile();
-            console.log(`[Auto-Recovery] Estado restaurado com sucesso do backup mais recente: ${backupFiles[0]} (${memCategories.length} categorias, ${memProducts.length} produtos)`);
-          }
-        }
-      }
-    } catch (recoveryErr) {
-      console.warn('[Auto-Recovery] Aviso ao tentar recuperar do backup:', recoveryErr);
-    }
+  if (!memCategories) {
+    memCategories = [];
   }
-
-  if (!memCategories || memCategories.length === 0) {
-    memCategories = [...DEFAULT_CATEGORIES];
-    writeJsonFile(CATEGORIES_FILE, memCategories);
-  }
-  if (!memProducts || memProducts.length <= 1) {
-    memProducts = [...DEFAULT_PRODUCTS];
-    writeJsonFile(PRODUCTS_FILE, memProducts);
+  if (!memProducts) {
+    memProducts = [];
   }
 
   // Sanitização rigorosa: expurgar qualquer resquício legado de produtos/categorias/informações antigas de Pão Mania
@@ -369,11 +335,12 @@ try {
   console.warn('Aviso: Falha na inicialização dos dados persistidos:', e);
 }
 
-// Tenta carregar do PostgreSQL se configurado (prioridade máxima como Render/Neon)
+// Tenta carregar do PostgreSQL se configurado (prioridade máxima como Render/Neon/Railway)
 if (isDatabaseConfigured()) {
   ensureTablesExist().then(async () => {
     try {
       console.log('[DB Startup] Tabelas verificadas e prontas no PostgreSQL.');
+      await hydrateFromPostgres();
     } catch (err) {
       console.warn('[DB Startup] Aviso ao verificar tabelas do PostgreSQL:', err);
     }
@@ -539,35 +506,60 @@ export async function hydrateFromPostgres(): Promise<void> {
       console.warn('[DB Hydrate] Aviso ao carregar store_info do PostgreSQL:', storeErr?.message || storeErr);
     }
 
-    // 2. Hidratar Categorias e Produtos do PostgreSQL se existirem
+    // 2. Hidratar Categorias e Produtos do PostgreSQL (fonte autoritativa de verdade)
+    const isCleared = fs.existsSync(CLEARED_FLAG_FILE);
     try {
       const dbCategories = await db.select().from(categories).orderBy(categories.order);
-      if (dbCategories.length > 0) {
-        memCategories = dbCategories;
-        persistCategoriesToDisk(memCategories);
-        console.log(`[DB Hydrate] ${memCategories.length} categorias carregadas do PostgreSQL.`);
-      }
-    } catch (catErr: any) {
-      console.warn('[DB Hydrate] Aviso ao carregar categorias do PostgreSQL:', catErr?.message || catErr);
-    }
-
-    try {
       const dbProducts = await db.select().from(products);
-      if (dbProducts.length > 0) {
-        memProducts = dbProducts;
+
+      if (isCleared && (!dbProducts || dbProducts.length === 0)) {
+        memCategories = [];
+        memProducts = [];
+        persistCategoriesToDisk(memCategories);
         persistProductsToDisk(memProducts);
-        console.log(`[DB Hydrate] ${memProducts.length} produtos carregados do PostgreSQL.`);
+        console.log('[DB Hydrate] Catálogo mantido zerado (conforme flag de zeramento de base).');
+      } else if (Array.isArray(dbProducts) && dbProducts.length > 0) {
+        memCategories = dbCategories || [];
+        memProducts = dbProducts;
+        persistCategoriesToDisk(memCategories);
+        persistProductsToDisk(memProducts);
+        console.log(`[DB Hydrate] ${memCategories.length} categorias e ${memProducts.length} produtos carregados do PostgreSQL.`);
+      } else if (!isCleared && memProducts && memProducts.length > 0) {
+        console.log(`[DB Hydrate] PostgreSQL sem produtos, populando ${memProducts.length} produtos da memória...`);
+        for (const cat of memCategories) {
+          try { await db.insert(categories).values(cat).onConflictDoNothing(); } catch (_) {}
+        }
+        for (const prod of memProducts) {
+          try { await db.insert(products).values(prod).onConflictDoNothing(); } catch (_) {}
+        }
       }
-    } catch (prodErr: any) {
-      console.warn('[DB Hydrate] Aviso ao carregar produtos do PostgreSQL:', prodErr?.message || prodErr);
+    } catch (catProdErr: any) {
+      console.warn('[DB Hydrate] Aviso ao carregar catálogo do PostgreSQL:', catProdErr?.message || catProdErr);
     }
 
+    // 3. Hidratar Pedidos do PostgreSQL (fonte autoritativa de vendas acumuladas)
     try {
       const dbOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
-      if (dbOrders.length > 0) {
-        memOrders = dbOrders;
+      if (Array.isArray(dbOrders) && dbOrders.length > 0) {
+        const orderMap = new Map<string, any>();
+        (memOrders || []).forEach(o => { if (o && o.id) orderMap.set(String(o.id), o); });
+        dbOrders.forEach(o => {
+          if (o && o.id) {
+            const parsedItems = typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []);
+            orderMap.set(String(o.id), { ...(orderMap.get(String(o.id)) || {}), ...o, items: parsedItems });
+          }
+        });
+        memOrders = Array.from(orderMap.values()).sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
         persistOrdersToDisk(memOrders);
-        console.log(`[DB Hydrate] ${memOrders.length} pedidos carregados do PostgreSQL.`);
+        console.log(`[DB Hydrate] ${memOrders.length} pedidos históricos carregados e unificados do PostgreSQL.`);
+      } else if (memOrders && memOrders.length > 0) {
+        console.log(`[DB Hydrate] PostgreSQL sem pedidos, populando ${memOrders.length} pedidos acumulados da memória...`);
+        for (const ord of memOrders) {
+          try {
+            const sanitized = sanitizeOrderForDb(ord);
+            await db.insert(orders).values(sanitized).onConflictDoNothing();
+          } catch (_) {}
+        }
       }
     } catch (ordErr: any) {
       console.warn('[DB Hydrate] Aviso ao carregar pedidos do PostgreSQL:', ordErr?.message || ordErr);
@@ -1111,20 +1103,14 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
             throw err;
           }
         }
-        if (list.length === 0 && !fs.existsSync(CLEARED_FLAG_FILE)) {
-          for (const cat of DEFAULT_CATEGORIES) {
-            await db.insert(categories).values(cat).onConflictDoNothing();
-          }
-          list = await db.select().from(categories).orderBy(categories.order);
-        }
-        memCategories = list;
-        return res.json(list);
+        memCategories = list || [];
+        return res.json(memCategories);
       } catch (error: any) {
         console.warn('[DB Categories] Falha ao consultar PostgreSQL, usando cache em memória:', error);
       }
     }
 
-    return res.json(memCategories.length > 0 ? memCategories : DEFAULT_CATEGORIES);
+    return res.json(memCategories || []);
   });
 
   app.post('/api/db/categories', async (req: Request, res: Response) => {
@@ -1331,13 +1317,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
             throw err;
           }
         }
-        if (list.length === 0 && !fs.existsSync(CLEARED_FLAG_FILE)) {
-          for (const prod of DEFAULT_PRODUCTS) {
-            await db.insert(products).values(prod).onConflictDoNothing();
-          }
-          list = await db.select().from(products);
-        }
-        const sanitized = list.map((p, idx) => attachCodeIfMissing(p, idx));
+        const sanitized = (list || []).map((p, idx) => attachCodeIfMissing(p, idx));
         memProducts = sanitized;
         return res.json(sanitized);
       } catch (error: any) {
@@ -1345,7 +1325,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
       }
     }
 
-    const sourceProds = memProducts.length > 1 ? memProducts : DEFAULT_PRODUCTS;
+    const sourceProds = memProducts || [];
     const sanitized = sourceProds.map((p, idx) => attachCodeIfMissing(p, idx));
     return res.json(sanitized);
   });
@@ -1510,29 +1490,67 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
     res.json({ success: true, id });
   });
 
-  app.post('/api/db/products/clear-all', async (req: Request, res: Response) => {
+  const executeClearCatalog = async () => {
+    // Preserve any custom product photos in permanent registry before clearing
+    memProducts.forEach(p => {
+      if (p.imageUrl && !p.imageUrl.includes('/static/mercadoria/')) {
+        recordCustomImage(p.id, p.externalId, p.name, p.imageUrl);
+      }
+    });
+
+    memProducts = [];
+    memCategories = [];
+    persistProductsToDisk(memProducts);
+    persistCategoriesToDisk(memCategories);
+
     try {
-      memProducts = [];
-      memCategories = [];
-      persistProductsToDisk(memProducts);
-      persistCategoriesToDisk(memCategories);
+      fs.writeFileSync(CLEARED_FLAG_FILE, 'true', 'utf8');
+    } catch (e) {}
 
+    try {
+      const catalogPath = path.join(process.cwd(), 'src', 'server', 'defaultCatalog.json');
+      fs.writeFileSync(catalogPath, JSON.stringify({ categories: [], products: [] }, null, 2), 'utf8');
+    } catch (e) {}
+
+    if (isDatabaseConfigured()) {
       try {
-        fs.writeFileSync(CLEARED_FLAG_FILE, 'true', 'utf8');
-      } catch (e) {}
-
-      if (isDatabaseConfigured()) {
+        if (pool) {
+          await pool.query('TRUNCATE TABLE products, categories CASCADE;');
+        }
+        await db.delete(products);
+        await db.delete(categories);
+        await pool.query("UPDATE store_info SET is_catalog_cleared = TRUE WHERE id = 'default';").catch(() => {});
+        console.log('[DB Clear-All] Produtos e categorias apagados com sucesso no PostgreSQL (TRUNCATE CASCADE).');
+      } catch (dbErr: any) {
+        console.warn('[DB Error] Falha ao truncar no PostgreSQL, tentando delete:', dbErr?.message);
         try {
           await db.delete(products);
           await db.delete(categories);
-        } catch (dbErr: any) {
-          console.warn('[DB Error] Falha ao limpar produtos/categorias no PostgreSQL:', dbErr?.message);
+        } catch (delErr: any) {
+          console.error('[DB Error] Falha secundária ao deletar produtos/categorias no PostgreSQL:', delErr?.message);
         }
       }
-      onUpdate?.();
-      res.json({ success: true, message: 'Todos os produtos e categorias foram zerados com sucesso.' });
+    }
+    persistAllStateToMasterFile();
+    broadcastSSE({ type: 'sync', target: 'catalog', action: 'clear_all', time: Date.now() });
+    onUpdate?.();
+  };
+
+  app.post('/api/db/products/clear-all', async (req: Request, res: Response) => {
+    try {
+      await executeClearCatalog();
+      res.json({ success: true, message: 'Todos os produtos e categorias foram zerados com sucesso no servidor e no banco de dados.' });
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao zerar produtos' });
+      res.status(500).json({ error: error.message || 'Erro ao zerar produtos e categorias' });
+    }
+  });
+
+  app.all('/api/db/clear-all', async (req: Request, res: Response) => {
+    try {
+      await executeClearCatalog();
+      res.json({ success: true, message: 'Base de produtos e categorias zerada com sucesso!' });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || 'Erro ao zerar base' });
     }
   });
 
@@ -1672,10 +1690,27 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
 
     if (isDatabaseConfigured()) {
       try {
-        const result = await db.insert(orders).values(newOrder).returning();
+        const sanitized = sanitizeOrderForDb(newOrder);
+        const result = await db.insert(orders).values(sanitized).onConflictDoUpdate({
+          target: orders.id,
+          set: {
+            items: sanitized.items,
+            total: sanitized.total,
+            status: sanitized.status,
+            paymentMethod: sanitized.paymentMethod,
+            customerName: sanitized.customerName,
+            customerPhone: sanitized.customerPhone,
+            deliveryAddress: sanitized.deliveryAddress,
+            tableNumber: sanitized.tableNumber,
+            tableId: sanitized.tableId,
+            scheduledTime: sanitized.scheduledTime,
+            scheduledDate: sanitized.scheduledDate,
+          }
+        }).returning();
         onUpdate?.();
         return res.json(result[0] || newOrder);
       } catch (error: any) {
+        console.warn('[DB Orders Save Error]:', error?.message || error);
         onUpdate?.();
         return res.json(newOrder);
       }
@@ -1703,8 +1738,26 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
       if (isDatabaseConfigured()) {
         for (const item of items) {
           try {
-            await db.insert(orders).values(item).onConflictDoNothing();
-          } catch (_) {}
+            const sanitized = sanitizeOrderForDb(item);
+            await db.insert(orders).values(sanitized).onConflictDoUpdate({
+              target: orders.id,
+              set: {
+                items: sanitized.items,
+                total: sanitized.total,
+                status: sanitized.status,
+                paymentMethod: sanitized.paymentMethod,
+                customerName: sanitized.customerName,
+                customerPhone: sanitized.customerPhone,
+                deliveryAddress: sanitized.deliveryAddress,
+                tableNumber: sanitized.tableNumber,
+                tableId: sanitized.tableId,
+                scheduledTime: sanitized.scheduledTime,
+                scheduledDate: sanitized.scheduledDate,
+              }
+            });
+          } catch (e: any) {
+            console.warn('[DB Orders Batch Save Error]:', e?.message || e);
+          }
         }
       }
       onUpdate?.();
@@ -3004,6 +3057,36 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
               await db.insert(restaurantTables).values(t).onConflictDoUpdate({ target: restaurantTables.id, set: t });
             }
           }
+          if (Array.isArray(data.orders)) {
+            for (const o of data.orders) {
+              try {
+                const sanitized = sanitizeOrderForDb(o);
+                await db.insert(orders).values(sanitized).onConflictDoUpdate({
+                  target: orders.id,
+                  set: {
+                    items: sanitized.items,
+                    total: sanitized.total,
+                    status: sanitized.status,
+                    paymentMethod: sanitized.paymentMethod,
+                    customerName: sanitized.customerName,
+                    customerPhone: sanitized.customerPhone,
+                    deliveryAddress: sanitized.deliveryAddress,
+                    tableNumber: sanitized.tableNumber,
+                    tableId: sanitized.tableId,
+                    scheduledTime: sanitized.scheduledTime,
+                    scheduledDate: sanitized.scheduledDate,
+                  }
+                });
+              } catch (_) {}
+            }
+          }
+          if (Array.isArray(data.customers)) {
+            for (const c of data.customers) {
+              try {
+                await db.insert(customers).values(c).onConflictDoUpdate({ target: customers.id, set: c });
+              } catch (_) {}
+            }
+          }
         } catch (dbErr) {
           console.warn('Aviso: Falha parcial ao restaurar no PostgreSQL:', dbErr);
         }
@@ -3056,7 +3139,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
   });
 
   // Automated Hourly Backup Setup & Endpoints
-  const AUTO_BACKUP_DIR = path.join(process.cwd(), 'backups');
+  const AUTO_BACKUP_DIR = path.join(STORAGE_DIR, 'backups');
   try {
     if (!fs.existsSync(AUTO_BACKUP_DIR)) {
       fs.mkdirSync(AUTO_BACKUP_DIR, { recursive: true });
@@ -3208,6 +3291,30 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
         persistOrdersToDisk(memOrders);
       }
       persistAllStateToMasterFile();
+
+      if (isDatabaseConfigured()) {
+        try {
+          if (Array.isArray(data.orders)) {
+            for (const o of data.orders) {
+              try {
+                const sanitized = sanitizeOrderForDb(o);
+                await db.insert(orders).values(sanitized).onConflictDoNothing();
+              } catch (_) {}
+            }
+          }
+          if (Array.isArray(data.categories)) {
+            for (const c of data.categories) {
+              try { await db.insert(categories).values(c).onConflictDoNothing(); } catch (_) {}
+            }
+          }
+          if (Array.isArray(data.products)) {
+            for (const p of data.products) {
+              try { await db.insert(products).values(p).onConflictDoNothing(); } catch (_) {}
+            }
+          }
+        } catch (_) {}
+      }
+
       onUpdate?.();
 
       return res.json({ success: true, message: 'Backup horário restaurado com sucesso!' });
