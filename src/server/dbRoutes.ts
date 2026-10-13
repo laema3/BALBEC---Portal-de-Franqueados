@@ -1088,7 +1088,9 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
 
   // Categories
   app.get('/api/db/categories', async (req: Request, res: Response) => {
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
 
     if (isDatabaseConfigured()) {
       try {
@@ -1272,7 +1274,9 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
 
   // Products
   app.get('/api/db/products', async (req: Request, res: Response) => {
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
 
     const defaultCodeMap: Record<string, string> = {
       'prod-1': '1001',

@@ -13,7 +13,7 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { FirebaseProvider } from './components/FirebaseProvider';
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { AppErrorBoundary } from './components/AppErrorBoundary';
 import { useStore } from './store/useStore';
 
 function StoreMeta() {
@@ -204,7 +204,7 @@ function AutoUpdater() {
 
 export default function App() {
   return (
-    <ErrorBoundary>
+    <AppErrorBoundary>
       <FirebaseProvider>
         <StoreMeta />
         <AutoUpdater />
@@ -233,6 +233,6 @@ export default function App() {
           </Suspense>
         </Router>
       </FirebaseProvider>
-    </ErrorBoundary>
+    </AppErrorBoundary>
   );
 }

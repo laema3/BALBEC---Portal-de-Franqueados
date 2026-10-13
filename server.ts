@@ -49,7 +49,12 @@ app.use((req, res, next) => {
     console.log(`[Redirect] ${host}${req.url} -> portal.balbec.com.br (Method: ${req.method})`);
     return res.redirect(308, `https://portal.balbec.com.br${req.url}`);
   }
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} (Host: ${host})`);
+  // Log only API requests and primary page navigation, avoiding internal Vite bundle assets
+  const url = req.url;
+  const isInternalAsset = url.startsWith('/@') || url.startsWith('/src/') || url.startsWith('/node_modules/') || /\.(tsx|ts|js|jsx|css|json|svg|png|jpg|jpeg|ico|woff2?|map)(\?|$)/i.test(url);
+  if (!isInternalAsset) {
+    console.log(`[Req] ${req.method} ${url}`);
+  }
   next();
 });
 

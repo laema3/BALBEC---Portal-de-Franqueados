@@ -1,8 +1,9 @@
-import { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
+  fallback?: ReactNode;
 }
 
 interface State {
@@ -10,7 +11,7 @@ interface State {
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
+export class AppErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -24,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('[ErrorBoundary caught an error]:', error, errorInfo);
+    console.warn('[AppErrorBoundary caught issue]:', error?.message);
   }
 
   private handleReset = () => {
@@ -43,6 +44,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
       return (
         <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4 font-sans">
           <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-stone-100">
@@ -91,5 +95,5 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-export default ErrorBoundary;
-
+export { AppErrorBoundary as ErrorBoundary };
+export default AppErrorBoundary;

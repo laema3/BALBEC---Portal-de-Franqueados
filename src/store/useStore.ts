@@ -846,6 +846,20 @@ export const useStore = create<StoreState>((set, get) => ({
           }
         });
 
+      // Fetch Customers unconditionally so customer records sync across production and dev on all pages
+      const pCust = fetchWithTimeout('/api/db/customers', 10000)
+        .then(safeParseResponse)
+        .then(rawCust => {
+          if (Array.isArray(rawCust)) {
+            const customers: Customer[] = rawCust.map((c: any) => ({
+              ...c,
+              tags: Array.isArray(c.tags) ? c.tags : (typeof c.tags === 'string' ? JSON.parse(c.tags || '[]') : [])
+            }));
+            set({ customers });
+          }
+        })
+        .catch(() => {});
+
       let adminPromises: Promise<any>[] = [];
       if (isAdminOrTvRoute) {
 
@@ -907,23 +921,10 @@ export const useStore = create<StoreState>((set, get) => ({
           })
           .catch(() => {});
 
-        const pCust = fetchWithTimeout('/api/db/customers', 10000)
-          .then(safeParseResponse)
-          .then(rawCust => {
-            if (Array.isArray(rawCust)) {
-              const customers: Customer[] = rawCust.map((c: any) => ({
-                ...c,
-                tags: Array.isArray(c.tags) ? c.tags : (typeof c.tags === 'string' ? JSON.parse(c.tags || '[]') : [])
-              }));
-              set({ customers });
-            }
-          })
-          .catch(() => {});
-
-        adminPromises = [pOrders, pUsers, pTv, pInst, pCust];
+        adminPromises = [pUsers, pTv, pInst];
       }
 
-      await Promise.all([pCat, pProd, pStore, pTables, ...adminPromises]);
+      await Promise.all([pCat, pProd, pStore, pTables, pOrders, pCust, ...adminPromises]);
       set({ isOnline: true, isInitialized: true });
     } catch {
       set({ isInitialized: true });
