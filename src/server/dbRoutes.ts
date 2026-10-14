@@ -357,25 +357,31 @@ function persistTotemBackupsToDisk(data: any[]) {
 }
 
 function persistCategoriesToDisk(data: any[]) {
+  const map = new Map();
+  (data || []).forEach(c => { if (c && c.id) map.set(c.id, c); });
+  memCategories = Array.from(map.values());
   categoriesVersion = Date.now();
-  writeJsonFile(CATEGORIES_FILE, data);
+  writeJsonFile(CATEGORIES_FILE, memCategories);
   persistAllStateToMasterFile();
   try {
     const catalogPath = path.join(process.cwd(), 'src', 'server', 'defaultCatalog.json');
     const catalog = fs.existsSync(catalogPath) ? JSON.parse(fs.readFileSync(catalogPath, 'utf8')) : { categories: [], products: [] };
-    catalog.categories = data;
+    catalog.categories = memCategories;
     fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2));
   } catch (e) {}
 }
 
 function persistProductsToDisk(data: any[]) {
+  const map = new Map();
+  (data || []).forEach(p => { if (p && p.id) map.set(p.id, p); });
+  memProducts = Array.from(map.values());
   productsVersion = Date.now();
-  writeJsonFile(PRODUCTS_FILE, data);
+  writeJsonFile(PRODUCTS_FILE, memProducts);
   persistAllStateToMasterFile();
   try {
     const catalogPath = path.join(process.cwd(), 'src', 'server', 'defaultCatalog.json');
     const catalog = fs.existsSync(catalogPath) ? JSON.parse(fs.readFileSync(catalogPath, 'utf8')) : { categories: [], products: [] };
-    catalog.products = data;
+    catalog.products = memProducts;
     fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2));
   } catch (e) {}
 }

@@ -11,7 +11,11 @@ const getInitialCategories = (): Category[] => {
     const raw = safeStorage.getItem(CATALOG_CATEGORIES_CACHE_KEY) || safeStorage.getItem('paomania_cached_categories_v1');
     if (raw !== null && raw !== undefined) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) {
+        const map = new Map<string, Category>();
+        parsed.forEach(c => { if (c && c.id) map.set(c.id, c); });
+        return Array.from(map.values());
+      }
     }
   } catch {}
   return [];
@@ -30,7 +34,11 @@ const getInitialProducts = (): Product[] => {
     const raw = safeStorage.getItem(CATALOG_PRODUCTS_CACHE_KEY) || safeStorage.getItem('paomania_cached_products_v1');
     if (raw !== null && raw !== undefined) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) {
+        const map = new Map<string, Product>();
+        parsed.forEach(p => { if (p && p.id) map.set(p.id, p); });
+        return Array.from(map.values());
+      }
     }
   } catch {}
   return [];
@@ -629,8 +637,20 @@ export const useStore = create<StoreState>((set, get) => ({
   isOnline: true,
   isInitialized: getInitialProducts().length > 0,
   
-  setCategories: (categories) => set({ categories }),
-  setProducts: (products) => set({ products }),
+  setCategories: (categories) => {
+    const map = new Map<string, Category>();
+    (categories || []).forEach(c => { if (c && c.id) map.set(c.id, c); });
+    const unique = Array.from(map.values());
+    saveCategoriesToStorage(unique);
+    set({ categories: unique });
+  },
+  setProducts: (products) => {
+    const map = new Map<string, Product>();
+    (products || []).forEach(p => { if (p && p.id) map.set(p.id, p); });
+    const unique = Array.from(map.values());
+    saveProductsToStorage(unique);
+    set({ products: unique });
+  },
   setOrders: (orders) => {
     saveOrdersToStorage(orders);
     set({ orders, ordersError: null });
