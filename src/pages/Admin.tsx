@@ -5164,7 +5164,7 @@ export default function Admin() {
               return p.isFlavor && notExcluded;
             }).map(product => {
               const category = categories.find(c => c.id === product.categoryId);
-              const displayImage = (product.imageUrl && !product.imageUrl.includes('unsplash')) ? product.imageUrl : '';
+              const displayImage = product.imageUrl || '';
               return (
                 <tr key={product.id} className="hover:bg-stone-50">
                   <td className="p-4">

@@ -1436,7 +1436,7 @@ export default function TvDisplay() {
             >
               {currentSlide && currentSlide.products.length > 0 ? (
                 currentSlide.products.map((product) => {
-                  const hasValidImage = product.imageUrl && product.imageUrl.trim() !== '' && !product.imageUrl.includes('unsplash.com');
+                  const hasValidImage = product.imageUrl && product.imageUrl.trim() !== '';
                   const formattedImageSrc = hasValidImage && product.imageUrl?.startsWith('http://') 
                     ? `/api/image-proxy?url=${encodeURIComponent(product.imageUrl)}` 
                     : (product.imageUrl || '');

@@ -18,7 +18,7 @@ export const ProductImage: React.FC<ProductImageProps> = ({
   const logoUrl = storeLogo || '/logo.svg';
   
   // Check if src is valid and not an empty placeholder
-  const isValidSrc = Boolean(src && typeof src === 'string' && src.trim() !== '' && !src.includes('unsplash.com'));
+  const isValidSrc = Boolean(src && typeof src === 'string' && src.trim() !== '');
   
   // Transform insecure HTTP URLs or BlueFocus URLs into secure backend proxy URLs
   let finalSrc = src || '';
