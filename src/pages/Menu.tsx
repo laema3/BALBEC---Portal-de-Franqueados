@@ -2335,7 +2335,6 @@ export default function Menu() {
               ) : null}
               <div className="text-center sm:text-left max-w-[130px] sm:max-w-none">
                 <h1 className="text-[10px] sm:text-base md:text-lg font-bold text-[#5c4033] leading-tight uppercase tracking-tight line-clamp-2 sm:line-clamp-none">{storeInfo.name}</h1>
-                <p className="text-[10px] sm:text-xs text-stone-500 font-medium truncate italic hidden sm:block">{storeInfo.headerPhrase}</p>
               </div>
             </div>
 

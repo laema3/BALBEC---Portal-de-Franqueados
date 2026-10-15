@@ -381,7 +381,7 @@ export const defaultStoreInfo: StoreInfo = {
   themeColor: '#ea580c',
   addButtonColor: '#ea580c',
   iconColor: '#ea580c',
-  headerPhrase: 'Portal de Franqueados - Gestão de Franquias',
+  headerPhrase: '',
   logoUrl: '/logo.svg',
   address: '',
   hours: '',
@@ -622,6 +622,43 @@ const localHasCustomValues = (local: StoreInfo): boolean => {
   );
 };
 
+const deduplicateClientCategories = (cats: any[]): any[] => {
+  if (!Array.isArray(cats)) return [];
+  const map = new Map<string, any>();
+  for (const c of cats) {
+    if (!c || !c.id) continue;
+    const ext = c.externalId ? String(c.externalId).trim() : '';
+    const norm = c.name ? String(c.name).trim().toLowerCase() : '';
+    const key = (ext && ext !== '0') ? `ext_${ext}` : (norm ? `name_${norm}` : `id_${c.id}`);
+    if (!map.has(key)) {
+      map.set(key, c);
+    } else {
+      const existing = map.get(key)!;
+      map.set(key, { ...c, ...existing });
+    }
+  }
+  return Array.from(map.values());
+};
+
+const deduplicateClientProducts = (prods: any[]): any[] => {
+  if (!Array.isArray(prods)) return [];
+  const map = new Map<string, any>();
+  for (const p of prods) {
+    if (!p || !p.id) continue;
+    const ext = p.externalId ? String(p.externalId).trim() : '';
+    const norm = p.name ? String(p.name).trim().toLowerCase() : '';
+    const key = (ext && ext !== '0') ? `ext_${ext}` : (norm ? `name_${norm}` : `id_${p.id}`);
+    if (!map.has(key)) {
+      map.set(key, p);
+    } else {
+      const existing = map.get(key)!;
+      const keeperImg = (existing.imageUrl && existing.imageUrl.trim() !== '') ? existing.imageUrl : p.imageUrl;
+      map.set(key, { ...p, ...existing, imageUrl: keeperImg });
+    }
+  }
+  return Array.from(map.values());
+};
+
 export const useStore = create<StoreState>((set, get) => ({
   categories: getInitialCategories(),
   products: getInitialProducts(),
@@ -671,6 +708,7 @@ export const useStore = create<StoreState>((set, get) => ({
     return { storeInfo: merged };
   }),
 
+
   fetchData: async () => {
     try {
       const fetchWithTimeout = (url: string, timeout = 15000) => {
@@ -689,8 +727,9 @@ export const useStore = create<StoreState>((set, get) => ({
         .then(safeParseResponse)
         .then(categories => {
           if (Array.isArray(categories)) {
-            saveCategoriesToStorage(categories);
-            set({ categories });
+            const clean = deduplicateClientCategories(categories);
+            saveCategoriesToStorage(clean);
+            set({ categories: clean });
           }
         })
         .catch((e) => {
@@ -725,8 +764,9 @@ export const useStore = create<StoreState>((set, get) => ({
                 availableForKiosk,
               };
             });
-            saveProductsToStorage(products);
-            set({ products, isInitialized: true });
+            const clean = deduplicateClientProducts(products);
+            saveProductsToStorage(clean);
+            set({ products: clean, isInitialized: true });
           } else {
             set({ isInitialized: true });
           }

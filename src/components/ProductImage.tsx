@@ -23,9 +23,17 @@ export const ProductImage: React.FC<ProductImageProps> = ({
   // Transform insecure HTTP URLs or BlueFocus URLs into secure backend proxy URLs
   let finalSrc = src || '';
   if (isValidSrc && src) {
-    if (src.startsWith('data:') || src.startsWith('/')) {
+    if (src.startsWith('data:') || (src.startsWith('/') && !src.startsWith('//'))) {
       finalSrc = src;
-    } else if (src.startsWith('http://') || src.includes('static/mercadoria') || src.includes('ddns.net') || src.includes(':8082')) {
+    } else if (
+      src.startsWith('http://') || 
+      src.startsWith('https://') || 
+      src.includes('static/mercadoria') || 
+      src.includes('ddns.net') || 
+      src.includes(':8082') || 
+      src.includes('paomania') || 
+      src.includes('valim')
+    ) {
       finalSrc = `/api/image-proxy?url=${encodeURIComponent(src)}`;
     }
   }

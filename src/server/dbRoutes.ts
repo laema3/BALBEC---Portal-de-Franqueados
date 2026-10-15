@@ -1,7 +1,7 @@
 import { Express, Request, Response } from 'express';
 import { db, pool, ensureTablesExist, isDatabaseConfigured, getDatabaseUrl, testDatabaseConnection, sanitizeOrderForDb } from '../db/index';
 import { categories, products, orders, storeInfo, users, tvMedia, appInstalls, customers, restaurantTables } from '../db/schema';
-import { eq, desc, asc } from 'drizzle-orm';
+import { eq, desc, asc, inArray } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -90,6 +90,65 @@ export function sanitizeStoreInfoPrinters(info: any) {
     info.modulesConfig = '{"mesas":false,"qrcodes":false,"totem":false,"delivery":false,"tv":true,"ai_agent":false}';
   }
   return info;
+}
+
+export function deduplicateCategoriesList(catList: any[]): { unique: any[]; duplicateIds: string[] } {
+  if (!Array.isArray(catList)) return { unique: [], duplicateIds: [] };
+  const map = new Map<string, any>();
+  const duplicateIds: string[] = [];
+
+  for (const c of catList) {
+    if (!c || !c.id) continue;
+    const cleanExt = c.externalId ? String(c.externalId).trim() : '';
+    const normName = c.name ? String(c.name).trim().toLowerCase() : '';
+    const key = (cleanExt && cleanExt !== '0') ? `ext_${cleanExt}` : (normName ? `name_${normName}` : `id_${c.id}`);
+
+    if (!map.has(key)) {
+      map.set(key, c);
+    } else {
+      const existing = map.get(key);
+      let keeper = existing;
+      let dup = c;
+      if (!existing.externalId && c.externalId) {
+        keeper = c;
+        dup = existing;
+      }
+      map.set(key, { ...dup, ...keeper });
+      duplicateIds.push(dup.id);
+    }
+  }
+  return { unique: Array.from(map.values()), duplicateIds };
+}
+
+export function deduplicateProductsList(prodList: any[]): { unique: any[]; duplicateIds: string[] } {
+  if (!Array.isArray(prodList)) return { unique: [], duplicateIds: [] };
+  const map = new Map<string, any>();
+  const duplicateIds: string[] = [];
+
+  for (const p of prodList) {
+    if (!p || !p.id) continue;
+    const cleanExt = p.externalId ? String(p.externalId).trim() : '';
+    const normName = p.name ? String(p.name).trim().toLowerCase() : '';
+    const key = (cleanExt && cleanExt !== '0') ? `ext_${cleanExt}` : (normName ? `name_${normName}` : `id_${p.id}`);
+
+    if (!map.has(key)) {
+      map.set(key, p);
+    } else {
+      const existing = map.get(key);
+      let keeper = existing;
+      let dup = p;
+      if ((!existing.imageUrl || existing.imageUrl.trim() === '') && p.imageUrl && p.imageUrl.trim() !== '') {
+        keeper = p;
+        dup = existing;
+      } else if (!existing.externalId && p.externalId) {
+        keeper = p;
+        dup = existing;
+      }
+      map.set(key, { ...dup, ...keeper, imageUrl: keeper.imageUrl || dup.imageUrl });
+      duplicateIds.push(dup.id);
+    }
+  }
+  return { unique: Array.from(map.values()), duplicateIds };
 }
 
 export function resolvePersistentStorageDir(): string {
@@ -490,22 +549,18 @@ export async function hydrateFromPostgres(): Promise<void> {
         if (merged.name && (merged.name.toLowerCase().includes('mania') || merged.name.toLowerCase().includes('pao'))) {
           merged.name = 'BALBEC - Portal de Franqueados';
         }
-        if (merged.headerPhrase && merged.headerPhrase.toLowerCase().includes('mania')) {
-          merged.headerPhrase = 'Portal de Franqueados';
-        }
+        merged.headerPhrase = '';
         memStoreInfo = sanitizeStoreInfoPrinters(merged);
         persistStoreInfoToDisk(memStoreInfo);
 
-        // Se o banco no PostgreSQL tiver o nome legado, atualiza para o oficial
-        if (dbRow.name && (dbRow.name.toLowerCase().includes('mania') || dbRow.name.toLowerCase().includes('pao'))) {
-          try {
-            await db.update(storeInfo).set({ name: 'BALBEC - Portal de Franqueados', headerPhrase: 'Portal de Franqueados' }).where(eq(storeInfo.id, 'default'));
-          } catch {}
-        }
+        // Atualiza a linha default no PostgreSQL limpando a frase do cabeçalho
+        try {
+          await db.update(storeInfo).set({ headerPhrase: '' }).where(eq(storeInfo.id, 'default'));
+        } catch {}
         console.log(`[DB Hydrate] StoreInfo carregada com sucesso do PostgreSQL: "${memStoreInfo.name}" (Aberta: ${memStoreInfo.isOpen}, Agente IA: ${memStoreInfo.aiAgentEnabled})`);
       } else {
         // Se a linha 'default' ainda não existe no Postgres, salva o estado atual
-        await db.insert(storeInfo).values({ ...DEFAULT_STORE_INFO, ...memStoreInfo, id: 'default' }).onConflictDoNothing();
+        await db.insert(storeInfo).values({ ...DEFAULT_STORE_INFO, ...memStoreInfo, headerPhrase: '', id: 'default' }).onConflictDoNothing();
         console.log('[DB Hydrate] Criada linha default em store_info no PostgreSQL.');
       }
     } catch (storeErr: any) {
@@ -515,21 +570,38 @@ export async function hydrateFromPostgres(): Promise<void> {
     // 2. Hidratar Categorias e Produtos do PostgreSQL (fonte autoritativa de verdade)
     const isCleared = fs.existsSync(CLEARED_FLAG_FILE);
     try {
-      const dbCategories = await db.select().from(categories).orderBy(categories.order);
-      const dbProducts = await db.select().from(products);
+      const dbCategoriesRaw = await db.select().from(categories).orderBy(categories.order);
+      const dbProductsRaw = await db.select().from(products);
 
-      if (isCleared && (!dbProducts || dbProducts.length === 0)) {
+      const { unique: cleanCats, duplicateIds: dupCatIds } = deduplicateCategoriesList(dbCategoriesRaw || []);
+      const { unique: cleanProds, duplicateIds: dupProdIds } = deduplicateProductsList(dbProductsRaw || []);
+
+      if (dupCatIds.length > 0) {
+        try {
+          await db.delete(categories).where(inArray(categories.id, dupCatIds));
+          console.log(`[DB Hydrate] Removidas ${dupCatIds.length} categorias duplicadas do PostgreSQL.`);
+        } catch (_) {}
+      }
+
+      if (dupProdIds.length > 0) {
+        try {
+          await db.delete(products).where(inArray(products.id, dupProdIds));
+          console.log(`[DB Hydrate] Removidos ${dupProdIds.length} produtos duplicados do PostgreSQL.`);
+        } catch (_) {}
+      }
+
+      if (isCleared && (!cleanProds || cleanProds.length === 0)) {
         memCategories = [];
         memProducts = [];
         persistCategoriesToDisk(memCategories);
         persistProductsToDisk(memProducts);
         console.log('[DB Hydrate] Catálogo mantido zerado (conforme flag de zeramento de base).');
-      } else if (Array.isArray(dbProducts) && dbProducts.length > 0) {
-        memCategories = dbCategories || [];
-        memProducts = dbProducts;
+      } else if (Array.isArray(cleanProds) && cleanProds.length > 0) {
+        memCategories = cleanCats;
+        memProducts = cleanProds;
         persistCategoriesToDisk(memCategories);
         persistProductsToDisk(memProducts);
-        console.log(`[DB Hydrate] ${memCategories.length} categorias e ${memProducts.length} produtos carregados do PostgreSQL.`);
+        console.log(`[DB Hydrate] ${memCategories.length} categorias e ${memProducts.length} produtos únicos carregados do PostgreSQL.`);
       } else if (!isCleared && memProducts && memProducts.length > 0) {
         console.log(`[DB Hydrate] PostgreSQL sem produtos, populando ${memProducts.length} produtos da memória...`);
         for (const cat of memCategories) {
@@ -1111,14 +1183,20 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
             throw err;
           }
         }
-        memCategories = list || [];
+        const { unique, duplicateIds } = deduplicateCategoriesList(list || []);
+        if (duplicateIds.length > 0) {
+          try { await db.delete(categories).where(inArray(categories.id, duplicateIds)); } catch (_) {}
+        }
+        memCategories = unique;
         return res.json(memCategories);
       } catch (error: any) {
         console.warn('[DB Categories] Falha ao consultar PostgreSQL, usando cache em memória:', error);
       }
     }
 
-    return res.json(memCategories || []);
+    const { unique } = deduplicateCategoriesList(memCategories || []);
+    memCategories = unique;
+    return res.json(memCategories);
   });
 
   app.post('/api/db/categories', async (req: Request, res: Response) => {
@@ -1327,7 +1405,11 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
             throw err;
           }
         }
-        const sanitized = (list || []).map((p, idx) => attachCodeIfMissing(p, idx));
+        const { unique, duplicateIds } = deduplicateProductsList(list || []);
+        if (duplicateIds.length > 0) {
+          try { await db.delete(products).where(inArray(products.id, duplicateIds)); } catch (_) {}
+        }
+        const sanitized = unique.map((p, idx) => attachCodeIfMissing(p, idx));
         memProducts = sanitized;
         return res.json(sanitized);
       } catch (error: any) {
@@ -1336,7 +1418,9 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
     }
 
     const sourceProds = memProducts || [];
-    const sanitized = sourceProds.map((p, idx) => attachCodeIfMissing(p, idx));
+    const { unique } = deduplicateProductsList(sourceProds);
+    memProducts = unique;
+    const sanitized = memProducts.map((p, idx) => attachCodeIfMissing(p, idx));
     return res.json(sanitized);
   });
 
@@ -1377,10 +1461,25 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
         return res.json({ success: true, count: 0 });
       }
 
-      const sanitizedItems = items.map(item => ({
-        ...item,
-        description: cleanProductDescription(item.description, false)
-      }));
+      const existingByExt = new Map<string, any>();
+      const existingByName = new Map<string, any>();
+      for (const p of memProducts) {
+        if (p.externalId && String(p.externalId).trim() !== '0') existingByExt.set(String(p.externalId).trim(), p);
+        if (p.name) existingByName.set(p.name.trim().toLowerCase(), p);
+      }
+
+      const sanitizedItems = items.map(item => {
+        const extKey = item.externalId ? String(item.externalId).trim() : '';
+        const nameKey = item.name ? item.name.trim().toLowerCase() : '';
+        const match = (extKey && extKey !== '0' && existingByExt.get(extKey)) || (nameKey && existingByName.get(nameKey));
+        const finalId = match ? match.id : (item.id || `prod_${Date.now()}`);
+
+        return {
+          ...item,
+          id: finalId,
+          description: cleanProductDescription(item.description, false)
+        };
+      });
 
       // Record any custom images in registry
       sanitizedItems.forEach(item => {

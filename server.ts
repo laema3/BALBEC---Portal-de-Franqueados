@@ -137,6 +137,12 @@ try {
   console.error("Erro ao registrar rotas do DB:", err);
 }
 
+import http from "http";
+import https from "https";
+
+const proxyHttpAgent = new http.Agent({ keepAlive: true });
+const proxyHttpsAgent = new https.Agent({ rejectUnauthorized: false, keepAlive: true });
+
 // Image Proxy Route to prevent Mixed Content (HTTP -> HTTPS) SSL protocol errors
 app.get("/api/image-proxy", async (req, res) => {
   const imageUrl = req.query.url as string;
@@ -151,14 +157,22 @@ app.get("/api/image-proxy", async (req, res) => {
     const proxyHeaders: any = {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     };
-    if (imageUrl.includes('bluefocus') && authToken) {
+    const isBlueFocusServer = imageUrl.includes('bluefocus') || 
+                              imageUrl.includes('ddns.net') || 
+                              imageUrl.includes(':8082') || 
+                              imageUrl.includes('valim') || 
+                              imageUrl.includes('paomania');
+
+    if (isBlueFocusServer && authToken) {
       proxyHeaders["autentica"] = authToken.trim();
     }
 
     const response = await axios.get(imageUrl, {
       responseType: "stream",
-      timeout: 10000,
-      headers: proxyHeaders
+      timeout: 12000,
+      headers: proxyHeaders,
+      httpAgent: proxyHttpAgent,
+      httpsAgent: proxyHttpsAgent
     });
     if (response.headers["content-type"]) {
       res.setHeader("Content-Type", response.headers["content-type"]);
