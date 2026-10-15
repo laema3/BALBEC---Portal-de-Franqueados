@@ -21,6 +21,10 @@ const DEFAULT_STORE_INFO = defaultStoreInfo;
 
 export function sanitizeStoreInfoPrinters(info: any) {
   if (!info) return info;
+  if (!info.name || /mania|pao|franqueados/i.test(info.name)) {
+    info.name = 'BALBEC';
+  }
+  info.headerPhrase = '';
   if (!info.networkPrinterIp || info.networkPrinterIp === '192.168.1.200' || info.networkPrinterIp.trim() === '') {
     info.networkPrinterIp = '192.168.0.90';
   }
@@ -546,16 +550,16 @@ export async function hydrateFromPostgres(): Promise<void> {
             merged[key] = val;
           }
         }
-        if (merged.name && (merged.name.toLowerCase().includes('mania') || merged.name.toLowerCase().includes('pao'))) {
-          merged.name = 'BALBEC - Portal de Franqueados';
+        if (!merged.name || merged.name.toLowerCase().includes('mania') || merged.name.toLowerCase().includes('pao') || merged.name.toLowerCase().includes('franqueados')) {
+          merged.name = 'BALBEC';
         }
         merged.headerPhrase = '';
         memStoreInfo = sanitizeStoreInfoPrinters(merged);
         persistStoreInfoToDisk(memStoreInfo);
 
-        // Atualiza a linha default no PostgreSQL limpando a frase do cabeçalho
+        // Atualiza a linha default no PostgreSQL limpando o nome e a frase do cabeçalho
         try {
-          await db.update(storeInfo).set({ headerPhrase: '' }).where(eq(storeInfo.id, 'default'));
+          await db.update(storeInfo).set({ name: 'BALBEC', headerPhrase: '' }).where(eq(storeInfo.id, 'default'));
         } catch {}
         console.log(`[DB Hydrate] StoreInfo carregada com sucesso do PostgreSQL: "${memStoreInfo.name}" (Aberta: ${memStoreInfo.isOpen}, Agente IA: ${memStoreInfo.aiAgentEnabled})`);
       } else {

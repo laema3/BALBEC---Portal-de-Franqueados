@@ -1218,10 +1218,12 @@ export default function TvDisplay() {
                     />
                   </div>
                   <div>
-                    <h1 className="text-xl font-black text-white tracking-wide leading-none">{storeInfo.name || 'BALBEC - Portal de Franqueados'}</h1>
-                    <p className="text-xs text-amber-300 font-medium tracking-wider uppercase mt-1.5">
-                      {storeInfo.headerPhrase || 'Padaria Artesanal & Confeitaria'}
-                    </p>
+                    <h1 className="text-xl font-black text-white tracking-wide leading-none">{(storeInfo.name || 'BALBEC').replace(/\s*-\s*portal\s*de\s*franqueados/i, '').trim()}</h1>
+                    {storeInfo.headerPhrase ? (
+                      <p className="text-xs text-amber-300 font-medium tracking-wider uppercase mt-1.5">
+                        {storeInfo.headerPhrase}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
 

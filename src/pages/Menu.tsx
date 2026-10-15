@@ -2334,7 +2334,7 @@ export default function Menu() {
                 </div>
               ) : null}
               <div className="text-center sm:text-left max-w-[130px] sm:max-w-none">
-                <h1 className="text-[10px] sm:text-base md:text-lg font-bold text-[#5c4033] leading-tight uppercase tracking-tight line-clamp-2 sm:line-clamp-none">{storeInfo.name}</h1>
+                <h1 className="text-[10px] sm:text-base md:text-lg font-bold text-[#5c4033] leading-tight uppercase tracking-tight line-clamp-2 sm:line-clamp-none">{(storeInfo.name || 'BALBEC').replace(/\s*-\s*portal\s*de\s*franqueados/i, '').trim()}</h1>
               </div>
             </div>
 

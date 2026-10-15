@@ -46,12 +46,10 @@ function StoreMeta() {
         if (localStore && (localStore.toLowerCase().includes('mania') || localStore.toLowerCase().includes('pao'))) {
           try {
             const parsed = JSON.parse(localStore);
-            if (parsed.name && (parsed.name.toLowerCase().includes('mania') || parsed.name.toLowerCase().includes('pao'))) {
-              parsed.name = 'BALBEC - Portal de Franqueados';
+            if (!parsed.name || parsed.name.toLowerCase().includes('mania') || parsed.name.toLowerCase().includes('pao') || parsed.name.toLowerCase().includes('franqueados')) {
+              parsed.name = 'BALBEC';
             }
-            if (parsed.headerPhrase && parsed.headerPhrase.toLowerCase().includes('mania')) {
-              parsed.headerPhrase = 'Portal de Franqueados';
-            }
+            parsed.headerPhrase = '';
             localStorage.setItem('balbec_store_info', JSON.stringify(parsed));
           } catch {}
         }
@@ -73,9 +71,8 @@ function StoreMeta() {
 
     const isTv = pathname.startsWith('/tv') || search.includes('tv');
 
-    const effectiveStoreName = (storeInfo?.name && !storeInfo.name.toLowerCase().includes('mania'))
-      ? storeInfo.name
-      : 'BALBEC - Portal de Franqueados';
+    const rawName = storeInfo?.name || 'BALBEC';
+    const effectiveStoreName = rawName.replace(/\s*-\s*portal\s*de\s*franqueados/i, '').trim() || 'BALBEC';
 
     if (isTotem) {
       document.documentElement.classList.add('totem-mode');
