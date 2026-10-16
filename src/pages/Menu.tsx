@@ -46,6 +46,19 @@ export default function Menu() {
   const [selectedTableNumber, setSelectedTableNumber] = useState<number | null>(null);
   const [showTableSelectModal, setShowTableSelectModal] = useState(false);
 
+  const handleClientLogout = () => {
+    safeStorage.removeItem('balbec_franchisee_cnpj');
+    safeStorage.removeItem('paomania_franchisee_cnpj');
+    safeStorage.removeItem('balbec_customer_name');
+    safeStorage.removeItem('paomania_customer_name');
+    safeStorage.removeItem('balbec_customer_phone');
+    safeStorage.removeItem('paomania_customer_phone');
+    setHasName(false);
+    setCustomerName('Franqueado BALBEC');
+    setCustomerPhone('(34) 99999-9999');
+    setCart([]);
+  };
+
   const handleManualSync = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
@@ -2189,7 +2202,7 @@ export default function Menu() {
             Portal de Franqueados
           </h2>
           <p className="text-stone-500 mb-6 font-medium text-xs sm:text-sm">
-            Digite o CNPJ da franquia e a senha (5 primeiros dígitos do CNPJ):
+            Digite o CPF ou CNPJ da franquia e a senha (5 primeiros dígitos):
           </p>
           
           <form 
@@ -2199,7 +2212,7 @@ export default function Menu() {
               const cleanPass = franchiseePassword.trim();
               
               if (cnpjDigits.length < 5) {
-                alert('Por favor, informe um CNPJ válido.');
+                alert('Por favor, informe um CPF ou CNPJ válido.');
                 return;
               }
               if (!cleanPass) {
@@ -2224,6 +2237,9 @@ export default function Menu() {
                   safeStorage.setItem('balbec_customer_name', data.user.name);
                   safeStorage.setItem('balbec_customer_phone', '(34) 99999-9999');
 
+                  setCustomerName(data.user.name);
+                  setCustomerPhone(data.user.phone || '(34) 99999-9999');
+
                   setShowFormSuccess(true);
                   setTimeout(() => {
                     setShowFormSuccess(false);
@@ -2241,6 +2257,9 @@ export default function Menu() {
                   safeStorage.setItem('balbec_customer_name', 'Franqueado BALBEC');
                   safeStorage.setItem('balbec_customer_phone', '(34) 99999-9999');
 
+                  setCustomerName('Franqueado BALBEC');
+                  setCustomerPhone('(34) 99999-9999');
+
                   setShowFormSuccess(true);
                   setTimeout(() => {
                     setShowFormSuccess(false);
@@ -2256,13 +2275,13 @@ export default function Menu() {
             <div className="text-left space-y-3.5">
               <div>
                 <label className="block text-xs font-black text-stone-700 mb-1.5 uppercase tracking-wider">
-                  CNPJ da Franquia (Usuário)
+                  CPF ou CNPJ (Usuário)
                 </label>
                 <input 
                   type="text" 
                   value={franchiseeCnpj}
                   onChange={(e) => setFranchiseeCnpj(e.target.value)}
-                  placeholder="00.000.000/0001-00"
+                  placeholder="000.000.000-00 ou 00.000.000/0001-00"
                   className="w-full p-3.5 sm:p-4 bg-stone-50 border-2 border-stone-200 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-base sm:text-lg font-bold text-stone-900 placeholder:text-stone-400 font-mono"
                   autoFocus
                   required
@@ -2270,7 +2289,7 @@ export default function Menu() {
               </div>
               <div>
                 <label className="block text-xs font-black text-stone-700 mb-1.5 uppercase tracking-wider">
-                  Senha (5 primeiros dígitos do CNPJ)
+                  Senha (5 primeiros dígitos do CPF/CNPJ)
                 </label>
                 <input 
                   type="password" 
@@ -2322,8 +2341,8 @@ export default function Menu() {
         {/* Modern Header */}
         <header className="bg-white border-b border-stone-200 shrink-0 z-30 pt-3 sm:pt-4 md:pt-5 pb-3 sm:pb-4 md:pb-5">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 min-h-[6.5rem] sm:min-h-[8.5rem] md:min-h-[10.5rem] flex items-center justify-between gap-2.5 sm:gap-3 md:gap-4">
-            <div className="flex items-center shrink-0">
-              <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 sm:border-3 border-orange-500/20 shadow-md bg-white flex items-center justify-center p-1.5 sm:p-2 shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-2 sm:border-3 border-orange-500/20 shadow-md bg-white flex items-center justify-center p-1.5 sm:p-2 shrink-0">
                 <img 
                   src={storeInfo.logoUrl || '/logo.svg'} 
                   alt="Logo" 
@@ -2331,6 +2350,24 @@ export default function Menu() {
                   referrerPolicy="no-referrer"
                 />
               </div>
+              
+              {hasName && !isTotemPath && (
+                <div className="flex flex-col animate-in slide-in-from-left duration-500">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] sm:text-xs font-black text-stone-400 uppercase tracking-[0.15em]">Logado como</span>
+                    <button 
+                      onClick={handleClientLogout}
+                      className="group flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 hover:bg-red-50 text-stone-400 hover:text-red-500 transition-all border border-transparent hover:border-red-200"
+                      title="Sair do Portal"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <span className="text-xs sm:text-sm md:text-base font-black text-stone-800 leading-none truncate max-w-[80px] sm:max-w-[150px]">
+                    {customerName.split(' ')[0]}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Search Bar - Center/Right */}
