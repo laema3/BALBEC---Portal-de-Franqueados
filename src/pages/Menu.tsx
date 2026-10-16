@@ -2823,10 +2823,12 @@ export default function Menu() {
                 <Link to="/privacidade" className="text-stone-400 hover:text-amber-600 transition-colors text-xs font-medium">
                   Privacidade & LGPD
                 </Link>
-                <Link to="/admin" className="text-stone-400 hover:text-orange-500 transition-colors flex items-center gap-1.5 text-xs font-medium">
-                  <Settings className="w-4 h-4" />
-                  <span>Painel de Controle</span>
-                </Link>
+                {!hasName && (
+                  <Link to="/admin" className="text-stone-400 hover:text-orange-500 transition-colors flex items-center gap-1.5 text-xs font-medium">
+                    <Settings className="w-4 h-4" />
+                    <span>Painel de Controle</span>
+                  </Link>
+                )}
               </nav>
             </footer>
           </main>
