@@ -32,7 +32,7 @@ export default function Menu() {
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data && (data.type === 'update' || data.type === 'ping' || data.time)) {
+        if (data && (data.type === 'update' || data.type === 'sync' || data.type === 'order' || data.type === 'catalog')) {
           fetchData();
         }
       } catch {}

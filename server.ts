@@ -143,46 +143,70 @@ import https from "https";
 const proxyHttpAgent = new http.Agent({ keepAlive: true });
 const proxyHttpsAgent = new https.Agent({ rejectUnauthorized: false, keepAlive: true });
 
-// Image Proxy Route to prevent Mixed Content (HTTP -> HTTPS) SSL protocol errors
+// Image Proxy Route to prevent Mixed Content (HTTP -> HTTPS) SSL protocol errors & auto-retry extensions
 app.get("/api/image-proxy", async (req, res) => {
   const imageUrl = req.query.url as string;
   if (!imageUrl) {
     return res.status(400).send("URL parameter is required");
   }
-  try {
-    const authKey = process.env.BLUE_FOCUS_AUTH_KEY || process.env.BLUEFOCUS_AUTH_KEY || process.env.BLUEFOCUS_AUTH_TOKEN;
-    const storeInfo = getMemStoreInfo ? getMemStoreInfo() : {};
-    const authToken = storeInfo?.bluefocusAuthToken || authKey;
 
-    const proxyHeaders: any = {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    };
-    const isBlueFocusServer = imageUrl.includes('bluefocus') || 
-                              imageUrl.includes('ddns.net') || 
-                              imageUrl.includes(':8082') || 
-                              imageUrl.includes('valim') || 
-                              imageUrl.includes('paomania');
+  const authKey = process.env.BLUE_FOCUS_AUTH_KEY || process.env.BLUEFOCUS_AUTH_KEY || process.env.BLUEFOCUS_AUTH_TOKEN;
+  const storeInfo = getMemStoreInfo ? getMemStoreInfo() : {};
+  const authToken = storeInfo?.bluefocusAuthToken || authKey;
 
-    if (isBlueFocusServer && authToken) {
-      proxyHeaders["autentica"] = authToken.trim();
-    }
+  const proxyHeaders: any = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  };
+  const isBlueFocusServer = imageUrl.includes('bluefocus') || 
+                            imageUrl.includes('ddns.net') || 
+                            imageUrl.includes(':8082') || 
+                            imageUrl.includes('valim') || 
+                            imageUrl.includes('paomania');
 
-    const response = await axios.get(imageUrl, {
-      responseType: "stream",
-      timeout: 12000,
-      headers: proxyHeaders,
-      httpAgent: proxyHttpAgent,
-      httpsAgent: proxyHttpsAgent
-    });
-    if (response.headers["content-type"]) {
-      res.setHeader("Content-Type", response.headers["content-type"]);
-    }
-    res.setHeader("Cache-Control", "public, max-age=604800, immutable"); // Cache 7 dias
-    response.data.pipe(res);
-  } catch (error: any) {
-    res.setHeader("Cache-Control", "public, max-age=3600"); // Cache 1h para evitar loops contínuos de erro
-    res.status(404).send("Image not found");
+  if (isBlueFocusServer && authToken) {
+    proxyHeaders["autentica"] = authToken.trim();
   }
+
+  // Candidate URLs to try in sequence if primary URL fails with 404
+  const candidateUrls: string[] = [imageUrl];
+
+  if (imageUrl.includes('/static/mercadoria/')) {
+    const cleanUrl = imageUrl.replace(/\.(jpg|jpeg|png|webp|gif|JPG|PNG|JPEG)$/i, '');
+    const altExts = ['.png', '.JPG', '.jpeg', '.PNG', '.JPEG', '_1.jpg', '_1.png'];
+
+    altExts.forEach(ext => {
+      const candidate = `${cleanUrl}${ext}`;
+      if (candidate !== imageUrl && !candidateUrls.includes(candidate)) {
+        candidateUrls.push(candidate);
+      }
+    });
+  }
+
+  for (const targetUrl of candidateUrls) {
+    try {
+      const response = await axios.get(targetUrl, {
+        responseType: "stream",
+        timeout: 8000,
+        headers: proxyHeaders,
+        httpAgent: proxyHttpAgent,
+        httpsAgent: proxyHttpsAgent
+      });
+
+      if (response.headers["content-type"]) {
+        res.setHeader("Content-Type", response.headers["content-type"]);
+      }
+      res.setHeader("Cache-Control", "public, max-age=604800, immutable"); // Cache 7 dias no navegador e CDN
+      response.data.pipe(res);
+      return;
+    } catch (err: any) {
+      if (err?.response?.status === 404 && candidateUrls.indexOf(targetUrl) < candidateUrls.length - 1) {
+        continue;
+      }
+    }
+  }
+
+  res.setHeader("Cache-Control", "public, max-age=3600"); // Cache 1h para erros de imagem não encontrada
+  res.status(404).send("Image not found");
 });
 
 // Helper function to diagnose and format BlueFocus errors friendly
