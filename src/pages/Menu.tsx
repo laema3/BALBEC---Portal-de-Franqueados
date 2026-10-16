@@ -2341,7 +2341,7 @@ export default function Menu() {
         {/* Modern Header */}
         <header className="bg-white border-b border-stone-200 shrink-0 z-30 pt-3 sm:pt-4 md:pt-5 pb-3 sm:pb-4 md:pb-5">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 min-h-[6.5rem] sm:min-h-[8.5rem] md:min-h-[10.5rem] flex items-center justify-between gap-2.5 sm:gap-3 md:gap-4">
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center shrink-0">
               <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-2 sm:border-3 border-orange-500/20 shadow-md bg-white flex items-center justify-center p-1.5 sm:p-2 shrink-0">
                 <img 
                   src={storeInfo.logoUrl || '/logo.svg'} 
@@ -2350,24 +2350,6 @@ export default function Menu() {
                   referrerPolicy="no-referrer"
                 />
               </div>
-              
-              {hasName && !isTotemPath && (
-                <div className="flex flex-col animate-in slide-in-from-left duration-500">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] sm:text-xs font-black text-stone-400 uppercase tracking-[0.15em]">Logado como</span>
-                    <button 
-                      onClick={handleClientLogout}
-                      className="group flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 hover:bg-red-50 text-stone-400 hover:text-red-500 transition-all border border-transparent hover:border-red-200"
-                      title="Sair do Portal"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                  <span className="text-xs sm:text-sm md:text-base font-black text-stone-800 leading-none truncate max-w-[80px] sm:max-w-[150px]">
-                    {customerName.split(' ')[0]}
-                  </span>
-                </div>
-              )}
             </div>
 
             {/* Search Bar - Center/Right */}
@@ -2410,6 +2392,24 @@ export default function Menu() {
                   {storeInfo.isOpen ? 'Aberto' : 'Fechado'}
                 </div>
 
+                {hasName && !isTotemPath && (
+                  <div className="flex items-center gap-2.5 bg-stone-50 px-3 py-1.5 rounded-xl border border-stone-100 animate-in fade-in duration-500">
+                    <div className="flex flex-col text-right">
+                      <span className="text-[9px] font-black text-stone-400 uppercase tracking-wider leading-none mb-0.5">Cliente</span>
+                      <span className="text-xs font-black text-stone-800 leading-none truncate max-w-[100px]">
+                        {customerName.split(' ')[0]}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={handleClientLogout}
+                      className="flex items-center justify-center w-6 h-6 rounded-full bg-white hover:bg-red-50 text-stone-400 hover:text-red-500 transition-all border border-stone-200 hover:border-red-200 shadow-xs active:scale-90"
+                      title="Sair do Portal"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
                 <button 
                   onClick={() => setIsCartOpen(prev => !prev)}
                   className="relative flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold rounded-xl shadow transition-all cursor-pointer"
@@ -2438,6 +2438,20 @@ export default function Menu() {
                 >
                   <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 text-stone-600 ${isRefreshing ? 'animate-spin' : ''}`} />
                 </button>
+
+                {hasName && !isTotemPath && (
+                  <div className="flex items-center gap-1.5 bg-stone-50 pl-2.5 pr-1 py-1 rounded-lg border border-stone-200 animate-in fade-in duration-500">
+                    <span className="text-[10px] font-black text-stone-800 truncate max-w-[60px]">
+                      {customerName.split(' ')[0]}
+                    </span>
+                    <button 
+                      onClick={handleClientLogout}
+                      className="flex items-center justify-center w-6 h-6 rounded-full text-stone-400 hover:text-red-500"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
 
                 {cart.length > 0 && (
                   <button 
