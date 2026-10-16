@@ -1207,23 +1207,15 @@ export default function TvDisplay() {
             {storeInfo.tvShowClock !== false && (
               <div className="absolute top-0 left-0 right-0 p-6 flex items-center justify-between bg-gradient-to-b from-black/80 via-black/30 to-transparent pointer-events-none z-20">
                 
-                {/* Brand Logo & Name */}
-                <div className="flex items-center gap-4 bg-stone-900/85 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-amber-500/20 shadow-2xl">
+                {/* Brand Logo */}
+                <div className="flex items-center bg-stone-900/85 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-amber-500/20 shadow-2xl">
                   <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-br from-amber-950 to-stone-950 p-1 border border-amber-500/40 shadow-lg flex items-center justify-center shrink-0">
                     <img 
                       src={storeInfo.logoUrl || '/logo.svg'} 
-                      alt={storeInfo.name || 'BALBEC - Portal de Franqueados'} 
+                      alt="Logo BALBEC" 
                       className="w-full h-full object-contain drop-shadow-md hover:scale-105 transition-transform"
                       referrerPolicy="no-referrer"
                     />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-black text-white tracking-wide leading-none">{(storeInfo.name || 'BALBEC').replace(/\s*-\s*portal\s*de\s*franqueados/i, '').trim()}</h1>
-                    {storeInfo.headerPhrase ? (
-                      <p className="text-xs text-amber-300 font-medium tracking-wider uppercase mt-1.5">
-                        {storeInfo.headerPhrase}
-                      </p>
-                    ) : null}
                   </div>
                 </div>
 
