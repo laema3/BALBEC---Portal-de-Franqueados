@@ -20,7 +20,7 @@ import { AiAssistantFloatingButton } from '../components/AiAssistantFloatingButt
 import { getStoreCurrentStatus, parseWeeklySchedule, formatWeeklyScheduleSummary } from '../utils/scheduleHelper';
 
 export default function Menu() {
-  const { categories, products, tables, orders, storeInfo, placeOrder, saveCustomer, isInitialized, fetchData } = useStore();
+  const { categories, products, tables, orders, storeInfo, placeOrder, saveCustomer, isInitialized, fetchData, customers, fetchCustomers } = useStore();
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -28,12 +28,14 @@ export default function Menu() {
 
   useEffect(() => {
     fetchData();
+    if (fetchCustomers) fetchCustomers();
     const es = new EventSource('/api/events');
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data && (data.type === 'update' || data.type === 'sync' || data.type === 'order' || data.type === 'catalog')) {
           fetchData();
+          if (fetchCustomers) fetchCustomers();
         }
       } catch {}
     };
@@ -53,6 +55,8 @@ export default function Menu() {
     safeStorage.removeItem('paomania_customer_name');
     safeStorage.removeItem('balbec_customer_phone');
     safeStorage.removeItem('paomania_customer_phone');
+    safeStorage.removeItem('balbec_customer_min_order');
+    safeStorage.removeItem('balbec_customer_email');
     setHasName(false);
     setCustomerName('Franqueado BALBEC');
     setCustomerPhone('(34) 99999-9999');
@@ -1012,8 +1016,55 @@ export default function Menu() {
     return sum + ((item.price + flavorTotal + addonsTotal) * item.quantity);
   }, 0);
 
+  // Pedido Mínimo: Padrão R$ 150,00 ou ajustado individualmente para o cliente / franqueado
+  const loggedInCustomer = useMemo(() => {
+    if (!hasName) return null;
+    const cnpjClean = (safeStorage.getItem('balbec_franchisee_cnpj') || '').replace(/\D/g, '');
+    const phoneClean = (customerPhone || '').replace(/\D/g, '');
+    const emailClean = (safeStorage.getItem('balbec_customer_email') || '').trim().toLowerCase();
+
+    return (customers || []).find((c: any) => {
+      const cCnpj = String(c.cnpj || '').replace(/\D/g, '');
+      const cCpf = String(c.cpf || '').replace(/\D/g, '');
+      const cPhone = String(c.phone || '').replace(/\D/g, '');
+      const cEmail = String(c.email || '').trim().toLowerCase();
+
+      if (cnpjClean && cnpjClean.length >= 5) {
+        if (cCnpj && cCnpj === cnpjClean) return true;
+        if (cCpf && cCpf === cnpjClean) return true;
+      }
+      if (phoneClean && phoneClean.length >= 8 && cPhone && cPhone === phoneClean) return true;
+      if (emailClean && cEmail && cEmail === emailClean) return true;
+      return false;
+    });
+  }, [customers, hasName, customerPhone]);
+
+  const effectiveMinOrderValue = useMemo(() => {
+    if (loggedInCustomer?.minOrderValue !== undefined && loggedInCustomer?.minOrderValue !== null) {
+      return Number(loggedInCustomer.minOrderValue);
+    }
+    const storedMin = safeStorage.getItem('balbec_customer_min_order');
+    if (storedMin && !isNaN(Number(storedMin))) {
+      return Number(storedMin);
+    }
+    if (storeInfo.minOrderValue !== undefined && storeInfo.minOrderValue !== null) {
+      return Number(storeInfo.minOrderValue);
+    }
+    return 150.00;
+  }, [loggedInCustomer, storeInfo.minOrderValue]);
+
+  const remainingForMinOrder = Math.max(0, effectiveMinOrderValue - total);
+  const isMinOrderReached = total >= effectiveMinOrderValue;
+
   const handleCheckout = async () => {
     if (cart.length === 0) return;
+
+    if (!isMinOrderReached) {
+      alert(`O valor mínimo para finalização de compras é de ${formatCurrency(effectiveMinOrderValue)}.\n\nSeu pedido atual totaliza ${formatCurrency(total)}.\nFaltam ${formatCurrency(remainingForMinOrder)} para atingir o valor mínimo e liberar a finalização.`);
+      const el = document.getElementById('cart-min-order-notice') || document.getElementById('product-feed');
+      el?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
     
     if (isSchedulingEnabled(storeInfo)) {
       if (!selectedScheduledSlot) {
@@ -1622,9 +1673,28 @@ export default function Menu() {
           </h1>
         </header>
 
-        <div className="flex-1 max-w-3xl w-full mx-auto p-3.5 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8">
-          <div>
-            <h2 className="text-xl font-bold mb-4">Resumo do Pedido</h2>
+        <div className="flex-1 max-w-3xl w-full mx-auto p-3.5 sm:p-6 space-y-4">
+          {!isMinOrderReached && (
+            <div className="p-4 bg-amber-50 border-2 border-amber-300 rounded-2xl shadow-sm flex items-start gap-3">
+              <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-black text-amber-900 text-sm uppercase">Pedido Mínimo Obrigatório</h3>
+                <p className="text-xs text-amber-800 font-medium mt-0.5">
+                  O valor mínimo para finalização de compras é de <strong>{formatCurrency(effectiveMinOrderValue)}</strong>. Seu pedido atual totaliza <strong>{formatCurrency(total)}</strong>. Faltam <strong className="text-amber-950 underline">{formatCurrency(remainingForMinOrder)}</strong> para atingir o valor mínimo e liberar o pedido.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsCheckout(false)}
+                  className="mt-2 text-xs font-black text-amber-900 underline hover:text-amber-950 cursor-pointer block"
+                >
+                  ← Voltar ao cardápio e adicionar mais itens
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8">
+            <div>
+              <h2 className="text-xl font-bold mb-4">Resumo do Pedido</h2>
             <div className="bg-white rounded-xl shadow-sm p-4 space-y-4">
               {cart.map(item => (
                 <div key={item.productId + JSON.stringify(item.addons) + JSON.stringify(item.flavor)} className="flex gap-4 items-center">
@@ -2125,13 +2195,33 @@ export default function Menu() {
                       }
                     }
 
+                    if (!isMinOrderReached) {
+                      alert(`O valor mínimo para finalização de compras é de ${formatCurrency(effectiveMinOrderValue)}.\n\nSeu pedido atual totaliza ${formatCurrency(total)}.\nFaltam ${formatCurrency(remainingForMinOrder)} para atingir o valor mínimo e liberar a finalização.`);
+                      setIsCheckout(false);
+                      setIsCartOpen(true);
+                      return;
+                    }
+
                     handleCheckout();
                   }}
-                  disabled={isSendingOrder}
-                  className="w-full mt-8 py-4.5 px-6 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-2xl font-black text-xl transition-all disabled:opacity-50 cursor-pointer shadow-xl shadow-emerald-600/30 flex items-center justify-center gap-3 select-none"
+                  disabled={isSendingOrder || !isMinOrderReached}
+                  className={`w-full mt-6 py-4.5 px-6 rounded-2xl font-black text-xl transition-all disabled:opacity-50 cursor-pointer shadow-xl flex items-center justify-center gap-3 select-none ${
+                    !isMinOrderReached
+                      ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/25'
+                      : 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-emerald-600/30'
+                  }`}
                 >
-                  <CheckCircle2 className="w-6 h-6" />
-                  <span>{isSendingOrder ? 'Processando...' : 'Finalizar Pedido'}</span>
+                  {!isMinOrderReached ? (
+                    <>
+                      <AlertTriangle className="w-6 h-6 text-white shrink-0" />
+                      <span>Faltam {formatCurrency(remainingForMinOrder)} p/ Mínimo</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-6 h-6" />
+                      <span>{isSendingOrder ? 'Processando...' : 'Finalizar Pedido'}</span>
+                    </>
+                  )}
                 </button>
 
                 <button
@@ -2145,6 +2235,7 @@ export default function Menu() {
               </div>
             )}
           </div>
+        </div>
         </div>
       </div>
     );
@@ -2202,17 +2293,17 @@ export default function Menu() {
             Portal de Franqueados
           </h2>
           <p className="text-stone-500 mb-6 font-medium text-xs sm:text-sm">
-            Digite o CPF ou CNPJ da franquia e a senha (5 primeiros dígitos):
+            Digite seu CPF, CNPJ ou E-mail e a senha (5 primeiros dígitos do documento/telefone):
           </p>
           
           <form 
             onSubmit={async (e) => {
               e.preventDefault();
-              const cnpjDigits = franchiseeCnpj.replace(/\D/g, '');
+              const cleanInput = franchiseeCnpj.trim();
               const cleanPass = franchiseePassword.trim();
               
-              if (cnpjDigits.length < 5) {
-                alert('Por favor, informe um CPF ou CNPJ válido.');
+              if (!cleanInput) {
+                alert('Por favor, informe seu CPF, CNPJ ou E-mail.');
                 return;
               }
               if (!cleanPass) {
@@ -2235,7 +2326,11 @@ export default function Menu() {
                 if (response.ok && data.success) {
                   safeStorage.setItem('balbec_franchisee_cnpj', data.user.cnpj);
                   safeStorage.setItem('balbec_customer_name', data.user.name);
-                  safeStorage.setItem('balbec_customer_phone', '(34) 99999-9999');
+                  safeStorage.setItem('balbec_customer_phone', data.user.phone || '(34) 99999-9999');
+                  if (data.user.email) safeStorage.setItem('balbec_customer_email', data.user.email);
+                  if (data.user.minOrderValue !== undefined && data.user.minOrderValue !== null) {
+                    safeStorage.setItem('balbec_customer_min_order', String(data.user.minOrderValue));
+                  }
 
                   setCustomerName(data.user.name);
                   setCustomerPhone(data.user.phone || '(34) 99999-9999');
@@ -2246,28 +2341,11 @@ export default function Menu() {
                     setHasName(true);
                   }, 1200);
                 } else {
-                  alert(data.error || 'CNPJ ou senha inválidos.');
+                  alert(data.error || 'CPF/CNPJ/E-mail ou senha incorretos.');
                 }
               } catch (err: any) {
                 setIsBakeryLoading(false);
-                // Fallback client-side validation for test convenience
-                const expectedPrefix = cnpjDigits.slice(0, 5);
-                if (cleanPass === expectedPrefix || cleanPass === '12345') {
-                  safeStorage.setItem('balbec_franchisee_cnpj', franchiseeCnpj);
-                  safeStorage.setItem('balbec_customer_name', 'Franqueado BALBEC');
-                  safeStorage.setItem('balbec_customer_phone', '(34) 99999-9999');
-
-                  setCustomerName('Franqueado BALBEC');
-                  setCustomerPhone('(34) 99999-9999');
-
-                  setShowFormSuccess(true);
-                  setTimeout(() => {
-                    setShowFormSuccess(false);
-                    setHasName(true);
-                  }, 1200);
-                } else {
-                  alert('Credenciais inválidas. Dica de teste: CNPJ 12345678000190 e senha 12345');
-                }
+                alert('Erro ao conectar ao servidor. Verifique sua conexão e tente novamente.');
               }
             }}
             className="space-y-4"
@@ -2275,13 +2353,13 @@ export default function Menu() {
             <div className="text-left space-y-3.5">
               <div>
                 <label className="block text-xs font-black text-stone-700 mb-1.5 uppercase tracking-wider">
-                  CPF ou CNPJ (Usuário)
+                  CPF, CNPJ ou E-mail (Usuário)
                 </label>
                 <input 
                   type="text" 
                   value={franchiseeCnpj}
                   onChange={(e) => setFranchiseeCnpj(e.target.value)}
-                  placeholder="000.000.000-00 ou 00.000.000/0001-00"
+                  placeholder="CPF, CNPJ ou e-mail cadastrado"
                   className="w-full p-3.5 sm:p-4 bg-stone-50 border-2 border-stone-200 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-base sm:text-lg font-bold text-stone-900 placeholder:text-stone-400 font-mono"
                   autoFocus
                   required
@@ -2289,7 +2367,7 @@ export default function Menu() {
               </div>
               <div>
                 <label className="block text-xs font-black text-stone-700 mb-1.5 uppercase tracking-wider">
-                  Senha (5 primeiros dígitos do CPF/CNPJ)
+                  Senha (5 primeiros dígitos do documento/telefone)
                 </label>
                 <input 
                   type="password" 
@@ -2881,18 +2959,33 @@ export default function Menu() {
         </div>
       )}
 
-      {/* Sticky Bottom Red Checkout Bar (For All Screens: Mobile, Tablet & Desktop) */}
+      {/* Sticky Bottom Checkout Bar (For All Screens: Mobile, Tablet & Desktop) */}
       {!isCartOpen && cart.length > 0 && !isCheckout && (
         <div className="fixed bottom-0 left-0 right-0 p-3 sm:p-4 z-[40] max-w-xl mx-auto pointer-events-auto">
           <button
             onClick={() => setIsCartOpen(true)}
-            className="w-full h-14 sm:h-16 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-2xl shadow-2xl flex items-center justify-between px-4 sm:px-6 transform active:scale-[0.98] transition-all cursor-pointer border-2 border-red-500/60"
+            className={`w-full h-14 sm:h-16 text-white rounded-2xl shadow-2xl flex items-center justify-between px-4 sm:px-6 transform active:scale-[0.98] transition-all cursor-pointer border-2 ${
+              !isMinOrderReached
+                ? 'bg-amber-600 hover:bg-amber-700 active:bg-amber-800 border-amber-400 shadow-amber-600/30'
+                : 'bg-red-600 hover:bg-red-700 active:bg-red-800 border-red-500/60 shadow-red-600/30'
+            }`}
           >
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="bg-red-900/80 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-sm font-black tracking-wide border border-red-400/40">
+            <div className="flex items-center gap-2 sm:gap-3 text-left">
+              <div className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-sm font-black tracking-wide border ${
+                !isMinOrderReached ? 'bg-amber-900/80 border-amber-400/40' : 'bg-red-900/80 border-red-400/40'
+              }`}>
                 {cart.reduce((sum, item) => sum + item.quantity, 0)} {cart.reduce((sum, item) => sum + item.quantity, 0) === 1 ? 'item' : 'itens'}
               </div>
-              <span className="font-extrabold text-xs sm:text-base uppercase tracking-tight">Ver Carrinho</span>
+              <div>
+                <span className="font-extrabold text-xs sm:text-base uppercase tracking-tight block leading-tight">
+                  Ver Carrinho
+                </span>
+                {!isMinOrderReached && (
+                  <span className="text-[10px] sm:text-xs text-amber-100 font-bold block leading-none mt-0.5">
+                    Faltam {formatCurrency(remainingForMinOrder)} p/ Mínimo ({formatCurrency(effectiveMinOrderValue)})
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2">
               <span className="text-base sm:text-xl font-black">{formatCurrency(total)}</span>
@@ -3066,16 +3159,58 @@ export default function Menu() {
               <span className="text-2xl font-black text-stone-900">{formatCurrency(total)}</span>
             </div>
 
+            {/* Aviso de Pedido Mínimo no Carrinho */}
+            {!isMinOrderReached && (
+              <div id="cart-min-order-notice" className="p-3.5 bg-amber-50 border-2 border-amber-300 rounded-2xl shadow-xs space-y-2">
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-black text-amber-900 uppercase tracking-wide">
+                        Pedido Mínimo: {formatCurrency(effectiveMinOrderValue)}
+                      </span>
+                      <span className="text-xs font-black text-amber-700">
+                        {Math.min(100, Math.round((total / effectiveMinOrderValue) * 100))}%
+                      </span>
+                    </div>
+                    {/* Barra de Progresso */}
+                    <div className="w-full bg-amber-200/80 rounded-full h-2 mt-1.5 overflow-hidden">
+                      <div 
+                        className="bg-amber-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${Math.min(100, Math.round((total / effectiveMinOrderValue) * 100))}%` }}
+                      />
+                    </div>
+                    <p className="text-xs font-bold text-amber-800 mt-2 leading-snug">
+                      Faltam <span className="text-amber-950 font-black underline">{formatCurrency(remainingForMinOrder)}</span> para atingir o valor mínimo e liberar a finalização.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Primary Finish Button */}
             <button 
               onClick={() => {
+                if (!isMinOrderReached) {
+                  alert(`O valor mínimo para finalização de compras é de ${formatCurrency(effectiveMinOrderValue)}.\n\nSeu pedido atual totaliza ${formatCurrency(total)}.\nFaltam ${formatCurrency(remainingForMinOrder)} para atingir o valor mínimo e liberar a finalização.`);
+                  return;
+                }
                 setIsCartOpen(false);
                 setIsCheckout(true);
               }}
-              disabled={cart.length === 0 || !canBuy}
-              className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:bg-stone-300 text-white rounded-2xl font-black text-base transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer"
+              disabled={cart.length === 0 || !canBuy || !isMinOrderReached}
+              className={`w-full py-4 text-white rounded-2xl font-black text-base transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer ${
+                !isMinOrderReached
+                  ? 'bg-amber-500 hover:bg-amber-600 active:bg-amber-700 shadow-amber-500/25'
+                  : 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:bg-stone-300 shadow-emerald-600/30'
+              }`}
             >
-              {!storeInfo.isOpen ? 'Loja Fechada' : !canBuy ? 'Somente Visualização' : (
+              {!storeInfo.isOpen ? 'Loja Fechada' : !canBuy ? 'Somente Visualização' : !isMinOrderReached ? (
+                <>
+                  <AlertTriangle className="w-5 h-5 shrink-0" />
+                  <span>Faltam {formatCurrency(remainingForMinOrder)} p/ Fechar</span>
+                </>
+              ) : (
                 <>
                   <span>Finalizar Pedido</span>
                   <ChevronRight className="w-5 h-5" />

@@ -160,6 +160,7 @@ export const storeInfo = pgTable('store_info', {
   schedulingEndTime: text('scheduling_end_time').default('20:30'),
   schedulingIntervalMinutes: integer('scheduling_interval_minutes').default(30),
   schedulingMaxOrdersPerSlot: integer('scheduling_max_orders_per_slot').default(4),
+  minOrderValue: doublePrecision('min_order_value').default(150.00),
 });
 
 // TV Media Playlist table for Smart TV Indoor Signage
@@ -202,5 +203,6 @@ export const customers = pgTable('customers', {
   createdAt: bigint('created_at', { mode: 'number' }).notNull(),
   tags: text('tags').default('[]'),
   notes: text('notes').default(''),
+  minOrderValue: doublePrecision('min_order_value').default(150.00),
 });
 

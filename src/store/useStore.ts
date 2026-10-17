@@ -256,6 +256,7 @@ export interface StoreInfo {
   schedulingEndTime?: string;
   schedulingIntervalMinutes?: number;
   schedulingMaxOrdersPerSlot?: number;
+  minOrderValue?: number;
 }
 
 export interface PrinterItem {
@@ -291,6 +292,8 @@ export interface Customer {
   phone: string;
   email?: string;
   address?: string;
+  cpf?: string;
+  cnpj?: string;
   source?: string;
   totalOrders: number;
   totalSpent: number;
@@ -298,6 +301,7 @@ export interface Customer {
   createdAt: number;
   tags?: string[] | string;
   notes?: string;
+  minOrderValue?: number;
 }
 
 interface StoreState {
@@ -394,6 +398,7 @@ export const defaultStoreInfo: StoreInfo = {
   isOpen: true,
   ntfyTopic: 'balbec_franquias',
   ntfyEnabled: false,
+  minOrderValue: 150.00,
   tvTickerText: 'Portal Oficial BALBEC - Franqueados e Gestão Integrada.',
   tvMode: 'split_menu',
   tvSelectedCategories: [],

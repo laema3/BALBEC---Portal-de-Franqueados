@@ -78,5 +78,6 @@
   "schedulingStartTime": "09:00",
   "schedulingEndTime": "20:30",
   "schedulingIntervalMinutes": 30,
-  "schedulingMaxOrdersPerSlot": 4
+  "schedulingMaxOrdersPerSlot": 4,
+  "minOrderValue": 150.00
 }

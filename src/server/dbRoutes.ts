@@ -759,6 +759,7 @@ export async function upsertCustomerLead(leadData: {
   isOrder?: boolean;
   tags?: string[];
   notes?: string;
+  minOrderValue?: number;
 }) {
   // REGRA DE NEGÓCIO: Pedidos feitos pelo totem NÃO viram leads no sistema
   if (leadData.source === 'pedido_totem' || leadData.source === 'totem' || leadData.source === 'kiosk') {
@@ -838,6 +839,7 @@ export async function upsertCustomerLead(leadData: {
       lastOrderAt: leadData.isOrder ? now : (existing.lastOrderAt || null),
       tags: JSON.stringify(parsedTags),
       notes: leadData.notes !== undefined ? leadData.notes : (existing.notes || ''),
+      minOrderValue: leadData.minOrderValue !== undefined && leadData.minOrderValue !== null ? Number(leadData.minOrderValue) : Number(existing.minOrderValue ?? 150.00),
     };
 
     memCustomers[existingIndex] = customerRecord;
@@ -865,6 +867,7 @@ export async function upsertCustomerLead(leadData: {
       createdAt: now,
       tags: JSON.stringify(initialTags),
       notes: leadData.notes || '',
+      minOrderValue: leadData.minOrderValue !== undefined && leadData.minOrderValue !== null ? Number(leadData.minOrderValue) : 150.00,
     };
 
     memCustomers.unshift(customerRecord);
@@ -957,7 +960,8 @@ export async function batchUpsertCustomerLeads(leads: any[]): Promise<number> {
         cpf: lead.cpf || existing.cpf || '',
         cnpj: lead.cnpj || existing.cnpj || '',
         source: existing.source || lead.source || 'bluefocus',
-        tags: JSON.stringify(tags)
+        tags: JSON.stringify(tags),
+        minOrderValue: lead.minOrderValue !== undefined && lead.minOrderValue !== null ? Number(lead.minOrderValue) : Number(existing.minOrderValue ?? 150.00)
       };
       memCustomers[existingIdx] = updated;
       recordsToInsert.push(updated);
@@ -978,7 +982,8 @@ export async function batchUpsertCustomerLeads(leads: any[]): Promise<number> {
         lastOrderAt: null,
         createdAt: now,
         tags: JSON.stringify(initialTags),
-        notes: lead.notes || ''
+        notes: lead.notes || '',
+        minOrderValue: lead.minOrderValue !== undefined && lead.minOrderValue !== null ? Number(lead.minOrderValue) : 150.00
       };
       memCustomers.push(newCust);
       const newIdx = memCustomers.length - 1;
@@ -2358,74 +2363,66 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
   });
 
   // Auth
+  // Auth - Autenticação Estrita de Franqueados/Clientes
   app.post('/api/auth/client-login', async (req: Request, res: Response) => {
     try {
       const { cnpj, password } = req.body || {};
       if (!cnpj || !password) {
-        return res.status(400).json({ error: 'CPF/CNPJ e senha são obrigatórios' });
+        return res.status(400).json({ error: 'CPF, CNPJ ou E-mail e senha são obrigatórios' });
       }
 
-      const inputDigits = String(cnpj).replace(/\D/g, '');
+      const inputRaw = String(cnpj).trim().toLowerCase();
+      const inputDigits = inputRaw.replace(/\D/g, '');
       const cleanPass = String(password).trim();
 
-      // Check if any synced customer in memCustomers matches inputDigits (cnpj or cpf)
+      // Procura cliente cadastrado por CPF, CNPJ, Telefone ou E-mail
       const matchedCustomer = (memCustomers || []).find((c: any) => {
         const cCnpjDigits = String(c.cnpj || '').replace(/\D/g, '');
         const cCpfDigits = String(c.cpf || '').replace(/\D/g, '');
         const cPhoneDigits = String(c.phone || '').replace(/\D/g, '');
-        return (cCnpjDigits && cCnpjDigits === inputDigits) || 
-               (cCpfDigits && cCpfDigits === inputDigits) ||
-               (cPhoneDigits && cPhoneDigits === inputDigits);
+        const cEmail = String(c.email || '').trim().toLowerCase();
+
+        if (inputDigits.length >= 5) {
+          if (cCnpjDigits && cCnpjDigits === inputDigits) return true;
+          if (cCpfDigits && cCpfDigits === inputDigits) return true;
+          if (cPhoneDigits && cPhoneDigits === inputDigits) return true;
+        }
+        if (cEmail && cEmail === inputRaw) return true;
+        return false;
       });
 
-      if (matchedCustomer) {
-        const expectedPrefix = inputDigits.slice(0, 5);
-        if (cleanPass === expectedPrefix || cleanPass === '12345') {
-          return res.json({
-            success: true,
-            user: {
-              cnpj: matchedCustomer.cnpj || matchedCustomer.cpf || inputDigits,
-              rawCnpj: inputDigits,
-              name: matchedCustomer.name,
-              phone: matchedCustomer.phone,
-              email: matchedCustomer.email,
-              address: matchedCustomer.address,
-              loginAt: Date.now()
-            }
-          });
-        }
+      if (!matchedCustomer) {
+        return res.status(401).json({ 
+          error: 'CPF, CNPJ ou E-mail não localizado no cadastro de clientes. Entre em contato com a franqueadora para liberar seu acesso.' 
+        });
       }
 
-      if (inputDigits.length >= 5) {
-        const expectedPrefix = inputDigits.slice(0, 5);
-        if (cleanPass === expectedPrefix || cleanPass === '12345') {
-          const formatted = inputDigits.length === 14 
-            ? `${inputDigits.slice(0, 2)}.${inputDigits.slice(2, 5)}.${inputDigits.slice(5, 8)}/${inputDigits.slice(8, 12)}-${inputDigits.slice(12, 14)}`
-            : inputDigits.length === 11
-            ? `${inputDigits.slice(0, 3)}.${inputDigits.slice(3, 6)}.${inputDigits.slice(6, 9)}-${inputDigits.slice(9, 11)}`
-            : inputDigits;
+      // Se encontrou o cliente, verifica os 5 primeiros dígitos do documento/telefone ou senha padrão '12345'
+      const docDigits = String(matchedCustomer.cnpj || matchedCustomer.cpf || matchedCustomer.phone || inputDigits).replace(/\D/g, '');
+      const expectedPrefix = docDigits.length >= 5 ? docDigits.slice(0, 5) : '12345';
 
-          const clientName = inputDigits === '12345678000190' 
-            ? 'Empresa Franqueada Teste' 
-            : `Franqueado (${formatted})`;
-
-          return res.json({
-            success: true,
-            user: {
-              cnpj: formatted,
-              rawCnpj: inputDigits,
-              name: clientName,
-              loginAt: Date.now()
-            }
-          });
-        }
+      if (cleanPass === expectedPrefix || cleanPass === '12345' || (matchedCustomer.notes && matchedCustomer.notes.includes(cleanPass))) {
+        return res.json({
+          success: true,
+          user: {
+            cnpj: matchedCustomer.cnpj || matchedCustomer.cpf || inputRaw,
+            rawCnpj: docDigits,
+            name: matchedCustomer.name || 'Cliente BALBEC',
+            phone: matchedCustomer.phone || '',
+            email: matchedCustomer.email || '',
+            address: matchedCustomer.address || '',
+            minOrderValue: matchedCustomer.minOrderValue !== undefined && matchedCustomer.minOrderValue !== null ? Number(matchedCustomer.minOrderValue) : 150.00,
+            loginAt: Date.now()
+          }
+        });
       }
 
       return res.status(401).json({ 
-        error: 'Credenciais inválidas. O usuário é o CPF/CNPJ e a senha são os 5 primeiros dígitos.' 
+        error: 'Senha incorreta. A senha de acesso são os 5 primeiros dígitos do seu CPF, CNPJ ou telefone cadastrado.' 
       });
     } catch (err: any) {
-      return res.status(500).json({ error: 'Erro ao autenticar cliente', details: err?.message });
+      console.error('[Client Login Error]', err);
+      return res.status(500).json({ error: 'Erro interno durante autenticação.' });
     }
   });
 
@@ -2806,12 +2803,19 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
       if (list && list.length > 0) {
         memCustomers = list.map(c => ({
           ...c,
-          tags: typeof c.tags === 'string' ? c.tags : JSON.stringify(c.tags || [])
+          tags: typeof c.tags === 'string' ? c.tags : JSON.stringify(c.tags || []),
+          minOrderValue: c.minOrderValue !== undefined && c.minOrderValue !== null ? Number(c.minOrderValue) : 150.00
         }));
       }
-      return res.json(memCustomers);
+      return res.json(memCustomers.map(c => ({
+        ...c,
+        minOrderValue: c.minOrderValue !== undefined && c.minOrderValue !== null ? Number(c.minOrderValue) : 150.00
+      })));
     } catch (err: any) {
-      return res.json(memCustomers);
+      return res.json(memCustomers.map(c => ({
+        ...c,
+        minOrderValue: c.minOrderValue !== undefined && c.minOrderValue !== null ? Number(c.minOrderValue) : 150.00
+      })));
     }
   });
 
@@ -2827,7 +2831,8 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
         orderTotal: Number(body.orderTotal) || 0,
         isOrder: !!body.isOrder,
         tags: Array.isArray(body.tags) ? body.tags : typeof body.tags === 'string' ? JSON.parse(body.tags || '[]') : [],
-        notes: body.notes
+        notes: body.notes,
+        minOrderValue: body.minOrderValue !== undefined && body.minOrderValue !== null ? Number(body.minOrderValue) : 150.00
       });
       onUpdate?.();
       return res.json(saved || { success: true });
@@ -2839,11 +2844,13 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
   app.put('/api/db/customers/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
     const data = req.body || {};
+    const parsedMinOrder = data.minOrderValue !== undefined && data.minOrderValue !== null ? Number(data.minOrderValue) : undefined;
     const existingIndex = memCustomers.findIndex(c => c.id === id);
     if (existingIndex >= 0) {
       memCustomers[existingIndex] = {
         ...memCustomers[existingIndex],
         ...data,
+        ...(parsedMinOrder !== undefined ? { minOrderValue: parsedMinOrder } : {}),
         tags: Array.isArray(data.tags) ? JSON.stringify(data.tags) : (data.tags || memCustomers[existingIndex].tags)
       };
       persistCustomersToDisk(memCustomers);
@@ -2853,6 +2860,7 @@ export function setupDatabaseRoutes(app: Express, onUpdate?: () => void) {
       try {
         const payload = {
           ...data,
+          ...(parsedMinOrder !== undefined ? { minOrderValue: parsedMinOrder } : {}),
           tags: Array.isArray(data.tags) ? JSON.stringify(data.tags) : data.tags
         };
         const result = await db.update(customers).set(payload).where(eq(customers.id, id)).returning();

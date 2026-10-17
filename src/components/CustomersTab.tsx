@@ -97,6 +97,7 @@ export const CustomersTab: React.FC = () => {
   const [formSource, setFormSource] = useState('manual');
   const [formTags, setFormTags] = useState('');
   const [formNotes, setFormNotes] = useState('');
+  const [formMinOrderValue, setFormMinOrderValue] = useState('150.00');
 
   // Helper to extract phone digits
   const cleanDigits = (phone?: string) => (phone || '').replace(/\D/g, '');
@@ -227,6 +228,7 @@ export const CustomersTab: React.FC = () => {
         : typeof customer.tags === 'string' ? customer.tags : '';
       setFormTags(tagsList);
       setFormNotes(customer.notes || '');
+      setFormMinOrderValue(String(customer.minOrderValue !== undefined && customer.minOrderValue !== null ? customer.minOrderValue : 150.00));
     } else {
       setEditingCustomer(null);
       setFormName('');
@@ -236,6 +238,7 @@ export const CustomersTab: React.FC = () => {
       setFormSource('manual');
       setFormTags('Lead, Marketing');
       setFormNotes('');
+      setFormMinOrderValue('150.00');
     }
     setIsModalOpen(true);
   };
@@ -261,7 +264,8 @@ export const CustomersTab: React.FC = () => {
         address: formAddress.trim() || undefined,
         source: formSource,
         tags: parsedTags,
-        notes: formNotes.trim() || undefined
+        notes: formNotes.trim() || undefined,
+        minOrderValue: parseFloat(formMinOrderValue) || 150.00
       };
 
       if (editingCustomer) {
@@ -755,13 +759,16 @@ export const CustomersTab: React.FC = () => {
                             {customer.name ? customer.name.charAt(0).toUpperCase() : '?'}
                           </div>
                           <div>
-                            <div className="font-bold text-stone-800 flex items-center gap-1.5">
+                            <div className="font-bold text-stone-800 flex items-center flex-wrap gap-1.5">
                               <span>{customer.name || 'Sem Nome'}</span>
                               {hasOrders && (
                                 <span className="text-[10px] bg-emerald-100 text-emerald-700 font-black px-1.5 py-0.2 rounded-md">
                                   Comprador
                                 </span>
                               )}
+                              <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-1.5 py-0.2 rounded-md" title="Pedido mínimo configurado para este cliente">
+                                Mín: {formatCurrency(customer.minOrderValue !== undefined && customer.minOrderValue !== null ? customer.minOrderValue : 150.00)}
+                              </span>
                             </div>
                             {customer.address && (
                               <p className="text-xs text-stone-400 flex items-center gap-1 mt-0.5 max-w-xs truncate" title={customer.address}>
@@ -1485,6 +1492,28 @@ export const CustomersTab: React.FC = () => {
                   placeholder="Ex: VIP, Café da Manhã, Delivery, Frequente"
                   className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500 focus:outline-none"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">
+                  Pedido Mínimo do Cliente (R$) *
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 font-bold text-xs">R$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    required
+                    value={formMinOrderValue}
+                    onChange={(e) => setFormMinOrderValue(e.target.value)}
+                    placeholder="150.00"
+                    className="w-full pl-9 pr-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500 focus:outline-none font-mono font-bold text-stone-900"
+                  />
+                </div>
+                <p className="text-[10px] text-stone-500 mt-1">
+                  Valor padrão inicial de R$ 150,00. Pode ser reajustado pelo administrador para mais ou para menos para este cliente.
+                </p>
               </div>
 
               <div>
